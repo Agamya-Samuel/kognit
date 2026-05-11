@@ -20,6 +20,7 @@ import { auditLogs } from './audit-logs';
 import { passwordResets } from './password-resets';
 import { emailVerifications } from './email-verifications';
 import { userAuthProviders } from './user-auth-providers';
+import { refreshTokens } from './refresh-tokens';
 import { betaInvites } from './beta-invites';
 import { waitlist } from './waitlist';
 import { reviews } from './reviews';
@@ -53,6 +54,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   passwordResets: many(passwordResets),
   emailVerifications: many(emailVerifications),
   userAuthProviders: many(userAuthProviders),
+  refreshTokens: many(refreshTokens),
   betaInvitesInvited: many(betaInvites, { relationName: 'invitedBy' }),
   betaInvitesUsed: many(betaInvites, { relationName: 'usedBy' }),
   reviews: many(reviews),
@@ -264,6 +266,14 @@ export const emailVerificationsRelations = relations(emailVerifications, ({ one 
 export const userAuthProvidersRelations = relations(userAuthProviders, ({ one }) => ({
   user: one(users, {
     fields: [userAuthProviders.userId],
+    references: [users.id],
+  }),
+}));
+
+// Refresh token relations
+export const refreshTokensRelations = relations(refreshTokens, ({ one }) => ({
+  user: one(users, {
+    fields: [refreshTokens.userId],
     references: [users.id],
   }),
 }));

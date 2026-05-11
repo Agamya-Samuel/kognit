@@ -22,6 +22,7 @@ export * from './audit-logs';
 export * from './password-resets';
 export * from './email-verifications';
 export * from './user-auth-providers';
+export * from './refresh-tokens';
 export * from './beta-invites';
 export * from './waitlist';
 export * from './reviews';
