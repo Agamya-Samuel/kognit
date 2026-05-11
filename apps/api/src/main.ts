@@ -5,6 +5,7 @@ import { ExpressAdapter } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { ThrottlerExceptionFilter as CustomThrottlerFilter } from './common/filters/throttler-exception.filter';
 import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
@@ -67,7 +68,7 @@ async function bootstrap() {
   app.useGlobalInterceptors(new ResponseInterceptor());
 
   // Global Exception Filter
-  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalFilters(new HttpExceptionFilter(), new CustomThrottlerFilter());
 
   // Swagger API Documentation
   if (NODE_ENV !== 'production') {
