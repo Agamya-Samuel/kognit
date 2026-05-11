@@ -9,29 +9,44 @@
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
     "clean": "rm -rf .next dist node_modules"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.100.9",
+    "axios": "^1.16.0",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "jotai": "^2.20.0",
     "next": "^16.2.6",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
-    "@tanstack/react-query": "^5.100.9",
-    "jotai": "^2.20.0",
-    "axios": "^1.16.0",
-    "clsx": "^2.1.1",
-    "tailwind-merge": "^3.6.0",
     "recharts": "^3.8.1",
-    "date-fns": "^4.1.0"
+    "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^25.6.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "typescript": "^6.0.3",
+    "@vitejs/plugin-react": "^4.7.0",
+    "@vitest/coverage-v8": "^4.1.5",
+    "autoprefixer": "^10.5.0",
     "eslint": "^10.3.0",
     "eslint-config-next": "^16.2.6",
-    "tailwindcss": "^4.3.0",
+    "jsdom": "^29.1.1",
+    "msw": "^2.14.6",
     "postcss": "^8.5.14",
-    "autoprefixer": "^10.5.0"
+    "tailwindcss": "^4.3.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.5"
   }
 }
