@@ -2,13 +2,19 @@
   "extends": "../config/tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": "..",
     "jsx": "react-jsx",
     "lib": ["es2022", "dom", "dom.iterable"],
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "paths": {
+      "@edutech/ui": ["../ui/src"],
+      "@edutech/validation": ["../validation/src"],
+      "@edutech/api-client": ["../api-client/src"],
+      "@edutech/types": ["../types/src"]
+    }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "../ui/src/**/*", "../validation/src/**/*", "../api-client/src/**/*", "../types/src/**/*"],
   "exclude": ["node_modules", "dist"]
 }

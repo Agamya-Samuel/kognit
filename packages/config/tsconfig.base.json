@@ -17,7 +17,6 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "incremental": true,
-    "baseUrl": ".",
     "paths": {
       "@edutech/ui": ["../../packages/ui/src"],
       "@edutech/types": ["../../packages/types/src"],
