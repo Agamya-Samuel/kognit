@@ -5,6 +5,9 @@
     "rootDir": "./src",
     "jsx": "react-jsx",
     "lib": ["es2022", "dom", "dom.iterable"],
+    "incremental": false,
+    "ignoreDeprecations": "6.0",
+    "paths": {},
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true
