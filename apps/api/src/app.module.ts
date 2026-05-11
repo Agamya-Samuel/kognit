@@ -1,10 +1,14 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AppConfigModule } from './config/config.module';
+import { DatabaseModule } from './db/database.module';
 import { RedisModule } from './redis/redis.module';
 import { QueueModule } from './queue/queue.module';
 import { HealthController } from './health/health.controller';
 import { AuthModule } from './modules/auth/auth.module';
+import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
+import { RolesGuard } from './modules/auth/guards/roles.guard';
 import { UsersModule } from './modules/users/users.module';
 import { CoursesModule } from './modules/courses/courses.module';
 import { EnrollmentsModule } from './modules/enrollments/enrollments.module';
@@ -27,6 +31,7 @@ import { AdminModule } from './modules/admin/admin.module';
     // Rate limiting: 100 requests per 60 seconds per IP
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
     // Infrastructure modules
+    DatabaseModule,
     RedisModule,
     QueueModule,
     // Feature modules
@@ -46,6 +51,10 @@ import { AdminModule } from './modules/admin/admin.module';
     AdminModule,
   ],
   controllers: [HealthController],
-  providers: [],
+  providers: [
+    // Global guards: JWT auth + RBAC applied to all routes
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: RolesGuard },
+  ],
 })
 export class AppModule {}
