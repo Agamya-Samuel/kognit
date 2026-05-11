@@ -43,6 +43,8 @@
 | [Code Standards](04-engineering/03-code-standards.md) | Git workflow, code quality, error handling hierarchy, DB practices, frontend practices |
 | [CI/CD & Operations](04-engineering/04-cicd-and-operations.md) | CI/CD pipeline stages, deployment strategy, monitoring, observability, alerting |
 | [Performance](04-engineering/05-performance.md) | Backend, frontend, infrastructure optimization checklists |
+| [Performance Checklist](04-engineering/05-performance-checklist.md) | Performance optimization checklists |
+| [UX States Specification](04-engineering/06-ux-states-specification.md) | Comprehensive UX state specifications for all platform features |
 
 ### 05 — Implementation
 | File | Description |
@@ -55,6 +57,12 @@
 |---|---|
 | [Risk Register](06-project-management/01-risk-register.md) | Combined risk register + mitigation strategies |
 | [Glossary](06-project-management/02-glossary.md) | All terminology definitions |
+
+### 07 — Design
+| File | Description |
+|---|---|
+| [Design Brief](07-design/01-design-brief.md) | Complete UI/UX design brief with screen maps for all platform apps |
+| [Design System](07-design/02-design-system.md) | Color palette, typography, spacing, tokens, accessibility, app-specific guidelines |
 
 ## Design Principles
 
