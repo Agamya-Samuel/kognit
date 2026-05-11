@@ -26,7 +26,7 @@ const envSchema = z.object({
 
   // JWT
   JWT_SECRET: z.string().min(32).default('your-super-secret-jwt-key-change-in-production'),
-  JWT_EXPIRY: z.string().default('7d'),
+  JWT_EXPIRY: z.string().default('15m'),
   JWT_REFRESH_SECRET: z.string().min(32).default('your-super-secret-refresh-key-change-in-production'),
   JWT_REFRESH_EXPIRY: z.string().default('30d'),
 
@@ -55,6 +55,14 @@ const envSchema = z.object({
   // PostHog
   POSTHOG_API_KEY: z.string().optional(),
   POSTHOG_HOST: z.string().default('https://app.posthog.com'),
+
+  // OAuth
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
+  GOOGLE_CALLBACK_URL: z.string().optional(),
+  GITHUB_CLIENT_ID: z.string().optional(),
+  GITHUB_CLIENT_SECRET: z.string().optional(),
+  GITHUB_CALLBACK_URL: z.string().optional(),
 
   // Email
   SMTP_HOST: z.string().optional(),
