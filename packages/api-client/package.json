@@ -20,6 +20,7 @@
     "clean": "rm -rf dist node_modules"
   },
   "dependencies": {
+    "@edutech/types": "*",
     "axios": "^1.16.0"
   },
   "devDependencies": {
