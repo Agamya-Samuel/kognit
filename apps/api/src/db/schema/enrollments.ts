@@ -1,4 +1,5 @@
 import { pgTable, serial, integer, timestamp, varchar } from 'drizzle-orm/pg-core';
+import type { InferSelectModel } from 'drizzle-orm';
 import { users } from './users';
 import { courses } from './courses';
 import { payments } from './payments';
@@ -16,3 +17,5 @@ export const enrollments = pgTable('enrollments', {
     columns: [table.studentId, table.courseId],
   },
 }));
+
+export type Enrollment = InferSelectModel<typeof enrollments>;

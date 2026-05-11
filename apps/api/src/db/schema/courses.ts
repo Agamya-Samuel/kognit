@@ -1,4 +1,5 @@
 import { pgTable, serial, integer, text, timestamp, varchar, boolean } from 'drizzle-orm/pg-core';
+import type { InferSelectModel } from 'drizzle-orm';
 import { users } from './users';
 import { pricingType } from './enums';
 
@@ -16,3 +17,5 @@ export const courses = pgTable('courses', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
+
+export type Course = InferSelectModel<typeof courses>;

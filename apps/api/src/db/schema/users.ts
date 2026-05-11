@@ -1,4 +1,5 @@
 import { pgTable, serial, varchar, boolean, timestamp, text } from 'drizzle-orm/pg-core';
+import type { InferSelectModel } from 'drizzle-orm';
 import { userRoles } from './enums';
 
 export const users = pgTable('users', {
@@ -14,3 +15,5 @@ export const users = pgTable('users', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
+
+export type User = InferSelectModel<typeof users>;
