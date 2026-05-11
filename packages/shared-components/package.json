@@ -24,6 +24,8 @@
     "react-dom": "^19.2.6",
     "@edutech/ui": "*",
     "@edutech/validation": "*",
+    "@edutech/api-client": "*",
+    "@edutech/types": "*",
     "@tanstack/react-query": "^5.100.9",
     "jotai": "^2.20.0",
     "axios": "^1.16.0"
