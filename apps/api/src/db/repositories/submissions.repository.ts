@@ -1,0 +1,129 @@
+import { Injectable } from '@nestjs/common';
+import { BaseRepository, PaginatedResult } from './base.repository';
+import { submissions } from '../schema';
+import { eq, and, desc } from 'drizzle-orm';
+import type { Submission } from '../schema';
+
+@Injectable()
+export class SubmissionsRepository extends BaseRepository<Submission> {
+  constructor(db: any) {
+    super(db, submissions);
+  }
+
+  async findById(id: number): Promise<Submission | null> {
+    try {
+      const result = await this.db
+        .select()
+        .from(submissions)
+        .where(eq(submissions.id, id))
+        .limit(1);
+      return result[0] || null;
+    } catch (error) {
+      this.handleError(error, 'findById');
+      return null;
+    }
+  }
+
+  async findByAssignmentAndStudent(assignmentId: number, studentId: number): Promise<Submission | null> {
+    try {
+      const result = await this.db
+        .select()
+        .from(submissions)
+        .where(and(eq(submissions.assignmentId, assignmentId), eq(submissions.studentId, studentId)))
+        .limit(1);
+      return result[0] || null;
+    } catch (error) {
+      this.handleError(error, 'findByAssignmentAndStudent');
+      return null;
+    }
+  }
+
+  async findByAssignment(assignmentId: number, options: { offset?: number; limit?: number } = {}): Promise<PaginatedResult<Submission>> {
+    return this.findMany({ ...options, assignmentId });
+  }
+
+  async findMany(options: {
+    offset?: number;
+    limit?: number;
+    assignmentId?: number;
+    studentId?: number;
+  } = {}): Promise<PaginatedResult<Submission>> {
+    const defaultLimit = 10;
+    const defaultOffset = 0;
+    try {
+      const offset = options.offset ?? defaultOffset;
+      const limit = options.limit ?? defaultLimit;
+
+      const conditions = [];
+      if (options.assignmentId) {
+        conditions.push(eq(submissions.assignmentId, options.assignmentId));
+      }
+      if (options.studentId) {
+        conditions.push(eq(submissions.studentId, options.studentId));
+      }
+
+      const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+      const [data, totalResult] = await Promise.all([
+        this.db
+          .select()
+          .from(submissions)
+          .where(whereClause)
+          .orderBy(desc(submissions.submittedAt))
+          .limit(limit)
+          .offset(offset),
+        this.db.select({ count: submissions.id }).from(submissions).where(whereClause),
+      ]);
+      return { data, total: totalResult.length, limit, offset };
+    } catch (error) {
+      this.handleError(error, 'findMany');
+      return { data: [], total: 0, limit: options.limit || defaultLimit, offset: options.offset || defaultOffset };
+    }
+  }
+
+  async create(data: Omit<Submission, 'id' | 'submittedAt'>): Promise<Submission> {
+    try {
+      const result = await this.db.insert(submissions).values(data).returning();
+      return result[0];
+    } catch (error) {
+      this.handleError(error, 'create');
+      throw error;
+    }
+  }
+
+  async update(id: number, data: Partial<Omit<Submission, 'id' | 'submittedAt'>>): Promise<Submission | null> {
+    try {
+      const result = await this.db
+        .update(submissions)
+        .set(data)
+        .where(eq(submissions.id, id))
+        .returning();
+      return result[0] || null;
+    } catch (error) {
+      this.handleError(error, 'update');
+      return null;
+    }
+  }
+
+  async grade(id: number, score: number, feedback: string): Promise<Submission | null> {
+    return this.update(id, { score, feedback, gradedAt: new Date() });
+  }
+
+  async count(filters?: { assignmentId?: number; studentId?: number }): Promise<number> {
+    try {
+      const conditions = [];
+      if (filters?.assignmentId) {
+        conditions.push(eq(submissions.assignmentId, filters.assignmentId));
+      }
+      if (filters?.studentId) {
+        conditions.push(eq(submissions.studentId, filters.studentId));
+      }
+      const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+      const result = await this.db.select({ count: submissions.id }).from(submissions).where(whereClause);
+      return result.length;
+    } catch (error) {
+      this.handleError(error, 'count');
+      return 0;
+    }
+  }
+}
