@@ -5,24 +5,24 @@ import { z } from 'zod';
 const envSchema = z.object({
   // Application
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  PORT: z.string().transform(Number).default('3000'),
+  PORT: z.string().transform(Number).default(3000),
 
   // Frontend
   FRONTEND_URL: z.string().url().default('http://localhost:3000'),
 
   // Database
   DATABASE_HOST: z.string().default('localhost'),
-  DATABASE_PORT: z.string().transform(Number).default('5432'),
+  DATABASE_PORT: z.string().transform(Number).default(5432),
   DATABASE_USER: z.string().default('postgres'),
   DATABASE_PASSWORD: z.string().default('postgres'),
   DATABASE_NAME: z.string().default('edutech'),
-  DATABASE_SSL: z.enum(['true', 'false']).transform(val => val === 'true').default('false'),
+  DATABASE_SSL: z.enum(['true', 'false']).transform(val => val === 'true').default(false),
 
   // Redis
   REDIS_HOST: z.string().default('localhost'),
-  REDIS_PORT: z.string().transform(Number).default('6379'),
+  REDIS_PORT: z.string().transform(Number).default(6379),
   REDIS_PASSWORD: z.string().optional(),
-  REDIS_DB: z.string().transform(Number).default('0'),
+  REDIS_DB: z.string().transform(Number).default(0),
 
   // JWT
   JWT_SECRET: z.string().min(32).default('your-super-secret-jwt-key-change-in-production'),
@@ -58,15 +58,15 @@ const envSchema = z.object({
 
   // Email
   SMTP_HOST: z.string().optional(),
-  SMTP_PORT: z.string().transform(Number).default('587'),
+  SMTP_PORT: z.string().transform(Number).default(587),
   SMTP_USER: z.string().optional(),
   SMTP_PASSWORD: z.string().optional(),
   SMTP_FROM_EMAIL: z.string().optional(),
   SMTP_FROM_NAME: z.string().default('EduTech Platform'),
 
   // Rate Limiting
-  RATE_LIMIT_TTL: z.string().transform(Number).default('60'),
-  RATE_LIMIT_LIMIT: z.string().transform(Number).default('100'),
+  RATE_LIMIT_TTL: z.string().transform(Number).default(60),
+  RATE_LIMIT_LIMIT: z.string().transform(Number).default(100),
 });
 
 // Type-safe environment configuration
