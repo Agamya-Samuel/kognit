@@ -2,21 +2,43 @@ import { z } from 'zod';
 
 // ─── Auth Schemas ─────────────────────────────────────────────────────────────
 
+// Password policy: min 8 chars, 1 uppercase, 1 lowercase, 1 digit
+export const passwordPolicy = z
+  .string()
+  .min(8, 'Password must be at least 8 characters')
+  .max(128, 'Password must be at most 128 characters')
+  .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+  .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+  .regex(/[0-9]/, 'Password must contain at least one number');
+
 export const loginSchema = z.object({
   email: z.email('Please enter a valid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  password: z.string().min(1, 'Password is required'),
 });
 
 export const registerSchema = z.object({
   email: z.email('Please enter a valid email address'),
-  password: z
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .max(128, 'Password must be at most 128 characters')
-    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-    .regex(/[0-9]/, 'Password must contain at least one number'),
+  password: passwordPolicy,
   name: z.string().min(2, 'Name must be at least 2 characters').max(255, 'Name must be at most 255 characters'),
+});
+
+// Email-first registration: step 1 — request verification code
+export const requestEmailVerificationSchema = z.object({
+  email: z.email('Please enter a valid email address'),
+});
+
+// Email-first registration: step 2 — verify code
+export const verifyEmailCodeSchema = z.object({
+  email: z.email('Please enter a valid email address'),
+  code: z.string().length(6, 'Verification code must be 6 digits'),
+});
+
+// Email-first registration: step 3 — complete registration
+export const completeRegistrationSchema = z.object({
+  email: z.email('Please enter a valid email address'),
+  code: z.string().length(6, 'Verification code must be 6 digits'),
+  name: z.string().min(2, 'Name must be at least 2 characters').max(255, 'Name must be at most 255 characters'),
+  password: passwordPolicy,
 });
 
 export const forgotPasswordSchema = z.object({
@@ -26,10 +48,7 @@ export const forgotPasswordSchema = z.object({
 export const resetPasswordSchema = z
   .object({
     token: z.string().min(1, 'Reset token is required'),
-    password: z
-      .string()
-      .min(8, 'Password must be at least 8 characters')
-      .max(128, 'Password must be at most 128 characters'),
+    password: passwordPolicy,
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -37,26 +56,27 @@ export const resetPasswordSchema = z
     path: ['confirmPassword'],
   });
 
-// ─── User Schemas ─────────────────────────────────────────────────────────────
-
-export const updateUserSchema = z.object({
-  name: z.string().min(2).max(255).optional(),
-  avatarUrl: z.string().url().max(500).optional(),
-});
-
 export const changePasswordSchema = z
   .object({
     currentPassword: z.string().min(1, 'Current password is required'),
-    newPassword: z
-      .string()
-      .min(8, 'Password must be at least 8 characters')
-      .max(128, 'Password must be at most 128 characters'),
+    newPassword: passwordPolicy,
     confirmPassword: z.string(),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
     message: 'Passwords do not match',
     path: ['confirmPassword'],
   });
+
+export const refreshTokenSchema = z.object({
+  refreshToken: z.string().min(1, 'Refresh token is required'),
+});
+
+// ─── User Schemas ─────────────────────────────────────────────────────────────
+
+export const updateUserSchema = z.object({
+  name: z.string().min(2).max(255).optional(),
+  avatarUrl: z.string().url().max(500).optional(),
+});
 
 // ─── Course Schemas ───────────────────────────────────────────────────────────
 
@@ -96,10 +116,14 @@ export const paginationQuerySchema = z.object({
 
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
+export type RequestEmailVerificationInput = z.infer<typeof requestEmailVerificationSchema>;
+export type VerifyEmailCodeInput = z.infer<typeof verifyEmailCodeSchema>;
+export type CompleteRegistrationInput = z.infer<typeof completeRegistrationSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
+export type RefreshTokenInput = z.infer<typeof refreshTokenSchema>;
 export type CreateCourseInput = z.infer<typeof createCourseSchema>;
 export type UpdateCourseInput = z.infer<typeof updateCourseSchema>;
 export type CreateEnrollmentInput = z.infer<typeof createEnrollmentSchema>;
