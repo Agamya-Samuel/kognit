@@ -5,26 +5,26 @@ import Link from 'next/link';
 
 export function CTASection() {
   return (
-    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-primary/10 to-secondary/10 border-t border-b border-border">
-      <div className="max-w-4xl mx-auto text-center space-y-8">
-        <h2 className="text-4xl sm:text-5xl font-bold text-foreground">
-          Ready to Start Learning?
+    <section className="py-16 sm:py-20 lg:py-28 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-primary via-accent to-primary text-white">
+      <div className="max-w-4xl mx-auto text-center space-y-6 sm:space-y-8">
+        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight text-balance">
+          Ready to Transform Your English Skills?
         </h2>
-        <p className="text-xl text-muted-foreground">
-          Join thousands of students and instructors building their futures with EduTech today.
+        <p className="text-base sm:text-lg text-white/90 max-w-2xl mx-auto text-balance">
+          Join 50,000+ learners who have already achieved fluency. Start your journey with a free trial today.
         </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center pt-4">
           <Link
             href="/auth/register"
-            className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-4 rounded-lg font-semibold transition-all transform hover:scale-105 text-center"
+            className="bg-white text-primary hover:bg-white/90 px-6 sm:px-8 py-3 sm:py-4 rounded-full font-bold transition-all transform hover:scale-105 text-center text-sm sm:text-base"
           >
-            Sign up for free
+            Start Free Trial
           </Link>
           <Link
-            href="/auth/login"
-            className="border border-primary/30 text-foreground hover:bg-primary/5 px-8 py-4 rounded-lg font-semibold transition-all text-center"
+            href="#features"
+            className="border-2 border-white text-white hover:bg-white/10 px-6 sm:px-8 py-3 sm:py-4 rounded-full font-bold transition-all text-center text-sm sm:text-base"
           >
-            Already have an account?
+            Learn More
           </Link>
         </div>
       </div>
@@ -34,60 +34,67 @@ export function CTASection() {
 
 export function Footer() {
   return (
-    <footer className="bg-background/50 border-t border-border py-12 px-4 sm:px-6 lg:px-8">
+    <footer className="bg-foreground text-white py-12 sm:py-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8 sm:mb-12">
           {/* Brand */}
           <div className="space-y-4">
-            <h3 className="text-xl font-bold text-foreground">EduTech</h3>
-            <p className="text-muted-foreground text-sm">
-              Empowering learners and educators worldwide through accessible, quality education.
+            <h3 className="text-xl sm:text-2xl font-bold">EduTech</h3>
+            <p className="text-white/70 text-sm leading-relaxed">
+              Empowering learners worldwide with accessible, interactive English education.
             </p>
           </div>
 
-          {/* Links */}
-          <div className="space-y-3">
-            <h4 className="font-semibold text-foreground">Product</h4>
+          {/* Product */}
+          <div className="space-y-4">
+            <h4 className="font-bold text-base sm:text-lg">Product</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link href="#" className="text-muted-foreground hover:text-primary transition-colors">Courses</Link></li>
-              <li><Link href="#" className="text-muted-foreground hover:text-primary transition-colors">Instructors</Link></li>
-              <li><Link href="#" className="text-muted-foreground hover:text-primary transition-colors">Pricing</Link></li>
+              <li><Link href="#" className="text-white/70 hover:text-white transition-colors">Courses</Link></li>
+              <li><Link href="#" className="text-white/70 hover:text-white transition-colors">Live Classes</Link></li>
+              <li><Link href="#" className="text-white/70 hover:text-white transition-colors">Pricing</Link></li>
+              <li><Link href="#" className="text-white/70 hover:text-white transition-colors">Blog</Link></li>
             </ul>
           </div>
 
-          <div className="space-y-3">
-            <h4 className="font-semibold text-foreground">Company</h4>
+          {/* Company */}
+          <div className="space-y-4">
+            <h4 className="font-bold text-base sm:text-lg">Company</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link href="#" className="text-muted-foreground hover:text-primary transition-colors">About</Link></li>
-              <li><Link href="#" className="text-muted-foreground hover:text-primary transition-colors">Blog</Link></li>
-              <li><Link href="#" className="text-muted-foreground hover:text-primary transition-colors">Careers</Link></li>
+              <li><Link href="#" className="text-white/70 hover:text-white transition-colors">About Us</Link></li>
+              <li><Link href="#" className="text-white/70 hover:text-white transition-colors">Careers</Link></li>
+              <li><Link href="#" className="text-white/70 hover:text-white transition-colors">Contact</Link></li>
+              <li><Link href="#" className="text-white/70 hover:text-white transition-colors">FAQ</Link></li>
             </ul>
           </div>
 
-          <div className="space-y-3">
-            <h4 className="font-semibold text-foreground">Legal</h4>
+          {/* Legal */}
+          <div className="space-y-4">
+            <h4 className="font-bold text-base sm:text-lg">Legal</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link href="#" className="text-muted-foreground hover:text-primary transition-colors">Privacy</Link></li>
-              <li><Link href="#" className="text-muted-foreground hover:text-primary transition-colors">Terms</Link></li>
-              <li><Link href="#" className="text-muted-foreground hover:text-primary transition-colors">Contact</Link></li>
+              <li><Link href="#" className="text-white/70 hover:text-white transition-colors">Privacy Policy</Link></li>
+              <li><Link href="#" className="text-white/70 hover:text-white transition-colors">Terms of Service</Link></li>
+              <li><Link href="#" className="text-white/70 hover:text-white transition-colors">Cookie Policy</Link></li>
             </ul>
           </div>
         </div>
 
+        {/* Divider */}
+        <div className="border-t border-white/20 pt-8"></div>
+
         {/* Bottom */}
-        <div className="border-t border-border pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-muted-foreground">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-white/70">
+          <p>
             © 2024 EduTech. All rights reserved.
           </p>
           <div className="flex gap-6">
-            <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
+            <Link href="#" className="text-white/70 hover:text-white transition-colors">
               Twitter
             </Link>
-            <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
+            <Link href="#" className="text-white/70 hover:text-white transition-colors">
               LinkedIn
             </Link>
-            <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-              GitHub
+            <Link href="#" className="text-white/70 hover:text-white transition-colors">
+              Facebook
             </Link>
           </div>
         </div>
