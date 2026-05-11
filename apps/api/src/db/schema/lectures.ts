@@ -1,4 +1,5 @@
 import { pgTable, serial, integer, text, timestamp, varchar, boolean } from 'drizzle-orm/pg-core';
+import type { InferSelectModel } from 'drizzle-orm';
 import { sections } from './sections';
 import { lectureType } from './enums';
 
@@ -16,3 +17,5 @@ export const lectures = pgTable('lectures', {
   isPublished: boolean('is_published').notNull().default(false),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
+
+export type Lecture = InferSelectModel<typeof lectures>;

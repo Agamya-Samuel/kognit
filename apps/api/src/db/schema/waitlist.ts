@@ -1,4 +1,5 @@
 import { pgTable, serial, timestamp, varchar } from 'drizzle-orm/pg-core';
+import type { InferSelectModel } from 'drizzle-orm';
 import { waitlistSource } from './enums';
 
 export const waitlist = pgTable('waitlist', {
@@ -9,3 +10,5 @@ export const waitlist = pgTable('waitlist', {
   source: waitlistSource('source').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
+
+export type WaitlistEntry = InferSelectModel<typeof waitlist>;

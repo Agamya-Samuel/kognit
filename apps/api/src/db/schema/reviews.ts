@@ -1,4 +1,5 @@
 import { pgTable, serial, integer, text, timestamp } from 'drizzle-orm/pg-core';
+import type { InferSelectModel } from 'drizzle-orm';
 import { users } from './users';
 import { courses } from './courses';
 import { moderationStatus } from './enums';
@@ -19,3 +20,5 @@ export const reviews = pgTable('reviews', {
     columns: [table.userId, table.courseId],
   },
 }));
+
+export type Review = InferSelectModel<typeof reviews>;

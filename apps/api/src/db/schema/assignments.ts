@@ -1,4 +1,5 @@
 import { pgTable, serial, integer, text, timestamp, varchar } from 'drizzle-orm/pg-core';
+import type { InferSelectModel } from 'drizzle-orm';
 import { lectures } from './lectures';
 import { assignmentType } from './enums';
 
@@ -12,3 +13,5 @@ export const assignments = pgTable('assignments', {
   dueAt: timestamp('due_at').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
+
+export type Assignment = InferSelectModel<typeof assignments>;

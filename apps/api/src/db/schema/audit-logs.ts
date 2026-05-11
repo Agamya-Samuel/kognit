@@ -1,4 +1,5 @@
 import { pgTable, serial, integer, text, timestamp, varchar, jsonb } from 'drizzle-orm/pg-core';
+import type { InferSelectModel } from 'drizzle-orm';
 import { users } from './users';
 
 export const auditLogs = pgTable('audit_logs', {
@@ -10,3 +11,5 @@ export const auditLogs = pgTable('audit_logs', {
   metadata: jsonb('metadata').$type<Record<string, any>>().notNull().default({}),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
+
+export type AuditLog = InferSelectModel<typeof auditLogs>;

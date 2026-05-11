@@ -1,4 +1,5 @@
 import { pgTable, serial, timestamp, varchar, integer } from 'drizzle-orm/pg-core';
+import type { InferSelectModel } from 'drizzle-orm';
 
 export const institutionAccounts = pgTable('institution_accounts', {
   id: serial('id').primaryKey(),
@@ -9,3 +10,5 @@ export const institutionAccounts = pgTable('institution_accounts', {
   activeUntil: timestamp('active_until').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
+
+export type InstitutionAccount = InferSelectModel<typeof institutionAccounts>;

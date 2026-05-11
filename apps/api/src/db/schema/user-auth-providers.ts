@@ -1,4 +1,5 @@
 import { pgTable, serial, integer, varchar, timestamp } from 'drizzle-orm/pg-core';
+import type { InferSelectModel } from 'drizzle-orm';
 import { users } from './users';
 
 export const userAuthProviders = pgTable('user_auth_providers', {
@@ -12,3 +13,5 @@ export const userAuthProviders = pgTable('user_auth_providers', {
     columns: [table.provider, table.providerId],
   },
 }));
+
+export type UserAuthProvider = InferSelectModel<typeof userAuthProviders>;

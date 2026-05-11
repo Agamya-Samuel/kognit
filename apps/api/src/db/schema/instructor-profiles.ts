@@ -1,4 +1,5 @@
 import { pgTable, serial, integer, text, timestamp, varchar } from 'drizzle-orm/pg-core';
+import type { InferSelectModel } from 'drizzle-orm';
 import { users } from './users';
 import { approvalStatus } from './enums';
 
@@ -12,3 +13,5 @@ export const instructorProfiles = pgTable('instructor_profiles', {
   razorpaySellerAccountId: varchar('razorpay_seller_account_id', { length: 255 }),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
+
+export type InstructorProfile = InferSelectModel<typeof instructorProfiles>;

@@ -1,4 +1,5 @@
 import { pgTable, serial, integer, timestamp, varchar } from 'drizzle-orm/pg-core';
+import type { InferSelectModel } from 'drizzle-orm';
 import { users } from './users';
 import { courses } from './courses';
 import { paymentStatus } from './enums';
@@ -14,3 +15,5 @@ export const payments = pgTable('payments', {
   status: paymentStatus('status').notNull().default('pending'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
+
+export type Payment = InferSelectModel<typeof payments>;

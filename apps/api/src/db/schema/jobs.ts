@@ -1,4 +1,5 @@
 import { pgTable, serial, integer, text, timestamp, varchar, boolean } from 'drizzle-orm/pg-core';
+import type { InferSelectModel } from 'drizzle-orm';
 import { users } from './users';
 import { courses } from './courses';
 
@@ -15,3 +16,5 @@ export const jobs = pgTable('jobs', {
   isActive: boolean('is_active').notNull().default(true),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
+
+export type Job = InferSelectModel<typeof jobs>;

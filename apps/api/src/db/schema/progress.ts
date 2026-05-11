@@ -1,4 +1,5 @@
 import { pgTable, serial, integer, timestamp } from 'drizzle-orm/pg-core';
+import type { InferSelectModel } from 'drizzle-orm';
 import { users } from './users';
 import { lectures } from './lectures';
 
@@ -13,3 +14,5 @@ export const progress = pgTable('progress', {
     columns: [table.studentId, table.lectureId],
   },
 }));
+
+export type Progress = InferSelectModel<typeof progress>;

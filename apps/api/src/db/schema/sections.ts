@@ -1,4 +1,5 @@
 import { pgTable, serial, integer, varchar, timestamp } from 'drizzle-orm/pg-core';
+import type { InferSelectModel } from 'drizzle-orm';
 import { courses } from './courses';
 
 export const sections = pgTable('sections', {
@@ -8,3 +9,5 @@ export const sections = pgTable('sections', {
   orderIndex: integer('order_index').notNull().default(0),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
+
+export type Section = InferSelectModel<typeof sections>;

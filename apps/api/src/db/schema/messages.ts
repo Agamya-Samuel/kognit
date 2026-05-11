@@ -1,4 +1,5 @@
 import { pgTable, serial, integer, text, timestamp, boolean } from 'drizzle-orm/pg-core';
+import type { InferSelectModel } from 'drizzle-orm';
 import { channels } from './channels';
 import { users } from './users';
 
@@ -11,3 +12,4 @@ export const messages = pgTable('messages', {
   isDeleted: boolean('is_deleted').notNull().default(false),
 });
 
+export type Message = InferSelectModel<typeof messages>;

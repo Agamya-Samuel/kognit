@@ -1,4 +1,5 @@
 import { pgTable, serial, integer, text, timestamp, varchar } from 'drizzle-orm/pg-core';
+import type { InferSelectModel } from 'drizzle-orm';
 import { assignments } from './assignments';
 import { users } from './users';
 
@@ -16,3 +17,5 @@ export const submissions = pgTable('submissions', {
     columns: [table.assignmentId, table.studentId],
   },
 }));
+
+export type Submission = InferSelectModel<typeof submissions>;

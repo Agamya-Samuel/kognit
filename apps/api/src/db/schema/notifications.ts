@@ -1,4 +1,5 @@
 import { pgTable, serial, integer, text, timestamp, varchar, boolean } from 'drizzle-orm/pg-core';
+import type { InferSelectModel } from 'drizzle-orm';
 import { users } from './users';
 import { notificationDelivery } from './enums';
 
@@ -13,3 +14,5 @@ export const notifications = pgTable('notifications', {
   emailSentAt: timestamp('email_sent_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
+
+export type Notification = InferSelectModel<typeof notifications>;
