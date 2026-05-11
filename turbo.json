@@ -32,6 +32,12 @@
       "outputs": ["coverage/**"],
       "inputs": ["src/**/*.tsx", "src/**/*.ts", "test/**/*.ts", "test/**/*.tsx"]
     },
+    "test:e2e": {
+      "dependsOn": ["^build"],
+      "outputs": ["test-results/**", "playwright-report/**"],
+      "inputs": ["src/**/*.tsx", "src/**/*.ts", "src/test/e2e/**/*.ts"],
+      "cache": false
+    },
     "clean": {
       "cache": false
     }

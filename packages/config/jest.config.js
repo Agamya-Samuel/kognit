@@ -13,7 +13,7 @@ module.exports = {
     '!src/**/*.mock.ts',
     '!src/main.ts',
   ],
-  coverageThresholds: {
+  coverageThreshold: {
     global: {
       branches: 80,
       functions: 80,
