@@ -12,24 +12,24 @@
     "clean": "rm -rf .next dist node_modules"
   },
   "dependencies": {
-    "next": "^14.2.5",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "@tanstack/react-query": "^5.51.1",
-    "jotai": "^2.8.3",
-    "axios": "^1.7.2",
+    "next": "^16.2.6",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "@tanstack/react-query": "^5.100.9",
+    "jotai": "^2.20.0",
+    "axios": "^1.16.0",
     "clsx": "^2.1.1",
-    "tailwind-merge": "^2.4.0"
+    "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
-    "@types/node": "^20.14.10",
-    "@types/react": "^18.3.3",
-    "@types/react-dom": "^18.3.0",
-    "typescript": "^5.5.3",
-    "eslint": "^8.57.0",
-    "eslint-config-next": "^14.2.5",
-    "tailwindcss": "^3.4.4",
-    "postcss": "^8.4.39",
-    "autoprefixer": "^10.4.19"
+    "@types/node": "^25.6.2",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^6.0.3",
+    "eslint": "^10.3.0",
+    "eslint-config-next": "^16.2.6",
+    "tailwindcss": "^4.3.0",
+    "postcss": "^8.5.14",
+    "autoprefixer": "^10.5.0"
   }
 }
