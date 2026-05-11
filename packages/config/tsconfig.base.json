@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "@edutech/ui": ["../../packages/ui/src"],
+      "@edutech/types": ["../../packages/types/src"],
+      "@edutech/validation": ["../../packages/validation/src"],
+      "@edutech/api-client": ["../../packages/api-client/src"],
+      "@edutech/shared-components": ["../../packages/shared-components/src"]
+    }
+  },
+  "exclude": ["node_modules", "dist", ".next", "build"]
+}
