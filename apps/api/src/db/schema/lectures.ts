@@ -10,6 +10,7 @@ export const lectures = pgTable('lectures', {
   description: text('description'),
   orderIndex: integer('order_index').notNull().default(0),
   type: lectureType('type').notNull().default('video'),
+  uploadId: integer('upload_id'),
   muxAssetId: varchar('mux_asset_id', { length: 255 }),
   muxPlaybackId: varchar('mux_playback_id', { length: 255 }),
   durationSeconds: integer('duration_seconds').notNull().default(0),
