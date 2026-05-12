@@ -187,19 +187,18 @@ describe('MuxService', () => {
         return config[key];
       });
 
-      (mockMuxClient.video.assets as any).delete.mockResolvedValue(undefined);
+      mockMuxClient.video.assets.delete.mockResolvedValue(undefined);
 
       await service.deleteAsset('asset_123');
 
-      expect((mockMuxClient.video.assets as any).delete).toHaveBeenCalledWith('asset_123');
+      expect(mockMuxClient.video.assets.delete).toHaveBeenCalledWith('asset_123');
     });
 
     it('should do nothing when Mux is not configured', async () => {
-      (service as any).mux = {};
-      (service as any).signingKey = undefined;
+      jest.spyOn(configService, 'get').mockReturnValue(undefined);
 
       await expect(service.deleteAsset('asset_123')).resolves.not.toThrow();
-      expect(mockMuxClient.video.assets.del).not.toHaveBeenCalled();
+      expect(mockMuxClient.video.assets.delete).not.toHaveBeenCalled();
     });
   });
 
@@ -216,6 +215,7 @@ describe('MuxService', () => {
     it('should throw InternalServerErrorException when Mux is not configured', async () => {
       (service as any).mux = {};
       jest.spyOn(configService, 'get').mockReturnValue(undefined);
+      (service as any).signingKey = undefined;
 
       await expect(
         service.generateSignedPlaybackUrl({

@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import { setupE2EApp, teardownE2EApp } from '../../../test/e2e/setup';
+import { setupE2EApp, teardownE2EApp } from './setup';
 import { AppModule } from '../../src/app.module';
 import { UploadService } from '../../src/modules/uploads/services/upload.service';
 import { MuxService } from '../../src/modules/media/services/mux.service';
