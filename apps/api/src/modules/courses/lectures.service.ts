@@ -55,6 +55,7 @@ export class LecturesService {
       description: data.description ?? null,
       orderIndex: data.orderIndex,
       type: data.type ?? 'video',
+      uploadId: null,
       muxAssetId: null,
       muxPlaybackId: null,
       durationSeconds: 0,
