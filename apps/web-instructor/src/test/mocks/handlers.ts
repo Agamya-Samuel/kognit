@@ -30,6 +30,7 @@ const mockInstructor = {
 const mockCourses = [
   {
     id: 1,
+    instructorId: 2,
     title: 'Introduction to TypeScript',
     description: 'Learn TypeScript from scratch',
     thumbnailUrl: null,
@@ -136,11 +137,19 @@ export const authHandlers = [
 // ─── Course Handlers ──────────────────────────────────────────────────────────
 
 export const courseHandlers = [
-  http.get(`${API_BASE}/courses`, async () => {
+  // Get all instructor courses
+  http.get(`${API_BASE}/courses`, async ({ request }) => {
     await delay(300);
+    const url = new URL(request.url);
+    const isInstructor = url.searchParams.get('instructorId') === '2';
+    
+    const filteredCourses = isInstructor 
+      ? mockCourses.filter(c => c.instructorId === 2)
+      : mockCourses;
+    
     return HttpResponse.json({
       success: true,
-      data: mockCourses,
+      data: filteredCourses,
     });
   }),
 
@@ -158,13 +167,110 @@ export const courseHandlers = [
 
   http.post(`${API_BASE}/courses`, async () => {
     await delay(300);
+    const newCourse = {
+      id: mockCourses.length + 1,
+      instructorId: 2,
+      title: 'New Course',
+      description: 'Course description',
+      domain: 'Programming',
+      pricingType: 'paid',
+      priceInr: 999,
+      isPublished: false,
+      thumbnailUrl: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    mockCourses.push(newCourse);
     return HttpResponse.json(
       {
         success: true,
-        data: { ...mockCourses[0], id: 3, title: 'New Course' },
+        data: newCourse,
       },
       { status: 201 },
     );
+  }),
+
+  http.put(`${API_BASE}/courses/:id`, async ({ params }) => {
+    await delay(300);
+    const index = mockCourses.findIndex((c) => c.id === Number(params.id));
+    if (index === -1) {
+      return HttpResponse.json(
+        { success: false, error: 'Course not found' },
+        { status: 404 },
+      );
+    }
+    mockCourses[index] = {
+      ...mockCourses[index],
+      updatedAt: new Date().toISOString(),
+    };
+    return HttpResponse.json({ success: true, data: mockCourses[index] });
+  }),
+
+  http.patch(`${API_BASE}/courses/:id/publish`, async ({ request, params }) => {
+    await delay(200);
+    const body = await request.json() as { isPublished: boolean };
+    const index = mockCourses.findIndex((c) => c.id === Number(params.id));
+    if (index === -1) {
+      return HttpResponse.json(
+        { success: false, error: 'Course not found' },
+        { status: 404 },
+      );
+    }
+    mockCourses[index].isPublished = body.isPublished;
+    mockCourses[index].updatedAt = new Date().toISOString();
+    return HttpResponse.json({ success: true, data: mockCourses[index] });
+  }),
+
+  http.delete(`${API_BASE}/courses/:id`, async ({ params }) => {
+    await delay(300);
+    const index = mockCourses.findIndex((c) => c.id === Number(params.id));
+    if (index === -1) {
+      return HttpResponse.json(
+        { success: false, error: 'Course not found' },
+        { status: 404 },
+      );
+    }
+    mockCourses.splice(index, 1);
+    return HttpResponse.json({ success: true, data: { message: 'Course deleted' } });
+  }),
+
+  // Dashboard endpoints
+  http.get(`${API_BASE}/dashboard/metrics`, async () => {
+    await delay(300);
+    return HttpResponse.json({
+      success: true,
+      data: {
+        totalStudents: 1234,
+        activeCourses: 8,
+        totalRevenue: 245000,
+        upcomingClasses: 3,
+      },
+    });
+  }),
+
+  http.get(`${API_BASE}/dashboard/recent-activity`, async () => {
+    await delay(200);
+    return HttpResponse.json({
+      success: true,
+      data: [
+        { id: 1, type: 'enrollment', message: 'John Doe enrolled in TypeScript Basics', time: '2 min ago' },
+        { id: 2, type: 'completion', message: 'Jane Smith completed React Patterns', time: '15 min ago' },
+        { id: 3, type: 'review', message: 'New review: "Excellent course!" on Node.js Fundamentals', time: '1 hour ago' },
+        { id: 4, type: 'enrollment', message: 'Mike Johnson enrolled in Advanced React', time: '2 hours ago' },
+      ],
+    });
+  }),
+
+  http.get(`${API_BASE}/dashboard/upcoming-classes`, async () => {
+    await delay(200);
+    return HttpResponse.json({
+      success: true,
+      data: [
+        { id: 1, title: 'TypeScript Live Session', time: 'Today, 3:00 PM', enrolled: 45 },
+        { id: 2, title: 'React Patterns Q&A', time: 'Tomorrow, 10:00 AM', enrolled: 32 },
+        { id: 3, title: 'Node.js Best Practices', time: 'Friday, 2:00 PM', enrolled: 28 },
+      ],
+    });
   }),
 ];
 
@@ -188,6 +294,94 @@ export const enrollmentHandlers = [
       },
       { status: 201 },
     );
+  }),
+];
+
+// ─── Section Handlers ──────────────────────────────────────────────────────
+
+export const sectionHandlers = [
+  http.get(`${API_BASE}/courses/:courseId/sections`, async ({ params }) => {
+    await delay(200);
+    return HttpResponse.json({
+      success: true,
+      data: [],
+    });
+  }),
+
+  http.post(`${API_BASE}/courses/:courseId/sections`, async () => {
+    await delay(300);
+    return HttpResponse.json(
+      {
+        success: true,
+        data: {
+          id: 1,
+          courseId: 1,
+          title: 'Introduction',
+          order: 1,
+        },
+      },
+      { status: 201 },
+    );
+  }),
+
+  http.put(`${API_BASE}/courses/:courseId/sections/:id`, async ({ params }) => {
+    await delay(200);
+    return HttpResponse.json({ success: true, data: { id: Number(params.id), courseId: 1, title: 'Updated Section', order: 1 } });
+  }),
+
+  http.delete(`${API_BASE}/courses/:courseId/sections/:id`, async () => {
+    await delay(200);
+    return HttpResponse.json({ success: true, data: { message: 'Section deleted' } });
+  }),
+
+  http.patch(`${API_BASE}/courses/:courseId/sections/reorder`, async () => {
+    await delay(200);
+    return HttpResponse.json({ success: true, data: { message: 'Sections reordered' } });
+  }),
+];
+
+// ─── Lecture Handlers ─────────────────────────────────────────────────────
+
+export const lectureHandlers = [
+  http.get(`${API_BASE}/sections/:sectionId/lectures`, async ({ params }) => {
+    await delay(200);
+    return HttpResponse.json({
+      success: true,
+      data: [],
+    });
+  }),
+
+  http.post(`${API_BASE}/sections/:sectionId/lectures`, async () => {
+    await delay(300);
+    return HttpResponse.json(
+      {
+        success: true,
+        data: {
+          id: 1,
+          sectionId: 1,
+          title: 'Lesson 1',
+          type: 'video',
+          order: 1,
+          isFreePreview: false,
+        },
+      },
+      { status: 201 },
+    );
+  }),
+
+  http.put(`${API_BASE}/lectures/:id`, async ({ params }) => {
+    await delay(200);
+    return HttpResponse.json({ success: true, data: { id: Number(params.id), sectionId: 1, title: 'Updated Lecture', order: 1 } });
+  }),
+
+  http.delete(`${API_BASE}/lectures/:id`, async () => {
+    await delay(200);
+    return HttpResponse.json({ success: true, data: { message: 'Lecture deleted' } });
+  }),
+
+  http.patch(`${API_BASE}/sections/:sectionId/lectures/reorder`, async () => {
+    await delay(200);
+    return HttpResponse.json({ success: true, data: { message: 'Lectures reordered' } });
   }),
 ];
 
@@ -224,6 +418,8 @@ export const healthHandler = [
 export const handlers = [
   ...authHandlers,
   ...courseHandlers,
+  ...sectionHandlers,
+  ...lectureHandlers,
   ...enrollmentHandlers,
   ...notificationHandlers,
   ...healthHandler,
