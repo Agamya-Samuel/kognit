@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { Skeleton } from '@edutech/ui';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@edutech/ui';
 import { Button } from '@edutech/ui';
 import { Badge } from '@edutech/ui';
 import { Plus, Edit, Eye } from 'lucide-react';
+import { useInstructorCourses } from '@/hooks/useCourses';
 
 interface Course {
   id: number;
@@ -15,54 +16,33 @@ interface Course {
   pricingType: 'free' | 'paid';
   priceInr: number;
   isPublished: boolean;
-  enrollmentCount: number;
-  revenue: number;
+  enrollmentCount?: number;
+  revenue?: number;
   createdAt: string;
   updatedAt: string;
 }
 
 export default function CoursesPage() {
-  const [courses] = useState<Course[]>([
-    {
-      id: 1,
-      title: 'Introduction to TypeScript',
-      description: 'Learn TypeScript from scratch with practical examples',
-      domain: 'Programming',
-      pricingType: 'free',
-      priceInr: 0,
-      isPublished: true,
-      enrollmentCount: 156,
-      revenue: 0,
-      createdAt: '2024-01-15T10:00:00Z',
-      updatedAt: '2024-01-20T14:30:00Z',
-    },
-    {
-      id: 2,
-      title: 'Advanced React Patterns',
-      description: 'Master advanced React patterns and best practices',
-      domain: 'Programming',
-      pricingType: 'paid',
-      priceInr: 4999,
-      isPublished: true,
-      enrollmentCount: 89,
-      revenue: 444911,
-      createdAt: '2024-01-10T09:00:00Z',
-      updatedAt: '2024-01-25T16:00:00Z',
-    },
-    {
-      id: 3,
-      title: 'Node.js Fundamentals',
-      description: 'Build scalable backend applications with Node.js',
-      domain: 'Programming',
-      pricingType: 'paid',
-      priceInr: 3999,
-      isPublished: false,
-      enrollmentCount: 0,
-      revenue: 0,
-      createdAt: '2024-01-28T11:00:00Z',
-      updatedAt: '2024-01-28T11:00:00Z',
-    },
-  ]);
+  const { data: courses, isLoading, error } = useInstructorCourses();
+
+  if (error) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <div className="text-lg font-medium text-gray-900 dark:text-white">
+              Failed to load courses
+            </div>
+            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+              Please try again later
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const courseList = courses || [];
 
   return (
     <div className="space-y-6">
@@ -89,9 +69,13 @@ export default function CoursesPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">
-              {courses.length}
-            </div>
+            {isLoading ? (
+              <Skeleton className="h-8 w-16" />
+            ) : (
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                {courseList.length}
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -102,9 +86,13 @@ export default function CoursesPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">
-              {courses.filter((c) => c.isPublished).length}
-            </div>
+            {isLoading ? (
+              <Skeleton className="h-8 w-16" />
+            ) : (
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                {courseList.filter((c: Course) => c.isPublished).length}
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -115,9 +103,13 @@ export default function CoursesPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">
-              {courses.reduce((sum, c) => sum + c.enrollmentCount, 0)}
-            </div>
+            {isLoading ? (
+              <Skeleton className="h-8 w-16" />
+            ) : (
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                {courseList.reduce((sum: number, c: Course) => sum + (c.enrollmentCount || 0), 0)}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -153,7 +145,41 @@ export default function CoursesPage() {
                 </tr>
               </thead>
               <tbody>
-                {courses.map((course) => (
+                {isLoading ? (
+                  // Skeleton loading rows
+                  Array.from({ length: 3 }).map((_, index) => (
+                    <tr
+                      key={`skeleton-${index}`}
+                      className="border-b border-gray-100 dark:border-gray-800"
+                    >
+                      <td className="px-4 py-4">
+                        <div className="space-y-2">
+                          <Skeleton className="h-5 w-48" />
+                          <Skeleton className="h-4 w-32" />
+                        </div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <Skeleton className="h-6 w-20" />
+                      </td>
+                      <td className="px-4 py-4">
+                        <Skeleton className="h-5 w-12" />
+                      </td>
+                      <td className="px-4 py-4">
+                        <Skeleton className="h-5 w-16" />
+                      </td>
+                      <td className="px-4 py-4">
+                        <Skeleton className="h-5 w-24" />
+                      </td>
+                      <td className="px-4 py-4 text-right">
+                        <div className="flex justify-end gap-2">
+                          <Skeleton className="h-8 w-8" />
+                          <Skeleton className="h-8 w-8" />
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  courseList.map((course: Course) => (
                   <tr
                     key={course.id}
                     className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50"
@@ -177,7 +203,7 @@ export default function CoursesPage() {
                       {course.enrollmentCount}
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-900 dark:text-white">
-                      ₹{course.revenue.toLocaleString('en-IN')}
+                      ₹{(course.revenue || 0).toLocaleString('en-IN')}
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-500 dark:text-gray-400">
                       {new Date(course.updatedAt).toLocaleDateString()}
@@ -195,7 +221,8 @@ export default function CoursesPage() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  ))
+                )}
               </tbody>
             </table>
           </div>

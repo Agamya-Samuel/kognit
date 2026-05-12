@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Spinner } from '@edutech/ui';
 import { Card, CardContent } from '@edutech/ui';
 import { Button } from '@edutech/ui';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -9,6 +10,7 @@ import { SectionsStep } from '@/components/course-creation/SectionsStep';
 import { LecturesStep } from '@/components/course-creation/LecturesStep';
 import { PricingStep } from '@/components/course-creation/PricingStep';
 import { ReviewStep } from '@/components/course-creation/ReviewStep';
+import { useCreateCourse } from '@/hooks/useCourses';
 
 type Step = 'details' | 'sections' | 'lectures' | 'pricing' | 'review';
 
@@ -34,6 +36,9 @@ export default function CreateCoursePage() {
     isPublished: false,
   });
 
+  const createCourseMutation = useCreateCourse();
+  const { mutate: createCourse, isPending: isCreating } = createCourseMutation;
+
   const currentStepIndex = steps.findIndex((step) => step.id === currentStep);
 
   const handleNext = () => {
@@ -49,8 +54,17 @@ export default function CreateCoursePage() {
   };
 
   const handleSubmit = () => {
-    // TODO: Submit course to API
-    console.log('Submitting course:', courseData);
+    // Submit course to API
+    createCourse(courseData, {
+      onSuccess: (data) => {
+        console.log('Course created successfully:', data);
+        // TODO: Navigate to course edit page or show success message
+      },
+      onError: (error) => {
+        console.error('Failed to create course:', error);
+        // TODO: Show error toast
+      },
+    });
   };
 
   const renderStep = () => {
@@ -143,8 +157,15 @@ export default function CreateCoursePage() {
           Previous
         </Button>
         {currentStepIndex === steps.length - 1 ? (
-          <Button onClick={handleSubmit} className="gap-2">
-            Create Course
+          <Button onClick={handleSubmit} disabled={isCreating} className="gap-2">
+            {isCreating ? (
+              <>
+                <Spinner className="h-4 w-4" />
+                Creating...
+              </>
+            ) : (
+              'Create Course'
+            )}
           </Button>
         ) : (
           <Button onClick={handleNext} className="gap-2">

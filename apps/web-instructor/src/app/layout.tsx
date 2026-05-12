@@ -2,6 +2,9 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
+import { ToastProvider, useToast } from '@/contexts/ToastContext';
+import { Toaster } from '@edutech/ui';
+import { useEffect } from 'react';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -18,8 +21,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Providers>{children}</Providers>
+        <ToastProvider>
+          <Providers>{children}</Providers>
+          <ToasterClient />
+        </ToastProvider>
       </body>
     </html>
   );
+}
+
+function ToasterClient() {
+  const { toasts, removeToast } = useToast();
+  return <Toaster toasts={toasts} onDismiss={removeToast} />;
 }
