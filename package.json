@@ -18,6 +18,7 @@
     "test:web-student:cov": "turbo run test:coverage --filter=web-student",
     "test:web-instructor:cov": "turbo run test:coverage --filter=web-instructor",
     "test:web-admin:cov": "turbo run test:coverage --filter=web-admin",
+    "test:web-landing:cov": "turbo run test:coverage --filter=web-landing",
     "test:e2e": "turbo run test:e2e",
     "clean": "turbo run clean && rm -rf node_modules",
     "changeset": "changeset",
