@@ -112,6 +112,57 @@ export const paginationQuerySchema = z.object({
   limit: z.coerce.number().int().positive().max(100).default(20),
 });
 
+// ─── Section Schemas ─────────────────────────────────────────────────────
+
+export const createSectionSchema = z.object({
+  title: z.string().min(2, 'Title must be at least 2 characters').max(255, 'Title must be at most 255 characters'),
+  orderIndex: z.number().int().min(0).optional(),
+});
+
+export const updateSectionSchema = z.object({
+  title: z.string().min(2).max(255).optional(),
+  orderIndex: z.number().int().min(0).optional(),
+});
+
+export const reorderSectionsSchema = z.object({
+  sectionIds: z.array(z.number().int().positive()).min(1, 'At least one section ID is required'),
+});
+
+// ─── Lecture Schemas ─────────────────────────────────────────────────────
+
+export const createLectureSchema = z.object({
+  title: z.string().min(2, 'Title must be at least 2 characters').max(255, 'Title must be at most 255 characters'),
+  description: z.string().max(5000).optional(),
+  type: z.enum(['video', 'live', 'text', 'assignment', 'quiz']).default('video'),
+  orderIndex: z.number().int().min(0).optional(),
+  isFreePreview: z.boolean().default(false),
+  isPublished: z.boolean().default(false),
+});
+
+export const updateLectureSchema = z.object({
+  title: z.string().min(2).max(255).optional(),
+  description: z.string().max(5000).optional(),
+  type: z.enum(['video', 'live', 'text', 'assignment', 'quiz']).optional(),
+  orderIndex: z.number().int().min(0).optional(),
+  isFreePreview: z.boolean().optional(),
+  isPublished: z.boolean().optional(),
+});
+
+export const reorderLecturesSchema = z.object({
+  lectureIds: z.array(z.number().int().positive()).min(1, 'At least one lecture ID is required'),
+});
+
+// ─── Course Query Schemas ────────────────────────────────────────────────
+
+export const courseQuerySchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(20),
+  domain: z.string().optional(),
+  isPublished: z.coerce.boolean().optional(),
+  instructorId: z.coerce.number().int().positive().optional(),
+  search: z.string().optional(),
+});
+
 // ─── Inferred Types ───────────────────────────────────────────────────────────
 
 export type LoginInput = z.infer<typeof loginSchema>;
@@ -128,3 +179,10 @@ export type CreateCourseInput = z.infer<typeof createCourseSchema>;
 export type UpdateCourseInput = z.infer<typeof updateCourseSchema>;
 export type CreateEnrollmentInput = z.infer<typeof createEnrollmentSchema>;
 export type PaginationInput = z.infer<typeof paginationQuerySchema>;
+export type CreateSectionInput = z.infer<typeof createSectionSchema>;
+export type UpdateSectionInput = z.infer<typeof updateSectionSchema>;
+export type ReorderSectionsInput = z.infer<typeof reorderSectionsSchema>;
+export type CreateLectureInput = z.infer<typeof createLectureSchema>;
+export type UpdateLectureInput = z.infer<typeof updateLectureSchema>;
+export type ReorderLecturesInput = z.infer<typeof reorderLecturesSchema>;
+export type CourseQueryInput = z.infer<typeof courseQuerySchema>;
