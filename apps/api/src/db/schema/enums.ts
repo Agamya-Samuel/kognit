@@ -25,3 +25,5 @@ export const moderationStatus = pgEnum('moderation_status', ['visible', 'flagged
 export const waitlistSource = pgEnum('waitlist_source', ['landing_page', 'invite_flow']);
 
 export const permissionsLevel = pgEnum('permissions_level', ['super_admin', 'moderator', 'support']);
+
+export const uploadStatus = pgEnum('upload_status', ['pending', 'uploading', 'complete', 'failed', 'cancelled']);
