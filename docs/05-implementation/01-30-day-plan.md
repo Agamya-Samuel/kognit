@@ -88,11 +88,12 @@ All implementation days must include comprehensive UX states for loading, error,
 | Task | Details |
 |---|---|
 | Initialize Turborepo | Root `package.json`, `turbo.json`, workspace configuration |
-| Scaffold apps | `apps/web-student` (Next.js), `apps/web-instructor` (Next.js), `apps/web-admin` (Next.js), `apps/api` (NestJS) |
+| Scaffold apps | `apps/web-student` (Next.js), `apps/web-instructor` (Next.js), `apps/web-admin` (Next.js), `apps/web-landing` (Next.js, marketing/landing page), `apps/api` (NestJS) |
 | Scaffold shared packages | `packages/ui` (ShadCN), `packages/types` (TypeScript types), `packages/validation` (Zod schemas), `packages/api-client` (typed client), `packages/config` (ESLint, TSConfig), `packages/shared-components` (cross-app UI components) |
 | Code quality | ESLint config, Prettier config, Husky pre-commit hooks, lint-staged |
 | CI/CD pipeline | GitHub Actions workflow — lint, typecheck, test, build (per-app pipelines, affected-only builds) |
 | **.env.example** | Document all required environment variables (per-app and shared) |
+| **Landing page scaffold** | `apps/web-landing` — Next.js App Router, TailwindCSS, standalone output, port 3003, minimal deps (no API client/state management) |
 
 **UX State Requirements:**
 - **Loading States**: Create shared loading components (Spinner, Skeleton, Progress)
@@ -109,7 +110,7 @@ All implementation days must include comprehensive UX states for loading, error,
 - CI pipeline test: verify affected-apps filtering works correctly
 - **UX Tests**: Test shared loading components accessibility and responsiveness
 
-**Exit Criteria:** `turbo run build` succeeds, `turbo run test` passes (all scaffold tests), Husky blocks commits on lint failure, CI builds only affected apps, shared UI components implemented with loading/error states
+**Exit Criteria:** `turbo run build` succeeds, `turbo run test` passes (all scaffold tests), Husky blocks commits on lint failure, CI builds only affected apps, shared UI components implemented with loading/error states, `apps/web-landing` scaffolded and builds successfully
 
 ---
 
@@ -1227,7 +1228,8 @@ All implementation days must include comprehensive UX states for loading, error,
 | Task | Details |
 |---|---|
 | Beta invite system | Invite code generation, email invite, registration with invite code |
-| Landing page | Public landing page with value proposition, course preview, CTA |
+| Landing page | Public landing page (`apps/web-landing`) with value proposition, course preview, CTA. Independent deploy, minimal deps, SEO-optimized |
+| Landing page deploy | Deploy `web-landing` to staging, configure subdomain (`landing.eduplatform.com`), SSL, env vars |
 | Waitlist | Email waitlist for non-invited users, notification on open beta |
 | Final code review | Comprehensive code review, TODO/FIXME cleanup, dead code removal |
 | Final test pass | Full test suite run, coverage verification, flaky test fix |
@@ -1263,7 +1265,7 @@ All implementation days must include comprehensive UX states for loading, error,
 - **UX Tests**: Responsive testing across all device sizes
 - **UX Tests**: User experience testing with real users
 
-**Exit Criteria:** Beta invite system working, landing page live, coverage thresholds met (≥80% general, ≥95% critical), soft launch successful, comprehensive production-ready UX states implemented with performance optimization, accessibility compliance, and user experience monitoring
+**Exit Criteria:** Beta invite system working, landing page live at `landing.eduplatform.com` (`apps/web-landing`), coverage thresholds met (≥80% general, ≥95% critical), soft launch successful, comprehensive production-ready UX states implemented with performance optimization, accessibility compliance, and user experience monitoring
 
 ---
 

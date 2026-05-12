@@ -109,6 +109,10 @@ jobs:
         run: npx playwright install --with-deps chromium
         working-directory: apps/web-student
 
+      - name: Install Playwright browsers (web-landing)
+        run: npx playwright install --with-deps chromium
+        working-directory: apps/web-landing
+
       - name: Run unit tests
         run: npx turbo run test --filter=[HEAD~1] --filter=HEAD^
 
@@ -142,6 +146,8 @@ jobs:
             apps/web-instructor/playwright-report
             apps/web-admin/test-results
             apps/web-admin/playwright-report
+            apps/web-landing/test-results
+            apps/web-landing/playwright-report
           retention-days: 7
 
   build:
