@@ -16,7 +16,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 
-const mockStudent = {
+const mockInstructor = {
   id: 2,
   email: 'instructor@edutech.test',
   role: 'instructor',
@@ -100,7 +100,7 @@ export const authHandlers = [
       data: {
         accessToken: 'mock-access-token',
         refreshToken: 'mock-refresh-token',
-        user: mockStudent,
+        user: mockInstructor,
       },
     });
   }),
@@ -128,7 +128,7 @@ export const authHandlers = [
     await delay(100);
     return HttpResponse.json({
       success: true,
-      data: mockStudent,
+      data: mockInstructor,
     });
   }),
 ];
