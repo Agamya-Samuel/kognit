@@ -16,5 +16,11 @@ export type { AvatarProps } from './components/Avatar';
 export { Spinner } from './components/Spinner';
 export type { SpinnerProps } from './components/Spinner';
 
+export { Label } from './components/Label';
+export type { LabelProps } from './components/Label';
+
+export { Textarea } from './components/Textarea';
+export type { TextareaProps } from './components/Textarea';
+
 // Utilities
 export { cn } from './lib/utils';
