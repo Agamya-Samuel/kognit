@@ -16,23 +16,10 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 
-const mockUser = {
-  id: 1,
-  email: 'student@edutech.test',
-  role: 'student',
-  name: 'Test Student',
-  avatarUrl: null,
-  isVerified: true,
-  isActive: true,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-};
-
-const mockInstructor = {
+const mockStudent = {
   id: 2,
   email: 'instructor@edutech.test',
   role: 'instructor',
-  name: 'Test Instructor',
   avatarUrl: null,
   isVerified: true,
   isActive: true,
@@ -43,7 +30,6 @@ const mockInstructor = {
 const mockCourses = [
   {
     id: 1,
-    instructorId: 2,
     title: 'Introduction to TypeScript',
     description: 'Learn TypeScript from scratch',
     thumbnailUrl: null,
@@ -72,7 +58,7 @@ const mockCourses = [
 const mockEnrollments = [
   {
     id: 1,
-    studentId: 1,
+    studentId: 2,
     courseId: 1,
     enrolledAt: new Date().toISOString(),
     paymentId: null,
@@ -101,7 +87,7 @@ export const authHandlers = [
     return HttpResponse.json(
       {
         success: true,
-        data: { user: mockUser, message: 'Registration successful' },
+        data: { message: 'Registration successful' },
       },
       { status: 201 },
     );
@@ -114,7 +100,7 @@ export const authHandlers = [
       data: {
         accessToken: 'mock-access-token',
         refreshToken: 'mock-refresh-token',
-        user: mockUser,
+        user: mockStudent,
       },
     });
   }),
@@ -142,7 +128,7 @@ export const authHandlers = [
     await delay(100);
     return HttpResponse.json({
       success: true,
-      data: mockUser,
+      data: mockStudent,
     });
   }),
 ];
