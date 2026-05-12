@@ -139,6 +139,43 @@ export interface Course {
   updatedAt: Date | string;
 }
 
+// ─── Section ──────────────────────────────────────────────────────────────────
+
+export interface Section {
+  id: number;
+  courseId: number;
+  title: string;
+  orderIndex: number;
+  createdAt: Date | string;
+}
+
+// ─── Lecture ──────────────────────────────────────────────────────────────────
+
+export interface Lecture {
+  id: number;
+  sectionId: number;
+  title: string;
+  description?: string | null;
+  orderIndex: number;
+  type: LectureType;
+  muxAssetId?: string | null;
+  muxPlaybackId?: string | null;
+  durationSeconds: number;
+  isFreePreview: boolean;
+  isPublished: boolean;
+  createdAt: Date | string;
+}
+
+// ─── Course with nested structures ────────────────────────────────────────────
+
+export interface CourseWithSections extends Course {
+  sections: SectionWithLectures[];
+}
+
+export interface SectionWithLectures extends Section {
+  lectures: Lecture[];
+}
+
 // ─── Enrollment ───────────────────────────────────────────────────────────────
 
 export interface Enrollment {
