@@ -140,4 +140,19 @@ export class LecturesRepository extends BaseRepository<Lecture> {
       return 0;
     }
   }
+
+  async findByMuxAssetId(muxAssetId: string): Promise<Lecture | null> {
+    try {
+      const result = await this.db
+        .select()
+        .from(lectures)
+        .where(eq(lectures.muxAssetId, muxAssetId))
+        .limit(1);
+
+      return result[0] || null;
+    } catch (error) {
+      this.handleError(error, 'findByMuxAssetId');
+      return null;
+    }
+  }
 }

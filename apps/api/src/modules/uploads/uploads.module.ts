@@ -14,6 +14,9 @@ import { UploadService } from './services/upload.service';
 import { UploadsController } from './uploads.controller';
 import { S3WebhookController } from './s3-webhook.controller';
 
+// Modules
+import { MediaModule } from '../media/media.module';
+
 const repositories = [
   {
     provide: UploadsRepository,
@@ -28,7 +31,7 @@ const repositories = [
 ];
 
 @Module({
-  imports: [ConfigModule],
+  imports: [ConfigModule, MediaModule],
   controllers: [UploadsController, S3WebhookController],
   providers: [
     ...repositories,

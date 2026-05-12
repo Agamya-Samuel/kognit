@@ -4,6 +4,7 @@ import type { Upload } from '../../../db/schema';
 import { S3Service } from './s3.service';
 import { UploadsRepository } from '../../../db/repositories/uploads.repository';
 import { LecturesRepository } from '../../../db/repositories/lectures.repository';
+import { MuxService } from '../../media/services/mux.service';
 
 export interface UploadProgress {
   uploadId: number;
@@ -38,6 +39,7 @@ export class UploadService {
     private uploadsRepository: UploadsRepository,
     private lecturesRepository: LecturesRepository,
     private configService: ConfigService,
+    private muxService: MuxService,
   ) {
     this.logger.log('UploadService initialized');
   }
@@ -298,7 +300,39 @@ export class UploadService {
         `Upload ${uploadIdNum} completed successfully, validation passed`
       );
 
-      // TODO: Trigger Mux ingestion (will be implemented in Day 11)
+      // Create Mux asset for transcoding
+      try {
+        // Get S3 URL for the uploaded file
+        const s3Url = this.s3Service.getCloudFrontUrl(upload.fileKey);
+
+        this.logger.log(
+          `Creating Mux asset for lecture ${lectureIdNum} from S3 URL: ${s3Url}`
+        );
+
+        // Create Mux asset
+        const muxAsset = await this.muxService.createAsset({
+          input: s3Url,
+          playbackPolicy: 'signed',
+          mp4Support: 'none',
+          test: false,
+        });
+
+        // Update lecture with Mux asset ID
+        await this.lecturesRepository.update(lectureIdNum, {
+          muxAssetId: muxAsset.assetId,
+        });
+
+        this.logger.log(
+          `Created Mux asset ${muxAsset.assetId} for lecture ${lectureIdNum}`
+        );
+      } catch (muxError) {
+        this.logger.error(
+          `Error creating Mux asset for lecture ${lectureIdNum}:`,
+          muxError
+        );
+        // Don't fail the entire upload process if Mux asset creation fails
+        // The instructor can retry or re-upload later
+      }
     } catch (error) {
       this.logger.error('Error handling upload completion:', error);
       throw new InternalServerErrorException('Failed to handle upload completion');
