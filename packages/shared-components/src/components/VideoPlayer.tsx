@@ -1,7 +1,18 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Play, Pause, Volume2, Maximize2, RotateCcw, AlertCircle } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Maximize2, Minimize2, RotateCcw, AlertCircle, Settings } from 'lucide-react';
+
+const PLAYBACK_SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2] as const;
+type PlaybackSpeed = (typeof PLAYBACK_SPEEDS)[number];
+
+const QUALITY_OPTIONS = [
+  { label: 'Auto', value: 'auto' },
+  { label: '1080p', value: '1080' },
+  { label: '720p', value: '720' },
+  { label: '480p', value: '480' },
+  { label: '360p', value: '360' },
+];
 
 interface VideoPlayerProps {
   playbackUrl: string;
@@ -9,10 +20,12 @@ interface VideoPlayerProps {
   duration: number;
   status: 'preparing' | 'ready' | 'errored';
   errorMessage?: string;
+  resumePosition?: number;
   onPlay?: () => void;
   onPause?: () => void;
   onEnded?: () => void;
   onProgress?: (progress: number) => void;
+  onTimeUpdate?: (currentTime: number, duration: number) => void;
   className?: string;
   autoplay?: boolean;
 }
@@ -25,6 +38,8 @@ interface VideoState {
   isFullscreen: boolean;
   isBuffering: boolean;
   hasError: boolean;
+  playbackSpeed: PlaybackSpeed;
+  quality: string;
 }
 
 export default function VideoPlayer({
@@ -33,15 +48,20 @@ export default function VideoPlayer({
   duration,
   status,
   errorMessage,
+  resumePosition = 0,
   onPlay,
   onPause,
   onEnded,
   onProgress,
+  onTimeUpdate,
   className = '',
   autoplay = false,
 }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [showSpeedMenu, setShowSpeedMenu] = useState(false);
+  const [showQualityMenu, setShowQualityMenu] = useState(false);
+  const [showResumeOverlay, setShowResumeOverlay] = useState(resumePosition > 0);
   const [videoState, setVideoState] = useState<VideoState>({
     isPlaying: false,
     currentTime: 0,
@@ -50,9 +70,60 @@ export default function VideoPlayer({
     isFullscreen: false,
     isBuffering: false,
     hasError: false,
+    playbackSpeed: 1 as PlaybackSpeed,
+    quality: 'auto',
   });
 
   const [error, setError] = useState<string | null>(null);
+
+  // Resume from saved position
+  useEffect(() => {
+    if (resumePosition > 0 && videoRef.current && status === 'ready') {
+      videoRef.current.currentTime = resumePosition;
+    }
+  }, [resumePosition, status]);
+
+  // Close menus on outside click
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setShowSpeedMenu(false);
+      setShowQualityMenu(false);
+    };
+    if (showSpeedMenu || showQualityMenu) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [showSpeedMenu, showQualityMenu]);
+
+  // Handle playback speed change
+  const changePlaybackSpeed = useCallback((speed: PlaybackSpeed) => {
+    if (!videoRef.current) return;
+    videoRef.current.playbackRate = speed;
+    setVideoState(prev => ({ ...prev, playbackSpeed: speed }));
+    setShowSpeedMenu(false);
+  }, []);
+
+  // Handle quality change (for native video, this is informational)
+  const changeQuality = useCallback((quality: string) => {
+    setVideoState(prev => ({ ...prev, quality }));
+    setShowQualityMenu(false);
+  }, []);
+
+  // Handle resume from saved position
+  const handleResume = useCallback(() => {
+    if (!videoRef.current || !resumePosition) return;
+    videoRef.current.currentTime = resumePosition;
+    setShowResumeOverlay(false);
+    videoRef.current.play();
+  }, [resumePosition]);
+
+  // Handle play from beginning
+  const handlePlayFromStart = useCallback(() => {
+    if (!videoRef.current) return;
+    videoRef.current.currentTime = 0;
+    setShowResumeOverlay(false);
+    videoRef.current.play();
+  }, []);
 
   // Handle play/pause toggle
   const togglePlay = useCallback(() => {
@@ -132,6 +203,7 @@ export default function VideoPlayer({
       const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
       setVideoState(prev => ({ ...prev, currentTime }));
       onProgress?.(progress);
+      onTimeUpdate?.(currentTime, duration);
     };
 
     const handleVolumeChange = () => {
@@ -199,17 +271,23 @@ export default function VideoPlayer({
       video.removeEventListener('error', handleError);
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
     };
-  }, [duration, onPlay, onPause, onEnded, onProgress]);
+  }, [duration, onPlay, onPause, onEnded, onProgress, onTimeUpdate]);
 
-  // Format time as MM:SS
+  // Format time as H:MM:SS or M:SS
   const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
     const secs = Math.floor(seconds % 60);
+    if (hrs > 0) {
+      return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   // Calculate progress percentage
   const progress = duration > 0 ? (videoState.currentTime / duration) * 100 : 0;
+  // Resume position as percentage
+  const resumeProgress = duration > 0 && resumePosition > 0 ? (resumePosition / duration) * 100 : 0;
 
   // Render preparing state
   if (status === 'preparing') {
@@ -274,6 +352,30 @@ export default function VideoPlayer({
         aria-label="Video player"
       />
 
+      {/* Resume Overlay */}
+      {showResumeOverlay && resumePosition > 0 && !videoState.isPlaying && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/60">
+          <div className="text-center p-6 rounded-xl bg-gray-900/90 border border-gray-700">
+            <p className="text-white text-lg font-semibold mb-1">Continue watching?</p>
+            <p className="text-gray-400 text-sm mb-4">Resume from {formatTime(resumePosition)}</p>
+            <div className="flex gap-3">
+              <button
+                onClick={handlePlayFromStart}
+                className="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium transition-colors"
+              >
+                Start over
+              </button>
+              <button
+                onClick={handleResume}
+                className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition-colors"
+              >
+                Resume
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Loading/Buffering Overlay */}
       {videoState.isBuffering && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/50 transition-opacity">
@@ -324,6 +426,14 @@ export default function VideoPlayer({
               aria-valuemax={100}
               aria-valuenow={progress}
             >
+              {/* Resume Position Marker */}
+              {resumeProgress > 0 && (
+                <div
+                  className="absolute top-0 h-full w-0.5 bg-yellow-400/80 z-10"
+                  style={{ left: `${resumeProgress}%` }}
+                ></div>
+              )}
+
               {/* Progress Fill */}
               <div
                 className="absolute top-0 left-0 h-full bg-blue-500 rounded-full transition-all"
@@ -368,7 +478,7 @@ export default function VideoPlayer({
                 className="text-white hover:text-white/80 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 rounded"
                 aria-label={videoState.isMuted ? 'Unmute' : 'Mute'}
               >
-                <Volume2 size={24} />
+                {videoState.isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
               </button>
               <div className="w-24">
                 <input
@@ -384,13 +494,66 @@ export default function VideoPlayer({
               </div>
             </div>
 
+            {/* Playback Speed */}
+            <div className="relative">
+              <button
+                onClick={(e) => { e.stopPropagation(); setShowSpeedMenu(!showSpeedMenu); setShowQualityMenu(false); }}
+                className="text-white hover:text-white/80 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 rounded px-2 py-1 text-xs font-medium bg-white/10 hover:bg-white/20"
+                aria-label="Playback speed"
+              >
+                {videoState.playbackSpeed}x
+              </button>
+              {showSpeedMenu && (
+                <div className="absolute bottom-full right-0 mb-2 bg-gray-900/95 border border-gray-700 rounded-lg py-1 min-w-[80px] z-50" onClick={(e) => e.stopPropagation()}>
+                  {PLAYBACK_SPEEDS.map((speed) => (
+                    <button
+                      key={speed}
+                      onClick={() => changePlaybackSpeed(speed)}
+                      className={`w-full text-left px-3 py-1.5 text-sm hover:bg-gray-700 transition-colors ${
+                        videoState.playbackSpeed === speed ? 'text-blue-400 font-medium' : 'text-white'
+                      }`}
+                    >
+                      {speed}x
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Quality Selector */}
+            <div className="relative">
+              <button
+                onClick={(e) => { e.stopPropagation(); setShowQualityMenu(!showQualityMenu); setShowSpeedMenu(false); }}
+                className="text-white hover:text-white/80 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 rounded"
+                aria-label="Quality settings"
+              >
+                <Settings size={22} />
+              </button>
+              {showQualityMenu && (
+                <div className="absolute bottom-full right-0 mb-2 bg-gray-900/95 border border-gray-700 rounded-lg py-1 min-w-[100px] z-50" onClick={(e) => e.stopPropagation()}>
+                  <div className="px-3 py-1.5 text-xs text-gray-400 font-medium border-b border-gray-700">Quality</div>
+                  {QUALITY_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => changeQuality(opt.value)}
+                      className={`w-full text-left px-3 py-1.5 text-sm hover:bg-gray-700 transition-colors ${
+                        videoState.quality === opt.value ? 'text-blue-400 font-medium' : 'text-white'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Fullscreen Button */}
             <button
               onClick={toggleFullscreen}
               className="text-white hover:text-white/80 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 rounded"
               aria-label={videoState.isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
             >
-              <Maximize2 size={24} />
+              {videoState.isFullscreen ? <Minimize2 size={24} /> : <Maximize2 size={24} />}
             </button>
           </div>
         </div>
