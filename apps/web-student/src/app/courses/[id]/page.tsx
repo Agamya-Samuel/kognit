@@ -6,6 +6,7 @@ import { CurriculumAccordion } from '@/components/CurriculumAccordion';
 import { CourseDetailSkeleton } from '@/components/CourseDetailSkeleton';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
+import { CheckoutButton } from '@/components/CheckoutButton';
 
 export default function CourseDetailPage({ params }: { params: { id: string } }) {
   const { data: course, isLoading, error, refetch } = useCourseWithCurriculum(params.id);
@@ -115,9 +116,27 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
                 )}
               </div>
 
-              <button className="mb-4 w-full rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
-                {course.pricingType === 'free' ? 'Start Learning' : 'Enroll Now'}
-              </button>
+              <CheckoutButton
+                courseId={course.id}
+                courseTitle={course.title}
+                priceInr={course.priceInr}
+                onSuccess={(_enrollmentId) => {
+                  // Redirect to course lectures after successful enrollment
+                  window.location.href = `/courses/${course.id}/lectures`;
+                }}
+                onError={(error) => {
+                  console.error('Payment error:', error);
+                }}
+                disabled={course.pricingType === 'free'}
+              />
+              {course.pricingType === 'free' && (
+                <button
+                  onClick={() => window.location.href = `/courses/${course.id}/lectures`}
+                  className="mb-4 w-full rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  Start Learning
+                </button>
+              )}
 
               <div className="space-y-3 border-t pt-4">
                 {course.sections && course.sections.length > 0 && (
