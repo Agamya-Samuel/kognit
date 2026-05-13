@@ -7,9 +7,16 @@ import { LiveClassesRepository } from '../../db/repositories/live-classes.reposi
 import { EnrollmentsRepository } from '../../db/repositories/enrollments.repository';
 import { LecturesRepository } from '../../db/repositories/lectures.repository';
 import { SectionsRepository } from '../../db/repositories/sections.repository';
+import { NotificationsRepository } from '../../db/repositories/notifications.repository';
 
 // Services
 import { LiveKitService } from './services/livekit.service';
+import { ScheduleService } from './services/schedule.service';
+import { RecordingService } from './services/recording.service';
+import { LiveNotificationService } from './services/live-notification.service';
+
+// Modules
+import { MediaModule } from '../media/media.module';
 
 // Controllers
 import { LiveController } from './live.controller';
@@ -35,15 +42,23 @@ const repositories = [
     useFactory: (db: any) => new SectionsRepository(db),
     inject: [DRIZZLE_DB],
   },
+  {
+    provide: NotificationsRepository,
+    useFactory: (db: any) => new NotificationsRepository(db),
+    inject: [DRIZZLE_DB],
+  },
 ];
 
 @Module({
-  imports: [ConfigModule],
+  imports: [ConfigModule, MediaModule],
   controllers: [LiveController],
   providers: [
     ...repositories,
     LiveKitService,
+    ScheduleService,
+    RecordingService,
+    LiveNotificationService,
   ],
-  exports: [LiveKitService],
+  exports: [LiveKitService, ScheduleService, RecordingService, LiveNotificationService],
 })
 export class LiveModule {}
