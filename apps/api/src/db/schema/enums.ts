@@ -8,7 +8,9 @@ export const pricingType = pgEnum('pricing_type', ['free', 'paid']);
 
 export const lectureType = pgEnum('lecture_type', ['video', 'live', 'text', 'assignment', 'quiz']);
 
-export const liveClassStatus = pgEnum('live_class_status', ['scheduled', 'live', 'ended']);
+export const liveClassStatus = pgEnum('live_class_status', ['scheduled', 'live', 'ended', 'cancelled']);
+
+export const recordingStatus = pgEnum('recording_status', ['none', 'recording', 'processing', 'ready', 'failed']);
 
 export const assignmentType = pgEnum('assignment_type', ['mcq', 'short', 'code']);
 
