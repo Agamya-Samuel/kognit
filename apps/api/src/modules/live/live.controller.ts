@@ -4,6 +4,7 @@ import {
   Get,
   Body,
   Param,
+  Query,
   UseGuards,
   HttpCode,
   HttpStatus,
@@ -17,6 +18,9 @@ import { JwtAuthGuard } from '../../modules/auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../modules/auth/decorators/current-user.decorator';
 import { Roles } from '../../modules/auth/decorators/auth.decorators';
 import { LiveKitService } from './services/livekit.service';
+import { ScheduleService } from './services/schedule.service';
+import { RecordingService } from './services/recording.service';
+import { LiveNotificationService } from './services/live-notification.service';
 import { LiveClassesRepository } from '../../db/repositories/live-classes.repository';
 import { EnrollmentsRepository } from '../../db/repositories/enrollments.repository';
 import { LecturesRepository } from '../../db/repositories/lectures.repository';
@@ -29,6 +33,17 @@ import {
   LiveKitTokenResponseDto,
   LiveClassStatusResponseDto,
   RoomInfoResponseDto,
+  CreateScheduleDto,
+  UpdateScheduleDto,
+  CancelScheduleDto,
+  CalendarQueryDto,
+  StartRecordingDto,
+  RecordingWebhookDto,
+  RetryRecordingDto,
+  CalendarEventResponseDto,
+  CalendarDayResponseDto,
+  RecordingInfoResponseDto,
+  PostSessionResultResponseDto,
 } from './dto/live.dto';
 
 @ApiTags('live')
@@ -38,6 +53,9 @@ export class LiveController {
 
   constructor(
     private readonly livekitService: LiveKitService,
+    private readonly scheduleService: ScheduleService,
+    private readonly recordingService: RecordingService,
+    private readonly notificationService: LiveNotificationService,
     private readonly liveClassesRepo: LiveClassesRepository,
     private readonly enrollmentsRepo: EnrollmentsRepository,
     private readonly lecturesRepo: LecturesRepository,
@@ -225,6 +243,13 @@ export class LiveController {
       ...(dto.recordingUrl ? { recordingUrl: dto.recordingUrl } : {}),
     });
 
+    // Trigger post-session recording workflow
+    try {
+      await this.recordingService.runPostSessionWorkflow(liveClass.id);
+    } catch (error) {
+      this.logger.warn(`Post-session workflow failed for class ${liveClass.id}:`, error);
+    }
+
     this.logger.log(`Instructor ${user.sub} ended live class ${liveClass.id}`);
 
     return { message: 'Live class ended successfully' };
@@ -284,5 +309,178 @@ export class LiveController {
       throw new NotFoundException('Room not found or not active');
     }
     return roomInfo;
+  }
+
+  // ─── Schedule Live Class (Instructor) ──────────────────────────────────────
+
+  @Post('schedule')
+  @UseGuards(JwtAuthGuard)
+  @Roles('instructor')
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create a live class schedule' })
+  @ApiResponse({ status: 201, description: 'Schedule created' })
+  @ApiResponse({ status: 400, description: 'Invalid schedule data' })
+  async createSchedule(
+    @CurrentUser() user: { sub: number; role: string },
+    @Body() dto: CreateScheduleDto,
+  ): Promise<CalendarEventResponseDto> {
+    const liveClass = await this.scheduleService.createSchedule({
+      lectureId: dto.lectureId,
+      instructorId: user.sub,
+      scheduledAt: dto.scheduledAt,
+      durationMinutes: dto.durationMinutes,
+    });
+
+    // Notify enrolled students
+    await this.notificationService.notifyClassScheduled(liveClass);
+
+    return this.scheduleService.getSchedule(liveClass.id);
+  }
+
+  // ─── Update Schedule (Instructor) ──────────────────────────────────────────
+
+  @Post('schedule/:liveClassId/update')
+  @UseGuards(JwtAuthGuard)
+  @Roles('instructor')
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update a live class schedule' })
+  async updateSchedule(
+    @CurrentUser() user: { sub: number },
+    @Param('liveClassId') liveClassId: string,
+    @Body() dto: UpdateScheduleDto,
+  ): Promise<CalendarEventResponseDto> {
+    const id = parseInt(liveClassId, 10);
+    await this.scheduleService.updateSchedule(id, user.sub, dto);
+    return this.scheduleService.getSchedule(id);
+  }
+
+  // ─── Cancel Schedule (Instructor) ──────────────────────────────────────────
+
+  @Post('schedule/cancel')
+  @UseGuards(JwtAuthGuard)
+  @Roles('instructor')
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Cancel a scheduled live class' })
+  async cancelSchedule(
+    @CurrentUser() user: { sub: number },
+    @Body() dto: CancelScheduleDto,
+  ): Promise<{ message: string }> {
+    const liveClass = await this.scheduleService.cancelSchedule(dto.liveClassId, user.sub);
+
+    // Notify enrolled students about cancellation
+    await this.notificationService.notifyClassCancelled(liveClass);
+
+    return { message: 'Live class cancelled successfully' };
+  }
+
+  // ─── Instructor Calendar ──────────────────────────────────────────────────
+
+  @Get('calendar/instructor')
+  @UseGuards(JwtAuthGuard)
+  @Roles('instructor')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get instructor calendar for a date range' })
+  async getInstructorCalendar(
+    @CurrentUser() user: { sub: number },
+    @Query() query: CalendarQueryDto,
+  ): Promise<CalendarDayResponseDto[]> {
+    return this.scheduleService.getInstructorCalendar(
+      user.sub,
+      new Date(query.startDate),
+      new Date(query.endDate),
+      query.timezone,
+    );
+  }
+
+  // ─── Student Calendar ─────────────────────────────────────────────────────
+
+  @Get('calendar/student')
+  @UseGuards(JwtAuthGuard)
+  @Roles('student')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get student calendar for a date range' })
+  async getStudentCalendar(
+    @CurrentUser() user: { sub: number },
+    @Query() query: CalendarQueryDto,
+  ): Promise<CalendarDayResponseDto[]> {
+    return this.scheduleService.getStudentCalendar(
+      user.sub,
+      new Date(query.startDate),
+      new Date(query.endDate),
+      query.timezone,
+    );
+  }
+
+  // ─── Upcoming Classes ─────────────────────────────────────────────────────
+
+  @Get('upcoming')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get upcoming live classes' })
+  async getUpcomingClasses(
+    @CurrentUser() user: { sub: number; role: string },
+    @Query('limit') limit?: string,
+  ): Promise<CalendarEventResponseDto[]> {
+    const parsedLimit = limit ? parseInt(limit, 10) : 10;
+    if (user.role === 'instructor') {
+      return this.scheduleService.getUpcomingClasses(user.sub, parsedLimit);
+    }
+    return this.scheduleService.getStudentUpcomingClasses(user.sub, parsedLimit);
+  }
+
+  // ─── Start Recording (Instructor) ─────────────────────────────────────────
+
+  @Post('recording/start')
+  @UseGuards(JwtAuthGuard)
+  @Roles('instructor')
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Start recording a live class' })
+  async startRecording(
+    @Body() dto: StartRecordingDto,
+  ): Promise<{ message: string; s3Key: string }> {
+    const result = await this.recordingService.startRecording(dto.liveClassId);
+    return { message: result.message, s3Key: result.s3Key };
+  }
+
+  // ─── Get Recording Info ───────────────────────────────────────────────────
+
+  @Get('recording/:liveClassId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get recording info for a live class' })
+  async getRecordingInfo(
+    @Param('liveClassId') liveClassId: string,
+  ): Promise<RecordingInfoResponseDto> {
+    const id = parseInt(liveClassId, 10);
+    return this.recordingService.getRecordingInfo(id);
+  }
+
+  // ─── Recording Complete Webhook (Internal/S3) ────────────────────────────
+
+  @Post('recording/complete')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Webhook: recording uploaded to S3' })
+  async recordingComplete(
+    @Body() dto: RecordingWebhookDto,
+  ): Promise<PostSessionResultResponseDto> {
+    return this.recordingService.handleRecordingComplete(dto.liveClassId, dto.s3Url);
+  }
+
+  // ─── Retry Failed Recording ───────────────────────────────────────────────
+
+  @Post('recording/retry')
+  @UseGuards(JwtAuthGuard)
+  @Roles('instructor', 'admin')
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Retry a failed recording pipeline' })
+  async retryRecording(
+    @Body() dto: RetryRecordingDto,
+  ): Promise<PostSessionResultResponseDto> {
+    return this.recordingService.retryRecording(dto.liveClassId);
   }
 }
