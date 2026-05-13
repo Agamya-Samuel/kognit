@@ -65,6 +65,9 @@ test-results
 .pnpm-debug.log*
 yarn-error.log*
 
+# Build artifacts
+tsup.config.bundled_*.mjs
+
 # Agent
 .agents
 skills-lock.json
