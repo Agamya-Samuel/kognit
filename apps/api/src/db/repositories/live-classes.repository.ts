@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository, PaginatedResult } from './base.repository';
 import { liveClasses } from '../schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, gte, lte, sql } from 'drizzle-orm';
 import type { LiveClass } from '../schema';
 
 @Injectable()
@@ -120,6 +120,85 @@ export class LiveClassesRepository extends BaseRepository<LiveClass> {
     } catch (error) {
       this.handleError(error, 'count');
       return 0;
+    }
+  }
+
+  async findByDateRange(
+    startDate: Date,
+    endDate: Date,
+    options: { instructorId?: number } = {},
+  ): Promise<LiveClass[]> {
+    try {
+      const conditions = [
+        gte(liveClasses.scheduledAt, startDate),
+        lte(liveClasses.scheduledAt, endDate),
+      ];
+      if (options.instructorId) {
+        conditions.push(eq(liveClasses.instructorId, options.instructorId));
+      }
+
+      const result = await this.db
+        .select()
+        .from(liveClasses)
+        .where(and(...conditions))
+        .orderBy(liveClasses.scheduledAt);
+      return result;
+    } catch (error) {
+      this.handleError(error, 'findByDateRange');
+      return [];
+    }
+  }
+
+  async findUpcoming(options: {
+    instructorId?: number;
+    limit?: number;
+  } = {}): Promise<LiveClass[]> {
+    try {
+      const conditions = [
+        gte(liveClasses.scheduledAt, new Date()),
+        eq(liveClasses.status, 'scheduled' as any),
+      ];
+      if (options.instructorId) {
+        conditions.push(eq(liveClasses.instructorId, options.instructorId));
+      }
+
+      const result = await this.db
+        .select()
+        .from(liveClasses)
+        .where(and(...conditions))
+        .orderBy(liveClasses.scheduledAt)
+        .limit(options.limit ?? 10);
+      return result;
+    } catch (error) {
+      this.handleError(error, 'findUpcoming');
+      return [];
+    }
+  }
+
+  async findByRecordingStatus(status: string): Promise<LiveClass[]> {
+    try {
+      const result = await this.db
+        .select()
+        .from(liveClasses)
+        .where(eq(liveClasses.recordingStatus, status as any));
+      return result;
+    } catch (error) {
+      this.handleError(error, 'findByRecordingStatus');
+      return [];
+    }
+  }
+
+  async findByLectureIds(lectureIds: number[]): Promise<LiveClass[]> {
+    try {
+      if (lectureIds.length === 0) return [];
+      const result = await this.db
+        .select()
+        .from(liveClasses)
+        .where(sql`${liveClasses.lectureId} IN (${sql.join(lectureIds.map(id => sql`${id}`), sql`, `)})`);
+      return result;
+    } catch (error) {
+      this.handleError(error, 'findByLectureIds');
+      return [];
     }
   }
 }
