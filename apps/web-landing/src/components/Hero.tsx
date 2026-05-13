@@ -43,7 +43,8 @@ export function Hero() {
         {/* Headline */}
         <h1 className="animate-fade-in-up delay-100 font-heading text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
           Learn{' '}
-          <TypingEffect words={['Software', 'Fullstack', 'Android', 'Data Science']} />{' '}
+          <TypingEffect words={['Software', 'Fullstack', 'Android', 'Data Science']} />
+          <br />
           from the best{' '}
           <span className="text-gradient">instructors</span>
         </h1>
