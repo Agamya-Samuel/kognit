@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ExpressAdapter } from '@nestjs/platform-express';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 import { AppModule } from './app.module';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
@@ -69,6 +70,21 @@ async function bootstrap() {
 
   // Global Exception Filter
   app.useGlobalFilters(new HttpExceptionFilter(), new CustomThrottlerFilter());
+
+  // Socket.IO with Redis adapter for horizontal scaling
+  const redisAdapterService = app.get(
+    require('./modules/socket/services/redis-adapter.service').RedisAdapterService,
+  );
+  const redisAdapter = redisAdapterService.getAdapter();
+  if (redisAdapter) {
+    const { createAdapter } = require('@socket.io/redis-adapter');
+    app.useWebSocketAdapter(new IoAdapter(app));
+    // Store adapter reference for gateway to pick up
+    (app as any).__redisAdapter = redisAdapter;
+  } else {
+    app.useWebSocketAdapter(new IoAdapter(app));
+  }
+  this?.logger?.log?.('Socket.IO adapter configured');
 
   // Swagger API Documentation
   if (NODE_ENV !== 'production') {
