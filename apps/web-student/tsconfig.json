@@ -2,7 +2,6 @@
   "extends": "../../packages/config/tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./.next",
-    "rootDir": "./src",
     "jsx": "preserve",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
@@ -15,7 +14,10 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": [
     "next-env.d.ts",
