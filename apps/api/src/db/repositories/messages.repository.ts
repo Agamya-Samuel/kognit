@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository, PaginatedResult } from './base.repository';
 import { messages } from '../schema';
-import { eq, and, desc, ne } from 'drizzle-orm';
+import { eq, and, desc, ne, asc, sql } from 'drizzle-orm';
 import type { Message } from '../schema';
 
 @Injectable()
@@ -29,6 +29,7 @@ export class MessagesRepository extends BaseRepository<Message> {
     limit?: number;
     channelId?: number;
     senderId?: number;
+    replyToId?: number | null;
   } = {}): Promise<PaginatedResult<Message>> {
     const defaultLimit = 50;
     const defaultOffset = 0;
@@ -43,6 +44,14 @@ export class MessagesRepository extends BaseRepository<Message> {
       if (options.senderId) {
         conditions.push(eq(messages.senderId, options.senderId));
       }
+      if (options.replyToId !== undefined) {
+        if (options.replyToId === null) {
+          // Top-level messages only (no reply)
+          conditions.push(sql`${messages.replyToId} IS NULL`);
+        } else {
+          conditions.push(eq(messages.replyToId, options.replyToId));
+        }
+      }
 
       const whereClause = and(...conditions);
 
@@ -51,7 +60,7 @@ export class MessagesRepository extends BaseRepository<Message> {
           .select()
           .from(messages)
           .where(whereClause)
-          .orderBy(desc(messages.createdAt))
+          .orderBy(asc(messages.createdAt))
           .limit(limit)
           .offset(offset),
         this.db.select({ count: messages.id }).from(messages).where(whereClause),
@@ -64,7 +73,7 @@ export class MessagesRepository extends BaseRepository<Message> {
     }
   }
 
-  async create(data: Omit<Message, 'id' | 'createdAt' | 'isDeleted'>): Promise<Message> {
+  async create(data: Omit<Message, 'id' | 'createdAt' | 'updatedAt' | 'isDeleted' | 'isEdited' | 'moderationStatus'>): Promise<Message> {
     try {
       const result = await this.db.insert(messages).values(data).returning();
       return result[0];
@@ -74,11 +83,25 @@ export class MessagesRepository extends BaseRepository<Message> {
     }
   }
 
+  async update(id: number, data: Partial<Pick<Message, 'content' | 'isEdited' | 'isDeleted' | 'moderationStatus'>>): Promise<Message | null> {
+    try {
+      const result = await this.db
+        .update(messages)
+        .set({ ...data, updatedAt: new Date() })
+        .where(eq(messages.id, id))
+        .returning();
+      return result[0] || null;
+    } catch (error) {
+      this.handleError(error, 'update');
+      return null;
+    }
+  }
+
   async softDelete(id: number): Promise<boolean> {
     try {
       const result = await this.db
         .update(messages)
-        .set({ isDeleted: true })
+        .set({ isDeleted: true, updatedAt: new Date() })
         .where(eq(messages.id, id))
         .returning();
       return result.length > 0;
@@ -89,7 +112,23 @@ export class MessagesRepository extends BaseRepository<Message> {
   }
 
   async findByChannel(channelId: number, options: { offset?: number; limit?: number } = {}): Promise<PaginatedResult<Message>> {
-    return this.findMany({ ...options, channelId });
+    return this.findMany({ ...options, channelId, replyToId: null });
+  }
+
+  async findReplies(parentMessageId: number, options: { offset?: number; limit?: number } = {}): Promise<PaginatedResult<Message>> {
+    return this.findMany({ ...options, replyToId: parentMessageId });
+  }
+
+  async flagMessage(id: number): Promise<Message | null> {
+    return this.update(id, { moderationStatus: 'flagged' });
+  }
+
+  async unflagMessage(id: number): Promise<Message | null> {
+    return this.update(id, { moderationStatus: 'visible' });
+  }
+
+  async hideMessage(id: number): Promise<Message | null> {
+    return this.update(id, { moderationStatus: 'hidden' });
   }
 
   async count(filters?: { channelId?: number; senderId?: number }): Promise<number> {

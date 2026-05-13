@@ -95,4 +95,18 @@ export class ChannelsRepository extends BaseRepository<Channel> {
       return 0;
     }
   }
+
+  async update(id: number, data: Partial<Pick<Channel, 'name'>>): Promise<Channel | null> {
+    try {
+      const result = await this.db
+        .update(channels)
+        .set(data)
+        .where(eq(channels.id, id))
+        .returning();
+      return result[0] || null;
+    } catch (error) {
+      this.handleError(error, 'update');
+      return null;
+    }
+  }
 }
