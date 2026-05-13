@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, serial, integer, timestamp, boolean } from 'drizzle-orm/pg-core';
 import type { InferSelectModel } from 'drizzle-orm';
 import { users } from './users';
 import { lectures } from './lectures';
@@ -8,6 +8,7 @@ export const progress = pgTable('progress', {
   studentId: integer('student_id').notNull().references(() => users.id, { onDelete: 'restrict' }),
   lectureId: integer('lecture_id').notNull().references(() => lectures.id, { onDelete: 'restrict' }),
   watchedSeconds: integer('watched_seconds').notNull().default(0),
+  isCompleted: boolean('is_completed').notNull().default(false),
   lastWatchedAt: timestamp('last_watched_at').notNull().defaultNow(),
 }, (table) => ({
   uniqueStudentLecture: {
