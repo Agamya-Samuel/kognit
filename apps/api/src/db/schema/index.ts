@@ -17,6 +17,7 @@ export * from './certificates';
 export * from './payments';
 export * from './channels';
 export * from './messages';
+export * from './channel-members';
 export * from './notifications';
 export * from './audit-logs';
 export * from './password-resets';

@@ -15,6 +15,7 @@ import { submissions } from './submissions';
 import { payments } from './payments';
 import { channels } from './channels';
 import { messages } from './messages';
+import { channelMembers } from './channel-members';
 import { notifications } from './notifications';
 import { auditLogs } from './audit-logs';
 import { passwordResets } from './password-resets';
@@ -216,6 +217,7 @@ export const channelsRelations = relations(channels, ({ one, many }) => ({
     references: [courses.id],
   }),
   messages: many(messages),
+  members: many(channelMembers),
 }));
 
 // Message relations
@@ -226,6 +228,23 @@ export const messagesRelations = relations(messages, ({ one }) => ({
   }),
   sender: one(users, {
     fields: [messages.senderId],
+    references: [users.id],
+  }),
+  replyToMessage: one(messages, {
+    fields: [messages.replyToId],
+    references: [messages.id],
+    relationName: 'messageReplies',
+  }),
+}));
+
+// Channel member relations
+export const channelMembersRelations = relations(channelMembers, ({ one }) => ({
+  channel: one(channels, {
+    fields: [channelMembers.channelId],
+    references: [channels.id],
+  }),
+  user: one(users, {
+    fields: [channelMembers.userId],
     references: [users.id],
   }),
 }));
