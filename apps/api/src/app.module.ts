@@ -23,6 +23,7 @@ import { AssignmentsModule } from './modules/assignments/assignments.module';
 import { CertificatesModule } from './modules/certificates/certificates.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { SocketModule } from './modules/socket/socket.module';
 
 // Feature modules (to be implemented)
 
@@ -51,6 +52,7 @@ import { AdminModule } from './modules/admin/admin.module';
     CertificatesModule,
     AnalyticsModule,
     AdminModule,
+    SocketModule,
   ],
   controllers: [HealthController],
   providers: [
