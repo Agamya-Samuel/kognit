@@ -257,3 +257,86 @@ export interface NotificationPayload {
   title: string;
   body: string;
 }
+
+// ─── Chat / Messaging ───────────────────────────────────────────────────────
+
+export interface ChatMessage {
+  id: number;
+  channelId: number;
+  senderId: number;
+  content: string;
+  replyToId: number | null;
+  isEdited: boolean;
+  isDeleted: boolean;
+  moderationStatus: ModerationStatus;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  replies?: ChatMessage[];
+  senderName?: string;
+  senderAvatarUrl?: string | null;
+  senderEmail?: string;
+  senderRole?: UserRole;
+}
+
+export interface ChatChannel {
+  id: number;
+  courseId: number | null;
+  type: ChannelType;
+  name: string;
+  createdAt: Date | string;
+  memberCount?: number;
+}
+
+export interface ChatChannelMember {
+  id: number;
+  channelId: number;
+  userId: number;
+  joinedAt: Date | string;
+  lastReadAt: Date | string | null;
+}
+
+export interface TypingIndicator {
+  channelId: number;
+  typingUsers: TypingUser[];
+}
+
+export interface TypingUser {
+  userId: number;
+  email: string;
+  channelId: number;
+  startedAt: number;
+}
+
+export interface SendMessagePayload {
+  channelId: number;
+  content: string;
+  replyToId?: number;
+}
+
+export interface EditMessagePayload {
+  messageId: number;
+  content: string;
+}
+
+export interface DeleteMessagePayload {
+  messageId: number;
+}
+
+export interface ChatSocketEvents {
+  'chat:send': (data: SendMessagePayload) => void;
+  'chat:edit': (data: EditMessagePayload) => void;
+  'chat:delete': (data: DeleteMessagePayload) => void;
+  'chat:typing': (data: { channelId: number; isTyping: boolean }) => void;
+  'chat:join': (data: { channelId: number }) => void;
+  'chat:leave': (data: { channelId: number }) => void;
+}
+
+export interface ChatServerEvents {
+  'chat:message': (data: ChatMessage) => void;
+  'chat:message_edited': (data: { id: number; content: string; isEdited: boolean; updatedAt: string }) => void;
+  'chat:message_deleted': (data: { messageId: number; deletedBy: number }) => void;
+  'chat:typing': (data: TypingIndicator) => void;
+  'chat:joined': (data: { channelId: number }) => void;
+  'chat:user_joined': (data: { channelId: number; userId: number; email: string; role: string }) => void;
+  'chat:user_left': (data: { channelId: number; userId: number }) => void;
+}
