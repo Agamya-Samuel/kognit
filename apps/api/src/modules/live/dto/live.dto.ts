@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { IsNumber, IsOptional, IsString, Min, IsDateString, IsIn, MinLength } from 'class-validator';
 
 // ─── Start Live Class ───────────────────────────────────────────────────────
 
@@ -93,4 +93,175 @@ export class RoomInfoResponseDto {
 
   @ApiProperty()
   active: boolean;
+}
+
+// ─── Scheduling DTOs ──────────────────────────────────────────────────────────
+
+export class CreateScheduleDto {
+  @ApiProperty({ description: 'Lecture ID to attach the live class to' })
+  @IsNumber()
+  lectureId: number;
+
+  @ApiProperty({ description: 'Scheduled start time (ISO 8601)' })
+  @IsDateString()
+  scheduledAt: string;
+
+  @ApiProperty({ description: 'Duration in minutes (15-480)', example: 60 })
+  @IsNumber()
+  @Min(15)
+  durationMinutes: number;
+}
+
+export class UpdateScheduleDto {
+  @ApiPropertyOptional({ description: 'New scheduled start time (ISO 8601)' })
+  @IsOptional()
+  @IsDateString()
+  scheduledAt?: string;
+
+  @ApiPropertyOptional({ description: 'New duration in minutes' })
+  @IsOptional()
+  @IsNumber()
+  @Min(15)
+  durationMinutes?: number;
+}
+
+export class CancelScheduleDto {
+  @ApiProperty({ description: 'Live class ID to cancel' })
+  @IsNumber()
+  liveClassId: number;
+}
+
+export class CalendarQueryDto {
+  @ApiProperty({ description: 'Start date (ISO 8601 or YYYY-MM-DD)' })
+  @IsDateString()
+  startDate: string;
+
+  @ApiProperty({ description: 'End date (ISO 8601 or YYYY-MM-DD)' })
+  @IsDateString()
+  endDate: string;
+
+  @ApiPropertyOptional({ description: 'Timezone for date grouping', default: 'Asia/Kolkata' })
+  @IsOptional()
+  @IsString()
+  timezone?: string;
+}
+
+// ─── Recording DTOs ───────────────────────────────────────────────────────────
+
+export class StartRecordingDto {
+  @ApiProperty({ description: 'Live class ID to start recording' })
+  @IsNumber()
+  liveClassId: number;
+}
+
+export class RecordingWebhookDto {
+  @ApiProperty({ description: 'Live class ID' })
+  @IsNumber()
+  liveClassId: number;
+
+  @ApiProperty({ description: 'S3 URL of the completed recording' })
+  @IsString()
+  s3Url: string;
+}
+
+export class RetryRecordingDto {
+  @ApiProperty({ description: 'Live class ID to retry recording' })
+  @IsNumber()
+  liveClassId: number;
+}
+
+// ─── Calendar Event Response ──────────────────────────────────────────────────
+
+export class CalendarEventResponseDto {
+  @ApiProperty()
+  id: number;
+
+  @ApiProperty()
+  lectureId: number;
+
+  @ApiProperty()
+  lectureTitle: string;
+
+  @ApiProperty()
+  sectionId: number;
+
+  @ApiProperty()
+  courseId: number;
+
+  @ApiProperty()
+  courseTitle: string;
+
+  @ApiProperty()
+  instructorId: number;
+
+  @ApiProperty()
+  scheduledAt: string;
+
+  @ApiProperty()
+  durationMinutes: number;
+
+  @ApiProperty()
+  status: string;
+
+  @ApiProperty()
+  livekitRoomName: string;
+
+  @ApiProperty()
+  recordingStatus: string;
+
+  @ApiPropertyOptional()
+  recordingUrl?: string | null;
+}
+
+export class CalendarDayResponseDto {
+  @ApiProperty()
+  date: string;
+
+  @ApiProperty({ type: [CalendarEventResponseDto] })
+  events: CalendarEventResponseDto[];
+}
+
+// ─── Recording Info Response ──────────────────────────────────────────────────
+
+export class RecordingInfoResponseDto {
+  @ApiProperty()
+  liveClassId: number;
+
+  @ApiProperty()
+  status: string;
+
+  @ApiPropertyOptional()
+  s3Key?: string | null;
+
+  @ApiPropertyOptional()
+  muxAssetId?: string | null;
+
+  @ApiPropertyOptional()
+  muxPlaybackId?: string | null;
+
+  @ApiPropertyOptional()
+  playbackUrl?: string | null;
+
+  @ApiPropertyOptional()
+  error?: string | null;
+}
+
+export class PostSessionResultResponseDto {
+  @ApiProperty()
+  liveClassId: number;
+
+  @ApiProperty()
+  lectureId: number;
+
+  @ApiProperty()
+  recordingStatus: string;
+
+  @ApiPropertyOptional()
+  muxAssetId?: string | null;
+
+  @ApiPropertyOptional()
+  muxPlaybackId?: string | null;
+
+  @ApiProperty()
+  lectureUpdated: boolean;
 }
