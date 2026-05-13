@@ -1,6 +1,7 @@
 import { Badge } from '@edutech/ui';
 import { Button } from '@edutech/ui';
 import { Sparkles, ArrowRight } from 'lucide-react';
+import { TypingEffect } from './TypingEffect';
 
 export function Hero() {
   return (
@@ -41,9 +42,10 @@ export function Hero() {
 
         {/* Headline */}
         <h1 className="animate-fade-in-up delay-100 font-heading text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
-          Learn from the best{' '}
-          <span className="text-gradient">instructors</span>{' '}
-          in India
+          Learn{' '}
+          <TypingEffect words={['Software', 'Fullstack', 'Android', 'Data Science']} />{' '}
+          from the best{' '}
+          <span className="text-gradient">instructors</span>
         </h1>
 
         {/* Subtitle */}

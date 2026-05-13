@@ -58,7 +58,7 @@ export function Footer() {
               <span className="text-gradient">EduTech</span>
             </a>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-[hsl(var(--muted-foreground))]">
-              India&apos;s live-first learning platform for college students. Build
+              A live-first learning platform for college students. Build
               real skills with interactive courses, expert mentors, and a
               supportive community.
             </p>

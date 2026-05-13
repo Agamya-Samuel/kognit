@@ -16,7 +16,7 @@ const testimonials = [
     role: 'MBA, IIM Ahmedabad',
     fallback: 'AP',
     quote:
-      'The business courses are incredibly practical. Real case studies, real projects. This is what Indian students actually need.',
+      'The business courses are incredibly practical. Real case studies, real projects. This is what students actually need.',
     rating: 5,
     highlight: false,
   },
@@ -52,7 +52,7 @@ export function Testimonials() {
           </span>
           <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
             Loved by students{' '}
-            <span className="text-gradient">across India</span>
+            <span className="text-gradient">everywhere</span>
           </h2>
           <p className="mt-4 text-[hsl(var(--muted-foreground))]">
             Hear from students who transformed their skills with EduTech.

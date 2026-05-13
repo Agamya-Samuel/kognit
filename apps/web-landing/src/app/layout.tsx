@@ -22,7 +22,7 @@ const mono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: 'EduTech - Learn from the Best Instructors',
   description:
-    'Master new skills with interactive courses, live classes, and hands-on assignments. Built for Indian college students.',
+    'Master new skills with interactive courses, live classes, and hands-on assignments. Built for college students everywhere.',
 };
 
 export default function RootLayout({

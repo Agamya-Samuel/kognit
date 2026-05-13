@@ -39,7 +39,7 @@ export function CTA() {
               <br className="hidden sm:block" /> learning journey?
             </h2>
             <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-white/80">
-              Join thousands of Indian college students who are building real skills
+              Join thousands of college students who are building real skills
               with EduTech. No credit card required.
             </p>
 
