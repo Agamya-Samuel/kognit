@@ -14,6 +14,7 @@ import { CoursesModule } from './modules/courses/courses.module';
 import { EnrollmentsModule } from './modules/enrollments/enrollments.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
 import { MediaModule } from './modules/media/media.module';
+import { ProgressModule } from './modules/progress/progress.module';
 import { LiveModule } from './modules/live/live.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
@@ -41,6 +42,7 @@ import { AdminModule } from './modules/admin/admin.module';
     EnrollmentsModule,
     UploadsModule,
     MediaModule,
+    ProgressModule,
     LiveModule,
     PaymentsModule,
     NotificationsModule,
