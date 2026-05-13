@@ -28,7 +28,7 @@ const mockUser = {
   updatedAt: new Date().toISOString(),
 };
 
-const mockInstructor = {
+export const mockInstructor = {
   id: 2,
   email: 'instructor@edutech.test',
   role: 'instructor',

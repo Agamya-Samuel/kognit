@@ -1,6 +1,6 @@
 // Smoke test — verify Vitest config, jsdom environment, and RTL setup work correctly
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 describe('Vitest Configuration', () => {
   it('should have jsdom environment available', () => {
