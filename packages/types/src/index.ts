@@ -4,7 +4,7 @@ export type UserRole = 'student' | 'instructor' | 'admin' | 'institution_admin';
 export type ApprovalStatus = 'pending' | 'approved' | 'rejected';
 export type PricingType = 'free' | 'paid';
 export type LectureType = 'video' | 'live' | 'text' | 'assignment' | 'quiz';
-export type LiveClassStatus = 'scheduled' | 'live' | 'ended';
+export type LiveClassStatus = 'scheduled' | 'live' | 'ended' | 'cancelled';
 export type AssignmentType = 'mcq' | 'short' | 'code';
 export type AccessType = 'purchased' | 'free';
 export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
@@ -200,4 +200,60 @@ export interface Payment {
   providerPaymentId: string;
   createdAt: Date | string;
   updatedAt: Date | string;
+}
+
+// ─── Recording Status ──────────────────────────────────────────────────────────
+
+export type RecordingStatus = 'none' | 'recording' | 'processing' | 'ready' | 'failed';
+
+// ─── Live Class ──────────────────────────────────────────────────────────────────
+
+export interface LiveClassSchedule {
+  id: number;
+  lectureId: number;
+  instructorId: number;
+  scheduledAt: Date | string;
+  durationMinutes: number;
+  status: LiveClassStatus;
+  livekitRoomName: string;
+  recordingStatus: RecordingStatus;
+  recordingUrl: string | null;
+}
+
+export interface CalendarEvent {
+  id: number;
+  lectureId: number;
+  lectureTitle: string;
+  sectionId: number;
+  courseId: number;
+  courseTitle: string;
+  instructorId: number;
+  scheduledAt: string;
+  durationMinutes: number;
+  status: LiveClassStatus;
+  livekitRoomName: string;
+  recordingStatus: RecordingStatus;
+  recordingUrl: string | null;
+}
+
+export interface CalendarDay {
+  date: string; // YYYY-MM-DD in target timezone
+  events: CalendarEvent[];
+}
+
+export interface RecordingInfo {
+  liveClassId: number;
+  status: RecordingStatus;
+  s3Key: string | null;
+  muxAssetId: string | null;
+  muxPlaybackId: string | null;
+  playbackUrl: string | null;
+  error: string | null;
+}
+
+export interface NotificationPayload {
+  liveClassId: number;
+  type: 'class_scheduled' | 'class_reminder_1hr' | 'class_reminder_15min' | 'class_cancelled' | 'class_started' | 'recording_ready';
+  title: string;
+  body: string;
 }
