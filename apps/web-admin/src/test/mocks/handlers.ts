@@ -28,7 +28,8 @@ const mockUser = {
   updatedAt: new Date().toISOString(),
 };
 
-const mockInstructor = {
+// Mock instructor data reserved for future admin endpoints
+const mockInstructorData = {
   id: 2,
   email: 'instructor@edutech.test',
   role: 'instructor',
@@ -39,6 +40,9 @@ const mockInstructor = {
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 };
+
+// Suppress unused warning — will be used when admin endpoints are implemented
+void mockInstructorData;
 
 const mockCourses = [
   {

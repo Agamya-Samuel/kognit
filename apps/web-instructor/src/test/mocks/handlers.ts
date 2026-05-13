@@ -300,7 +300,7 @@ export const enrollmentHandlers = [
 // ─── Section Handlers ──────────────────────────────────────────────────────
 
 export const sectionHandlers = [
-  http.get(`${API_BASE}/courses/:courseId/sections`, async ({ params }) => {
+  http.get(`${API_BASE}/courses/:courseId/sections`, async ({ params: _params }) => {
     await delay(200);
     return HttpResponse.json({
       success: true,
@@ -343,7 +343,7 @@ export const sectionHandlers = [
 // ─── Lecture Handlers ─────────────────────────────────────────────────────
 
 export const lectureHandlers = [
-  http.get(`${API_BASE}/sections/:sectionId/lectures`, async ({ params }) => {
+  http.get(`${API_BASE}/sections/:sectionId/lectures`, async ({ params: _params }) => {
     await delay(200);
     return HttpResponse.json({
       success: true,
