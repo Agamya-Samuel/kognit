@@ -3,6 +3,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from 'next-themes';
 import { useState } from 'react';
+import { ToastProvider, useToast } from '@/contexts/ToastContext';
+import { Toaster } from '@edutech/ui';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -30,8 +32,16 @@ export function Providers({ children }: { children: React.ReactNode }) {
         enableSystem
         disableTransitionOnChange
       >
-        {children}
+        <ToastProvider>
+          {children}
+          <ToasterClient />
+        </ToastProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
+}
+
+function ToasterClient() {
+  const { toasts, removeToast } = useToast();
+  return <Toaster toasts={toasts} onDismiss={removeToast} />;
 }
