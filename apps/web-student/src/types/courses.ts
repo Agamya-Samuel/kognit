@@ -72,3 +72,49 @@ export interface CourseFilters {
   limit?: number;
   sort?: 'newest' | 'oldest' | 'popular' | 'rating' | 'price-low' | 'price-high';
 }
+
+// ─── Progress Types ────────────────────────────────────────────────────
+
+export interface LectureProgress {
+  lectureId: number;
+  watchedSeconds: number;
+  isCompleted: boolean;
+  lastWatchedAt: string;
+  durationSeconds: number;
+  progressPercentage: number;
+}
+
+export interface CourseProgressSummary {
+  courseId: number;
+  totalLectures: number;
+  completedLectures: number;
+  watchedSeconds: number;
+  totalDurationSeconds: number;
+  progressPercentage: number;
+}
+
+export interface WatchHistoryItem {
+  lectureId: number;
+  lectureTitle: string;
+  lectureDuration: number;
+  sectionTitle: string;
+  courseId: number;
+  courseTitle: string;
+  watchedSeconds: number;
+  isCompleted: boolean;
+  lastWatchedAt: string;
+  progressPercentage: number;
+}
+
+export interface WatchHistoryResponse {
+  items: WatchHistoryItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface UpdateProgressResponse {
+  watchedSeconds: number;
+  isCompleted: boolean;
+  progressPercentage: number;
+}
