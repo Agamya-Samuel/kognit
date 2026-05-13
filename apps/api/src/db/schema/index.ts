@@ -13,6 +13,7 @@ export * from './enrollments';
 export * from './progress';
 export * from './assignments';
 export * from './submissions';
+export * from './quiz-questions';
 export * from './certificates';
 export * from './payments';
 export * from './channels';

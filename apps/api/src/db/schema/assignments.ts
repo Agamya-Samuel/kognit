@@ -11,6 +11,8 @@ export const assignments = pgTable('assignments', {
   type: assignmentType('type').notNull().default('short'),
   maxScore: integer('max_score').notNull(),
   dueAt: timestamp('due_at').notNull(),
+  lateWindowHours: integer('late_window_hours'),
+  latePenaltyPercent: integer('late_penalty_percent').notNull().default(0),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 

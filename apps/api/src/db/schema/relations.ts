@@ -12,6 +12,7 @@ import { progress } from './progress';
 import { certificates } from './certificates';
 import { assignments } from './assignments';
 import { submissions } from './submissions';
+import { quizQuestions } from './quiz-questions';
 import { payments } from './payments';
 import { channels } from './channels';
 import { messages } from './messages';
@@ -183,6 +184,7 @@ export const assignmentsRelations = relations(assignments, ({ one, many }) => ({
     references: [lectures.id],
   }),
   submissions: many(submissions),
+  questions: many(quizQuestions),
 }));
 
 // Submission relations
@@ -194,6 +196,14 @@ export const submissionsRelations = relations(submissions, ({ one }) => ({
   student: one(users, {
     fields: [submissions.studentId],
     references: [users.id],
+  }),
+}));
+
+// Quiz question relations
+export const quizQuestionsRelations = relations(quizQuestions, ({ one }) => ({
+  assignment: one(assignments, {
+    fields: [quizQuestions.assignmentId],
+    references: [assignments.id],
   }),
 }));
 
