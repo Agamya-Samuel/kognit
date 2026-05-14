@@ -3,46 +3,46 @@ import { Star, Award, Users, BookOpen } from 'lucide-react';
 
 const testimonials = [
   {
-    name: 'Priya Sharma',
-    role: 'B.Tech CSE, IIT Delhi',
-    fallback: 'PS',
+    name: 'Aisha Khan',
+    role: 'Computer Science, Tech University',
+    fallback: 'AK',
     quote:
-      'The live classes made complex topics so easy to understand. I landed my first internship at a top startup after completing the web development track.',
+      "EduTech's live classes transformed my coding skills. The mentors are incredibly supportive, and the hands-on projects helped me land a competitive internship.",
     rating: 5,
     highlight: true,
   },
   {
-    name: 'Arjun Patel',
-    role: 'MBA, IIM Ahmedabad',
-    fallback: 'AP',
+    name: 'Rahul Sharma',
+    role: 'Statistics Major, Premier Institute',
+    fallback: 'RS',
     quote:
-      'The business courses are incredibly practical. Real case studies, real projects. This is what students actually need.',
+      'I learned more about Data Science here than in my entire degree. The practical approach and immediate feedback truly accelerate learning. Highly recommend!',
     rating: 5,
     highlight: false,
   },
   {
-    name: 'Sneha Reddy',
-    role: 'B.Sc Data Science, BITS Pilani',
-    fallback: 'SR',
+    name: 'Priya Singh',
+    role: 'Electronics Eng., Engineering College',
+    fallback: 'PS',
     quote:
-      'The community and mentorship is what sets EduTech apart. I always had someone to guide me when I got stuck on a problem.',
+      'The Android Development course was fantastic. Building my own app in live sessions was challenging yet incredibly rewarding. My confidence has skyrocketed.',
     rating: 5,
     highlight: false,
   },
 ];
 
 const stats = [
-  { icon: Users, value: '2,500+', label: 'Active Students' },
+  { icon: Users, value: '25K+', label: 'Students Taught' },
   { icon: Star, value: '4.9/5', label: 'Average Rating' },
-  { icon: BookOpen, value: '87+', label: 'Courses' },
-  { icon: Award, value: '95%', label: 'Completion Rate' },
+  { icon: BookOpen, value: '100+', label: 'Live Courses' },
+  { icon: Award, value: '92%', label: 'Course Completion' },
 ];
 
 export function Testimonials() {
   return (
     <section
       id="testimonials"
-      className="bg-[hsl(var(--muted))]/50 px-4 py-24 sm:px-6 lg:px-8"
+      className="gradient-radial px-4 py-24 sm:px-6 lg:px-8"
     >
       <div className="mx-auto max-w-6xl">
         {/* Section header */}
@@ -51,20 +51,22 @@ export function Testimonials() {
             Testimonials
           </span>
           <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
-            Loved by students{' '}
-            <span className="text-gradient">everywhere</span>
+            Hear From Our{' '}
+            <span className="text-gradient">Successful</span>{' '}
+            Students
           </h2>
           <p className="mt-4 text-[hsl(var(--muted-foreground))]">
-            Hear from students who transformed their skills with EduTech.
+            Real stories from those transforming their careers.
           </p>
         </div>
 
         {/* Social proof stats bar */}
-        <div className="mt-14 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="gradient-border mt-14 rounded-2xl p-px">
+        <div className="grid grid-cols-2 gap-4 rounded-2xl bg-[hsl(var(--card))] p-4 sm:grid-cols-4">
           {stats.map((stat, index) => (
             <div
               key={stat.label}
-              className="animate-fade-in-up rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 text-center transition-all duration-200 hover:shadow-md"
+              className="animate-fade-in-up rounded-xl p-5 text-center transition-all duration-200 hover:shadow-md"
               style={{ animationDelay: `${index * 80}ms` }}
             >
               <stat.icon
@@ -78,6 +80,7 @@ export function Testimonials() {
             </div>
           ))}
         </div>
+        </div>
 
         {/* Testimonial cards */}
         <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
@@ -85,13 +88,13 @@ export function Testimonials() {
             <Card
               key={t.name}
               className={`relative border-[hsl(var(--border))] bg-[hsl(var(--card))] transition-all duration-300 hover:-translate-y-1 hover:shadow-xl animate-fade-in-up ${
-                t.highlight ? 'ring-1 ring-[hsl(var(--primary))]/20' : ''
+                t.highlight ? 'ring-2 ring-[hsl(var(--primary))]/30 shadow-lg shadow-[hsl(var(--primary))]/10' : ''
               }`}
               style={{ animationDelay: `${index * 100}ms` }}
             >
               <CardContent className="p-6">
                 {/* Large decorative quote mark */}
-                <div className="absolute -top-4 right-6 text-6xl font-serif leading-none text-[hsl(var(--primary))]/10">
+                <div className="absolute -top-4 right-6 text-7xl font-serif leading-none text-[hsl(var(--primary))]/15">
                   &ldquo;
                 </div>
 

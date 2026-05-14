@@ -42,7 +42,7 @@ export function Footer() {
   return (
     <footer className="relative border-t border-[hsl(var(--border))] bg-[hsl(var(--muted))]/40 px-4 pt-16 pb-8 sm:px-6 lg:px-8">
       {/* Gradient accent line at top */}
-      <div className="gradient-primary absolute inset-x-0 top-0 h-[2px]" />
+      <div className="gradient-cta absolute inset-x-0 top-0 h-[2px]" />
 
       <div className="mx-auto max-w-6xl">
         <div className="grid gap-12 lg:grid-cols-12">
@@ -95,7 +95,7 @@ export function Footer() {
                   key={s.label}
                   href={s.href}
                   aria-label={s.label}
-                  className="hover-lift inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[hsl(var(--border))] text-[hsl(var(--muted-foreground))] transition-colors hover:border-[hsl(var(--primary))]/30 hover:text-[hsl(var(--primary))]"
+                  className="hover-lift inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[hsl(var(--border))] text-[hsl(var(--muted-foreground))] transition-all hover:border-[hsl(var(--primary))]/30 hover:text-[hsl(var(--primary))] hover:scale-110"
                 >
                   <s.icon size={16} />
                 </a>

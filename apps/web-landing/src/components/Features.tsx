@@ -1,4 +1,4 @@
-import { Card, CardContent } from '@edutech/ui';
+import { Card, CardContent, Badge } from '@edutech/ui';
 import { Video, Code2, Users } from 'lucide-react';
 
 const features = [
@@ -6,40 +6,49 @@ const features = [
     icon: Video,
     title: 'Live Interactive Classes',
     description:
-      'Join real-time sessions with expert instructors. Ask questions, participate in discussions, and get instant feedback.',
-    gradient: 'from-[hsl(var(--primary))]/10 to-[hsl(var(--primary))]/5',
+      'Engage directly with expert instructors. Ask questions, get instant feedback, and stay motivated.',
+    detail: 'Real-time learning, direct instructor interaction.',
+    gradient: 'from-[hsl(var(--primary))]/15 to-[hsl(var(--primary))]/5',
     iconColor: 'text-[hsl(var(--primary))]',
     iconBg: 'bg-[hsl(var(--primary))]/10',
   },
   {
     icon: Code2,
-    title: 'Hands-on Projects',
+    title: 'Build Real-World Projects',
     description:
-      'Build real-world projects with guided assignments. Practice what you learn with practical coding exercises.',
-    gradient: 'from-[hsl(var(--secondary))]/10 to-[hsl(var(--secondary))]/5',
+      'Apply your knowledge with practical, hands-on assignments. Develop a portfolio that will stand out.',
+    detail: 'Practical assignments, portfolio-ready outcomes.',
+    gradient: 'from-[hsl(var(--secondary))]/15 to-[hsl(var(--secondary))]/5',
     iconColor: 'text-[hsl(var(--secondary))]',
     iconBg: 'bg-[hsl(var(--secondary))]/10',
   },
   {
     icon: Users,
-    title: 'Community & Mentors',
+    title: 'Expert Mentorship & Community',
     description:
-      'Connect with fellow students and industry mentors. Get guidance, collaborate, and grow together.',
-    gradient: 'from-[hsl(var(--warning))]/10 to-[hsl(var(--warning))]/5',
+      'Get personalized guidance from industry pros. Connect with peers, share insights, and grow your network.',
+    detail: 'Personalized guidance, collaborative peer network.',
+    gradient: 'from-[hsl(var(--warning))]/15 to-[hsl(var(--warning))]/5',
     iconColor: 'text-[hsl(var(--warning))]',
     iconBg: 'bg-[hsl(var(--warning))]/10',
   },
 ];
 
 export function Features() {
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    e.currentTarget.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+    e.currentTarget.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+  };
+
   return (
     <section id="features" className="px-4 py-20 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
         {/* Section header */}
         <div className="mx-auto max-w-2xl text-center">
-          <span className="mb-3 inline-block text-sm font-semibold uppercase tracking-wider text-[hsl(var(--primary))]">
+          <Badge variant="outline" className="mb-3 rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[hsl(var(--primary))]">
             Features
-          </span>
+          </Badge>
           <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
             Everything you need to succeed
           </h2>
@@ -53,8 +62,9 @@ export function Features() {
           {features.map((feature, index) => (
             <Card
               key={feature.title}
-              className={`group border-transparent bg-gradient-to-b ${feature.gradient} hover-lift animate-fade-in-up`}
-              style={{ animationDelay: `${index * 100}ms` }}
+              className={`group card-spotlight border-transparent bg-gradient-to-b ${feature.gradient} hover-lift animate-fade-in-up`}
+              onMouseMove={handleMouseMove}
+              style={{ animationDelay: `${index * 80}ms` }}
             >
               <CardContent className="p-6">
                 <div
@@ -65,6 +75,9 @@ export function Features() {
                 <h3 className="font-heading text-lg font-semibold">{feature.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-[hsl(var(--muted-foreground))]">
                   {feature.description}
+                </p>
+                <p className="mt-2 text-xs font-medium text-[hsl(var(--primary))]">
+                  {feature.detail}
                 </p>
               </CardContent>
             </Card>
