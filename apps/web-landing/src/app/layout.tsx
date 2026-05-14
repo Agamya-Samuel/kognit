@@ -20,9 +20,9 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'EduTech - Learn from the Best Instructors',
+  title: 'EduTech - Master Tech Skills with Expert Mentors',
   description:
-    'Master new skills with interactive courses, live classes, and hands-on assignments. Built for college students everywhere.',
+    'Transform your career with live, interactive courses. Gain practical skills in Software, Data, and more.',
 };
 
 export default function RootLayout({
