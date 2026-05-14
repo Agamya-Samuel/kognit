@@ -24,6 +24,11 @@ export type { TextareaProps } from './components/Textarea';
 
 export { Skeleton } from './components/Skeleton';
 
+export { Separator } from './components/Separator';
+export type { SeparatorProps } from './components/Separator';
+
+export { Tooltip } from './components/Tooltip';
+
 export { Toast, type ToastVariant, type ToastActionElement } from './components/Toast';
 
 export { Toaster } from './components/Toaster';

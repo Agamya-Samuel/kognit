@@ -10,7 +10,9 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
-    "./globals.css": "./src/globals.css"
+    "./globals.css": "./src/globals.css",
+    "./tokens": "./src/tokens/index.css",
+    "./tailwind-theme": "./src/tokens/tailwind.css"
   },
   "scripts": {
     "build": "tsup",
