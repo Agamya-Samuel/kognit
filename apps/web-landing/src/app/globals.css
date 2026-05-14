@@ -1,122 +1,6 @@
 @import 'tailwindcss';
-
-@layer base {
-  :root {
-    --radius: 0.625rem;
-
-    /* Surfaces */
-    --background: 210 40% 98%;
-    --foreground: 222 84% 5%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 222 84% 5%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 84% 5%;
-
-    /* Brand: Scholarly Indigo (#4F46E5) */
-    --primary: 239 84% 59%;
-    --primary-foreground: 0 0% 100%;
-
-    /* Supporting: Growth Teal (#0D9488) */
-    --secondary: 175 84% 32%;
-    --secondary-foreground: 0 0% 100%;
-
-    /* Subdued */
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-
-    /* Interactive hover */
-    --accent: 175 60% 40%;
-    --accent-foreground: 0 0% 100%;
-
-    /* Destructive */
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    /* Borders & Input */
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 239 84% 59%;
-
-    /* Status Tokens */
-    --success: 175 84% 32%;
-    --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 222 84% 5%;
-    --info: 217 91% 60%;
-    --info-foreground: 0 0% 100%;
-
-    /* Chart Palette */
-    --chart-1: 239 84% 59%;
-    --chart-2: 175 84% 32%;
-    --chart-3: 38 92% 50%;
-    --chart-4: 217 91% 60%;
-    --chart-5: 25 95% 53%;
-
-    /* Sidebar */
-    --sidebar: 210 40% 98%;
-    --sidebar-foreground: 222 84% 5%;
-    --sidebar-primary: 239 84% 59%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 40% 96%;
-    --sidebar-accent-foreground: 222 84% 5%;
-    --sidebar-border: 214 32% 91%;
-    --sidebar-ring: 239 84% 59%;
-  }
-
-  .dark {
-    --background: 222 84% 5%;
-    --foreground: 210 40% 98%;
-
-    --card: 217 33% 17%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 217 33% 17%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 239 84% 75%;
-    --primary-foreground: 222 84% 5%;
-
-    --secondary: 172 66% 50%;
-    --secondary-foreground: 222 84% 5%;
-
-    --muted: 215 25% 27%;
-    --muted-foreground: 215 20% 65%;
-
-    --accent: 172 66% 50%;
-    --accent-foreground: 222 84% 5%;
-
-    --destructive: 0 84% 67%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 215 25% 27%;
-    --input: 215 25% 27%;
-    --ring: 239 84% 75%;
-
-    --success: 172 66% 50%;
-    --success-foreground: 222 84% 5%;
-    --warning: 45 93% 47%;
-    --warning-foreground: 222 84% 5%;
-    --info: 213 94% 68%;
-    --info-foreground: 222 84% 5%;
-
-    --chart-1: 239 84% 75%;
-    --chart-2: 172 66% 50%;
-    --chart-3: 45 93% 47%;
-    --chart-4: 213 94% 68%;
-    --chart-5: 25 95% 60%;
-
-    --sidebar: 217 33% 17%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 239 84% 75%;
-    --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 215 25% 27%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 215 25% 27%;
-    --sidebar-ring: 239 84% 75%;
-  }
-}
+@import '@edutech/ui/tokens';
+@import '@edutech/ui/tailwind-theme';
 
 @layer base {
   * {
@@ -155,6 +39,67 @@
     -webkit-backdrop-filter: blur(12px) saturate(180%);
   }
 
+  /* Bold 4-stop gradient text */
+  .text-gradient-bold {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(280 80% 60%) 40%, hsl(var(--secondary)) 70%, hsl(var(--warning)) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Mesh background (overlapping radial gradients) */
+  .gradient-mesh {
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 40%, hsl(var(--primary) / 0.15), transparent),
+      radial-gradient(ellipse 60% 40% at 80% 60%, hsl(var(--secondary) / 0.12), transparent),
+      radial-gradient(ellipse 50% 50% at 50% 0%, hsl(280 80% 60% / 0.08), transparent);
+  }
+
+  /* Subtle radial glow for section backgrounds */
+  .gradient-radial {
+    background: radial-gradient(ellipse 100% 60% at 50% 0%, hsl(var(--primary) / 0.06) 0%, transparent 70%);
+  }
+
+  /* Mouse-tracking spotlight effect on cards */
+  .card-spotlight {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-spotlight::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), hsl(var(--primary) / 0.06), transparent 40%);
+    opacity: 0;
+    transition: opacity 300ms ease;
+    pointer-events: none;
+  }
+
+  .card-spotlight:hover::after {
+    opacity: 1;
+  }
+
+  /* Noise texture overlay for depth */
+  .noise-bg {
+    position: relative;
+  }
+
+  .noise-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Better headline wrapping */
+  .text-balance {
+    text-wrap: balance;
+  }
+
   /* Gradient backgrounds */
   .gradient-primary {
     background: linear-gradient(135deg, hsl(var(--primary)), hsl(260 83% 58%));
@@ -162,6 +107,8 @@
 
   .gradient-cta {
     background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(260 70% 55%) 50%, hsl(var(--secondary)) 100%);
+    background-size: 200% 200%;
+    animation: gradient-shift 8s ease infinite;
   }
 
   .gradient-subtle {
@@ -289,6 +236,21 @@
   }
 }
 
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes bounce-subtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
 @layer utilities {
   .animate-fade-in-up {
     animation: fade-in-up 0.6s ease-out both;
@@ -316,6 +278,19 @@
 
   .animate-count-up {
     animation: count-up 0.5s ease-out both;
+  }
+
+  .animate-gradient-shift {
+    background-size: 200% 200%;
+    animation: gradient-shift 8s ease infinite;
+  }
+
+  .animate-scale-in {
+    animation: scale-in 0.4s ease-out both;
+  }
+
+  .animate-bounce-subtle {
+    animation: bounce-subtle 2s ease-in-out infinite;
   }
 
   /* Staggered animation delays */
