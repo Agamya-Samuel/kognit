@@ -17,12 +17,7 @@
     "isolatedModules": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@edutech/ui": ["../../packages/ui/src"],
-      "@edutech/types": ["../../packages/types/src"],
-      "@edutech/validation": ["../../packages/validation/src"],
-      "@edutech/api-client": ["../../packages/api-client/src"],
-      "@edutech/shared-components": ["../../packages/shared-components/src"]
+      "@/*": ["./src/*"]
     }
   },
   "include": [
