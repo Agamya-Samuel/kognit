@@ -1,0 +1,5 @@
+@layer tokens-primitive {
+  :root {
+    --radius-scale: 0.625rem;
+  }
+}

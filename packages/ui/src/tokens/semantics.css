@@ -1,0 +1,117 @@
+@layer tokens-semantic {
+  :root {
+    --radius: var(--radius-scale);
+
+    /* Surfaces */
+    --background: 210 40% 98%;
+    --foreground: 222 84% 5%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 84% 5%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 84% 5%;
+
+    /* Brand: Scholarly Indigo (#4F46E5) */
+    --primary: 239 84% 59%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Supporting: Growth Teal (#0D9488) */
+    --secondary: 175 84% 32%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Subdued */
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    /* Interactive hover */
+    --accent: 175 60% 40%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders & Input */
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 239 84% 59%;
+
+    /* Status Tokens */
+    --success: 175 84% 32%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 222 84% 5%;
+    --info: 217 91% 60%;
+    --info-foreground: 0 0% 100%;
+
+    /* Chart Palette */
+    --chart-1: 239 84% 59%;
+    --chart-2: 175 84% 32%;
+    --chart-3: 38 92% 50%;
+    --chart-4: 217 91% 60%;
+    --chart-5: 25 95% 53%;
+
+    /* Sidebar */
+    --sidebar: 210 40% 98%;
+    --sidebar-foreground: 222 84% 5%;
+    --sidebar-primary: 239 84% 59%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 40% 96%;
+    --sidebar-accent-foreground: 222 84% 5%;
+    --sidebar-border: 214 32% 91%;
+    --sidebar-ring: 239 84% 59%;
+  }
+
+  .dark {
+    --background: 222 84% 5%;
+    --foreground: 210 40% 98%;
+
+    --card: 217 33% 17%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 217 33% 17%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 239 84% 75%;
+    --primary-foreground: 222 84% 5%;
+
+    --secondary: 172 66% 50%;
+    --secondary-foreground: 222 84% 5%;
+
+    --muted: 215 25% 27%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 172 66% 50%;
+    --accent-foreground: 222 84% 5%;
+
+    --destructive: 0 84% 67%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 215 25% 27%;
+    --input: 215 25% 27%;
+    --ring: 239 84% 75%;
+
+    --success: 172 66% 50%;
+    --success-foreground: 222 84% 5%;
+    --warning: 45 93% 47%;
+    --warning-foreground: 222 84% 5%;
+    --info: 213 94% 68%;
+    --info-foreground: 222 84% 5%;
+
+    --chart-1: 239 84% 75%;
+    --chart-2: 172 66% 50%;
+    --chart-3: 45 93% 47%;
+    --chart-4: 213 94% 68%;
+    --chart-5: 25 95% 60%;
+
+    --sidebar: 217 33% 17%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 239 84% 75%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 215 25% 27%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 215 25% 27%;
+    --sidebar-ring: 239 84% 75%;
+  }
+}
