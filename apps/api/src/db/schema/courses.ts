@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, text, timestamp, varchar, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, serial, integer, text, timestamp, varchar, boolean, index } from 'drizzle-orm/pg-core';
 import type { InferSelectModel } from 'drizzle-orm';
 import { users } from './users';
 import { pricingType } from './enums';
@@ -16,6 +16,11 @@ export const courses = pgTable('courses', {
   deletedAt: timestamp('deleted_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
-});
+}, (table) => [
+  index('courses_instructor_id_idx').on(table.instructorId),
+  index('courses_is_published_idx').on(table.isPublished),
+  index('courses_deleted_at_idx').on(table.deletedAt),
+  index('courses_domain_idx').on(table.domain),
+]);
 
 export type Course = InferSelectModel<typeof courses>;

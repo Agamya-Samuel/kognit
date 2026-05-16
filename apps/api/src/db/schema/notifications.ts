@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, text, timestamp, varchar, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, serial, integer, text, timestamp, varchar, boolean, index } from 'drizzle-orm/pg-core';
 import type { InferSelectModel } from 'drizzle-orm';
 import { users } from './users';
 import { notificationDelivery } from './enums';
@@ -13,6 +13,9 @@ export const notifications = pgTable('notifications', {
   deliveredVia: notificationDelivery('delivered_via').notNull().default('in_app'),
   emailSentAt: timestamp('email_sent_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
-});
+}, (table) => [
+  index('notifications_user_id_idx').on(table.userId),
+  index('notifications_user_is_read_idx').on(table.userId, table.isRead),
+]);
 
 export type Notification = InferSelectModel<typeof notifications>;

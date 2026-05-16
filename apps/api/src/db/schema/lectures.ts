@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, text, timestamp, varchar, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, serial, integer, text, timestamp, varchar, boolean, index } from 'drizzle-orm/pg-core';
 import type { InferSelectModel } from 'drizzle-orm';
 import { sections } from './sections';
 import { lectureType } from './enums';
@@ -17,6 +17,10 @@ export const lectures = pgTable('lectures', {
   isFreePreview: boolean('is_free_preview').notNull().default(false),
   isPublished: boolean('is_published').notNull().default(false),
   createdAt: timestamp('created_at').notNull().defaultNow(),
-});
+}, (table) => [
+  index('lectures_section_id_idx').on(table.sectionId),
+  index('lectures_mux_asset_id_idx').on(table.muxAssetId),
+  index('lectures_is_published_idx').on(table.isPublished),
+]);
 
 export type Lecture = InferSelectModel<typeof lectures>;

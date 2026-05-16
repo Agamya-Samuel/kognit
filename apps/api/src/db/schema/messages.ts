@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, text, timestamp, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, serial, integer, text, timestamp, boolean, index } from 'drizzle-orm/pg-core';
 import type { InferSelectModel } from 'drizzle-orm';
 import { channels } from './channels';
 import { users } from './users';
@@ -15,6 +15,10 @@ export const messages = pgTable('messages', {
   moderationStatus: moderationStatus('moderation_status').notNull().default('visible'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
-});
+}, (table) => [
+  index('messages_channel_id_idx').on(table.channelId),
+  index('messages_channel_created_at_idx').on(table.channelId, table.createdAt),
+  index('messages_sender_id_idx').on(table.senderId),
+]);
 
 export type Message = InferSelectModel<typeof messages>;
