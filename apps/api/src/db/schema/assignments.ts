@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, text, timestamp, varchar } from 'drizzle-orm/pg-core';
+import { pgTable, serial, integer, text, timestamp, varchar, index } from 'drizzle-orm/pg-core';
 import type { InferSelectModel } from 'drizzle-orm';
 import { lectures } from './lectures';
 import { assignmentType } from './enums';
@@ -14,6 +14,8 @@ export const assignments = pgTable('assignments', {
   lateWindowHours: integer('late_window_hours'),
   latePenaltyPercent: integer('late_penalty_percent').notNull().default(0),
   createdAt: timestamp('created_at').notNull().defaultNow(),
-});
+}, (table) => [
+  index('assignments_lecture_id_idx').on(table.lectureId),
+]);
 
 export type Assignment = InferSelectModel<typeof assignments>;

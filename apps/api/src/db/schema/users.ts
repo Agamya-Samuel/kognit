@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, boolean, timestamp, text } from 'drizzle-orm/pg-core';
+import { pgTable, serial, varchar, boolean, timestamp, text, index } from 'drizzle-orm/pg-core';
 import type { InferSelectModel } from 'drizzle-orm';
 import { userRoles } from './enums';
 
@@ -14,6 +14,9 @@ export const users = pgTable('users', {
   deletedAt: timestamp('deleted_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
-});
+}, (table) => [
+  index('users_role_idx').on(table.role),
+  index('users_is_active_idx').on(table.isActive),
+]);
 
 export type User = InferSelectModel<typeof users>;

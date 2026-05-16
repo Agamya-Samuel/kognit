@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, text, timestamp, varchar, bigint, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, serial, integer, text, timestamp, varchar, bigint, boolean, index } from 'drizzle-orm/pg-core';
 import type { InferSelectModel } from 'drizzle-orm';
 import { users } from './users';
 import { lectures } from './lectures';
@@ -21,6 +21,10 @@ export const uploads = pgTable('uploads', {
   validationPassed: boolean('validation_passed').notNull().default(false),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
-});
+}, (table) => [
+  index('uploads_lecture_id_idx').on(table.lectureId),
+  index('uploads_user_id_idx').on(table.userId),
+  index('uploads_status_idx').on(table.status),
+]);
 
 export type Upload = InferSelectModel<typeof uploads>;

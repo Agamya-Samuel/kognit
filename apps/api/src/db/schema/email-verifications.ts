@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, varchar, boolean, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, serial, integer, varchar, boolean, timestamp, index } from 'drizzle-orm/pg-core';
 import type { InferSelectModel } from 'drizzle-orm';
 import { users } from './users';
 
@@ -9,6 +9,9 @@ export const emailVerifications = pgTable('email_verifications', {
   expiresAt: timestamp('expires_at').notNull(),
   verified: boolean('verified').notNull().default(false),
   createdAt: timestamp('created_at').notNull().defaultNow(),
-});
+}, (table) => [
+  index('email_verifications_token_hash_idx').on(table.tokenHash),
+  index('email_verifications_user_id_idx').on(table.userId),
+]);
 
 export type EmailVerification = InferSelectModel<typeof emailVerifications>;

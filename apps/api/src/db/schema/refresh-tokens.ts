@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, varchar, boolean, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, serial, integer, varchar, boolean, timestamp, index } from 'drizzle-orm/pg-core';
 import type { InferSelectModel } from 'drizzle-orm';
 import { users } from './users';
 
@@ -11,6 +11,9 @@ export const refreshTokens = pgTable('refresh_tokens', {
   isRevoked: boolean('is_revoked').notNull().default(false),
   expiresAt: timestamp('expires_at').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
-});
+}, (table) => [
+  index('refresh_tokens_user_id_idx').on(table.userId),
+  index('refresh_tokens_family_idx').on(table.family),
+]);
 
 export type RefreshToken = InferSelectModel<typeof refreshTokens>;
