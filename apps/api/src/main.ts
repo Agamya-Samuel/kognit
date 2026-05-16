@@ -5,6 +5,8 @@ import { ExpressAdapter } from '@nestjs/platform-express';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { AppModule } from './app.module';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
+import { SlowQueryInterceptor } from './common/interceptors/slow-query.interceptor';
+import { CacheHeadersInterceptor } from './common/interceptors/cache-headers.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ThrottlerExceptionFilter as CustomThrottlerFilter } from './common/filters/throttler-exception.filter';
 import { ConfigService } from '@nestjs/config';
@@ -17,6 +19,9 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const PORT = configService.get<number>('PORT') || 3000;
   const NODE_ENV = configService.get<string>('NODE_ENV') || 'development';
+
+  // Response compression (gzip)
+  app.use(require('compression')({ threshold: 1024 }));
 
   // Enable shutdown hooks for graceful shutdown
   app.enableShutdownHooks();
@@ -65,8 +70,12 @@ async function bootstrap() {
     }),
   );
 
-  // Global Response Interceptor
-  app.useGlobalInterceptors(new ResponseInterceptor());
+  // Global Interceptors
+  app.useGlobalInterceptors(
+    new SlowQueryInterceptor(),
+    new CacheHeadersInterceptor(),
+    new ResponseInterceptor(),
+  );
 
   // Global Exception Filter
   app.useGlobalFilters(new HttpExceptionFilter(), new CustomThrottlerFilter());
