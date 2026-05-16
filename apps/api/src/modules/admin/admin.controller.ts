@@ -61,4 +61,74 @@ export class AdminController {
   async deleteUser(@Param('id', ParseIntPipe) id: number) {
     return this.adminService.deleteUser(id);
   }
+
+  // ─── Instructor Approval ─────────────────────────────────────────────────
+
+  @Get('instructors')
+  @ApiOperation({ summary: 'List instructor applications with filters' })
+  async listInstructors(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('status') status?: string,
+  ) {
+    return this.adminService.listPendingInstructors({
+      page: page ? parseInt(page, 10) : undefined,
+      limit: limit ? parseInt(limit, 10) : undefined,
+      status,
+    });
+  }
+
+  @Patch('instructors/:id/approve')
+  @ApiOperation({ summary: 'Approve an instructor application' })
+  async approveInstructor(@Param('id', ParseIntPipe) id: number) {
+    return this.adminService.approveInstructor(id);
+  }
+
+  @Patch('instructors/:id/reject')
+  @ApiOperation({ summary: 'Reject an instructor application' })
+  async rejectInstructor(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { reason: string },
+  ) {
+    return this.adminService.rejectInstructor(id, body.reason);
+  }
+
+  // ─── Course Moderation ───────────────────────────────────────────────────
+
+  @Get('courses')
+  @ApiOperation({ summary: 'List all courses with filters for moderation' })
+  async listCourses(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+    @Query('isPublished') isPublished?: string,
+  ) {
+    return this.adminService.listCourses({
+      page: page ? parseInt(page, 10) : undefined,
+      limit: limit ? parseInt(limit, 10) : undefined,
+      search,
+      isPublished: isPublished === 'true' ? true : isPublished === 'false' ? false : undefined,
+    });
+  }
+
+  @Patch('courses/:id/approve')
+  @ApiOperation({ summary: 'Approve a course (publish)' })
+  async approveCourse(@Param('id', ParseIntPipe) id: number) {
+    return this.adminService.approveCourse(id);
+  }
+
+  @Patch('courses/:id/reject')
+  @ApiOperation({ summary: 'Reject a course with reason' })
+  async rejectCourse(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { reason: string },
+  ) {
+    return this.adminService.rejectCourse(id, body.reason);
+  }
+
+  @Patch('courses/:id/suspend')
+  @ApiOperation({ summary: 'Suspend a course (unpublish)' })
+  async suspendCourse(@Param('id', ParseIntPipe) id: number) {
+    return this.adminService.suspendCourse(id);
+  }
 }
