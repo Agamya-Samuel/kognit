@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, timestamp, varchar, text } from 'drizzle-orm/pg-core';
+import { pgTable, serial, integer, timestamp, varchar, text, index } from 'drizzle-orm/pg-core';
 import type { InferSelectModel } from 'drizzle-orm';
 import { lectures } from './lectures';
 import { users } from './users';
@@ -19,6 +19,12 @@ export const liveClasses = pgTable('live_classes', {
   recordingError: text('recording_error'),
   status: liveClassStatus('status').notNull().default('scheduled'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
-});
+}, (table) => [
+  index('live_classes_lecture_id_idx').on(table.lectureId),
+  index('live_classes_instructor_id_idx').on(table.instructorId),
+  index('live_classes_status_idx').on(table.status),
+  index('live_classes_status_scheduled_at_idx').on(table.status, table.scheduledAt),
+  index('live_classes_recording_status_idx').on(table.recordingStatus),
+]);
 
 export type LiveClass = InferSelectModel<typeof liveClasses>;

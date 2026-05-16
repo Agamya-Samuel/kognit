@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, timestamp, varchar } from 'drizzle-orm/pg-core';
+import { pgTable, serial, integer, timestamp, varchar, index } from 'drizzle-orm/pg-core';
 import type { InferSelectModel } from 'drizzle-orm';
 import { users } from './users';
 import { courses } from './courses';
@@ -14,6 +14,10 @@ export const payments = pgTable('payments', {
   currency: varchar('currency', { length: 3 }).notNull().default('INR'),
   status: paymentStatus('status').notNull().default('pending'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
-});
+}, (table) => [
+  index('payments_student_id_idx').on(table.studentId),
+  index('payments_course_id_idx').on(table.courseId),
+  index('payments_status_idx').on(table.status),
+]);
 
 export type Payment = InferSelectModel<typeof payments>;

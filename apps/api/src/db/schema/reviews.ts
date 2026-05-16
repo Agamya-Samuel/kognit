@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, text, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, serial, integer, text, timestamp, index } from 'drizzle-orm/pg-core';
 import type { InferSelectModel } from 'drizzle-orm';
 import { users } from './users';
 import { courses } from './courses';
@@ -15,10 +15,15 @@ export const reviews = pgTable('reviews', {
   moderatedBy: integer('moderated_by').references(() => users.id, { onDelete: 'set null' }),
   moderatedAt: timestamp('moderated_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
-}, (table) => ({
-  uniqueUserCourse: {
-    columns: [table.userId, table.courseId],
+}, (table) => [
+  index('reviews_course_id_idx').on(table.courseId),
+  index('reviews_user_id_idx').on(table.userId),
+  index('reviews_course_moderation_idx').on(table.courseId, table.moderationStatus),
+  {
+    uniqueUserCourse: {
+      columns: [table.userId, table.courseId],
+    },
   },
-}));
+]);
 
 export type Review = InferSelectModel<typeof reviews>;
