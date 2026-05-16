@@ -1,8 +1,5 @@
+import { redirect } from 'next/navigation';
+
 export default function AdminPage() {
-  return (
-    <div>
-      <h1>EduTech Admin Panel</h1>
-      <p>Coming soon.</p>
-    </div>
-  );
+  redirect('/dashboard');
 }
