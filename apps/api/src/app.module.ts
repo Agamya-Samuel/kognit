@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppConfigModule } from './config/config.module';
 import { DatabaseModule } from './db/database.module';
 import { RedisModule } from './redis/redis.module';
@@ -30,8 +31,15 @@ import { SocketModule } from './modules/socket/socket.module';
 @Module({
   imports: [
     AppConfigModule,
-    // Rate limiting: 100 requests per 60 seconds per IP
-    ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
+    // Rate limiting: configurable via RATE_LIMIT_TTL (seconds) and RATE_LIMIT_LIMIT env vars
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => [{
+        ttl: (config.get<number>('RATE_LIMIT_TTL') ?? 60) * 1000,
+        limit: config.get<number>('RATE_LIMIT_LIMIT') ?? 100,
+      }],
+    }),
     // Infrastructure modules
     DatabaseModule,
     RedisModule,
