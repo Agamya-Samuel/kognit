@@ -1,0 +1,12 @@
+@import "tailwindcss";
+@import '@edutech/ui/tokens';
+@import '@edutech/ui/tailwind-theme';
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
