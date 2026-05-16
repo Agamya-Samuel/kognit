@@ -119,6 +119,74 @@ const mockEnrollments = [
   },
 ];
 
+const mockInstructorProfiles: { id: number; userId: number; userName: string; userEmail: string; bio: string; expertise: string[]; approvalStatus: 'pending' | 'approved' | 'rejected'; createdAt: string }[] = [
+  {
+    id: 1,
+    userId: 2,
+    userName: 'Test Instructor',
+    userEmail: 'instructor@edutech.test',
+    bio: 'Experienced developer',
+    expertise: ['React', 'TypeScript', 'Node.js'],
+    approvalStatus: 'pending',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 2,
+    userId: 4,
+    userName: 'Jane Smith',
+    userEmail: 'jane@example.com',
+    bio: 'Data science educator',
+    expertise: ['Python', 'Machine Learning'],
+    approvalStatus: 'pending',
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+  },
+];
+
+const mockAdminCourses = [
+  {
+    id: 1,
+    instructorId: 2,
+    instructorName: 'Test Instructor',
+    title: 'Introduction to TypeScript',
+    description: 'Learn TypeScript from scratch',
+    domain: 'Programming',
+    pricingType: 'free' as const,
+    priceInr: 0,
+    isPublished: true,
+    deletedAt: null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 2,
+    instructorId: 2,
+    instructorName: 'Test Instructor',
+    title: 'Advanced React Patterns',
+    description: 'Master advanced React patterns',
+    domain: 'Programming',
+    pricingType: 'paid' as const,
+    priceInr: 4999,
+    isPublished: true,
+    deletedAt: null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 3,
+    instructorId: 4,
+    instructorName: 'Jane Smith',
+    title: 'Python for Data Science',
+    description: 'Learn data science with Python',
+    domain: 'Data Science',
+    pricingType: 'paid' as const,
+    priceInr: 2999,
+    isPublished: false,
+    deletedAt: null,
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+    updatedAt: new Date(Date.now() - 86400000).toISOString(),
+  },
+];
+
 const mockNotifications = [
   {
     id: 1,
@@ -343,6 +411,124 @@ export const adminHandlers = [
     }
     mockAdminUsers.splice(idx, 1);
     return HttpResponse.json({ success: true, data: { message: 'User deleted' } });
+  }),
+
+  // ─── Admin Instructor Endpoints ──────────────────────────────────────────
+
+  http.get(`${API_BASE}/admin/instructors`, async ({ request }) => {
+    await delay(200);
+    const url = new URL(request.url);
+    const status = url.searchParams.get('status') || 'pending';
+    const page = parseInt(url.searchParams.get('page') || '1', 10);
+    const limit = parseInt(url.searchParams.get('limit') || '10', 10);
+
+    const filtered = mockInstructorProfiles.filter((i) => i.approvalStatus === status);
+    const start = (page - 1) * limit;
+    const paged = filtered.slice(start, start + limit);
+
+    return HttpResponse.json({
+      success: true,
+      data: {
+        instructors: paged,
+        total: filtered.length,
+        page,
+        limit,
+      },
+    });
+  }),
+
+  http.patch(`${API_BASE}/admin/instructors/:id/approve`, async ({ params }) => {
+    await delay(150);
+    const profile = mockInstructorProfiles.find((i) => i.id === Number(params.id));
+    if (!profile) {
+      return HttpResponse.json(
+        { success: false, error: { code: 'NOT_FOUND', message: 'Profile not found' } },
+        { status: 404 },
+      );
+    }
+    profile.approvalStatus = 'approved';
+    return HttpResponse.json({ success: true, data: { message: 'Instructor approved' } });
+  }),
+
+  http.patch(`${API_BASE}/admin/instructors/:id/reject`, async ({ params }) => {
+    await delay(150);
+    const profile = mockInstructorProfiles.find((i) => i.id === Number(params.id));
+    if (!profile) {
+      return HttpResponse.json(
+        { success: false, error: { code: 'NOT_FOUND', message: 'Profile not found' } },
+        { status: 404 },
+      );
+    }
+    profile.approvalStatus = 'rejected';
+    return HttpResponse.json({ success: true, data: { message: 'Instructor rejected' } });
+  }),
+
+  // ─── Admin Course Moderation Endpoints ──────────────────────────────────
+
+  http.get(`${API_BASE}/admin/courses`, async ({ request }) => {
+    await delay(200);
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '1', 10);
+    const limit = parseInt(url.searchParams.get('limit') || '10', 10);
+    const search = url.searchParams.get('search');
+    const isPublished = url.searchParams.get('isPublished');
+
+    let filtered = [...mockAdminCourses];
+    if (isPublished === 'true') filtered = filtered.filter((c) => c.isPublished);
+    if (isPublished === 'false') filtered = filtered.filter((c) => !c.isPublished);
+    if (search) filtered = filtered.filter((c) => c.title.toLowerCase().includes(search.toLowerCase()));
+
+    const start = (page - 1) * limit;
+    const paged = filtered.slice(start, start + limit);
+
+    return HttpResponse.json({
+      success: true,
+      data: {
+        courses: paged,
+        total: filtered.length,
+        page,
+        limit,
+      },
+    });
+  }),
+
+  http.patch(`${API_BASE}/admin/courses/:id/approve`, async ({ params }) => {
+    await delay(150);
+    const course = mockAdminCourses.find((c) => c.id === Number(params.id));
+    if (!course) {
+      return HttpResponse.json(
+        { success: false, error: { code: 'NOT_FOUND', message: 'Course not found' } },
+        { status: 404 },
+      );
+    }
+    course.isPublished = true;
+    return HttpResponse.json({ success: true, data: { message: 'Course approved' } });
+  }),
+
+  http.patch(`${API_BASE}/admin/courses/:id/reject`, async ({ params }) => {
+    await delay(150);
+    const idx = mockAdminCourses.findIndex((c) => c.id === Number(params.id));
+    if (idx === -1) {
+      return HttpResponse.json(
+        { success: false, error: { code: 'NOT_FOUND', message: 'Course not found' } },
+        { status: 404 },
+      );
+    }
+    mockAdminCourses.splice(idx, 1);
+    return HttpResponse.json({ success: true, data: { message: 'Course rejected' } });
+  }),
+
+  http.patch(`${API_BASE}/admin/courses/:id/suspend`, async ({ params }) => {
+    await delay(150);
+    const course = mockAdminCourses.find((c) => c.id === Number(params.id));
+    if (!course) {
+      return HttpResponse.json(
+        { success: false, error: { code: 'NOT_FOUND', message: 'Course not found' } },
+        { status: 404 },
+      );
+    }
+    course.isPublished = false;
+    return HttpResponse.json({ success: true, data: { message: 'Course suspended' } });
   }),
 ];
 
