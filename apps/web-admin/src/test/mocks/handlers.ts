@@ -28,7 +28,6 @@ const mockUser = {
   updatedAt: new Date().toISOString(),
 };
 
-// Mock instructor data reserved for future admin endpoints
 const mockInstructorData = {
   id: 2,
   email: 'instructor@edutech.test',
@@ -41,8 +40,44 @@ const mockInstructorData = {
   updatedAt: new Date().toISOString(),
 };
 
-// Suppress unused warning — will be used when admin endpoints are implemented
-void mockInstructorData;
+// Mock users for admin endpoints
+const mockAdminUsers = [
+  { ...mockUser },
+  { ...mockInstructorData },
+  {
+    id: 3,
+    email: 'admin@edutech.test',
+    role: 'admin',
+    name: 'Test Admin',
+    avatarUrl: null,
+    isVerified: true,
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 4,
+    email: 'jane@example.com',
+    role: 'student',
+    name: 'Jane Smith',
+    avatarUrl: null,
+    isVerified: true,
+    isActive: false,
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+    updatedAt: new Date(Date.now() - 86400000).toISOString(),
+  },
+  {
+    id: 5,
+    email: 'inst_admin@example.com',
+    role: 'institution_admin',
+    name: 'Inst Admin User',
+    avatarUrl: null,
+    isVerified: false,
+    isActive: true,
+    createdAt: new Date(Date.now() - 172800000).toISOString(),
+    updatedAt: new Date(Date.now() - 172800000).toISOString(),
+  },
+];
 
 const mockCourses = [
   {
@@ -229,6 +264,88 @@ export const notificationHandlers = [
   }),
 ];
 
+// ─── Admin Handlers ───────────────────────────────────────────────────────────
+
+export const adminHandlers = [
+  http.get(`${API_BASE}/admin/users`, async ({ request }) => {
+    await delay(200);
+    const url = new URL(request.url);
+    const role = url.searchParams.get('role');
+    const page = parseInt(url.searchParams.get('page') || '1', 10);
+    const limit = parseInt(url.searchParams.get('limit') || '10', 10);
+
+    let filtered = mockAdminUsers;
+    if (role && role !== 'all') {
+      filtered = filtered.filter((u) => u.role === role);
+    }
+
+    const start = (page - 1) * limit;
+    const paged = filtered.slice(start, start + limit);
+
+    return HttpResponse.json({
+      success: true,
+      data: {
+        users: paged,
+        total: filtered.length,
+        page,
+        limit,
+      },
+    });
+  }),
+
+  http.get(`${API_BASE}/admin/users/:id`, async ({ params }) => {
+    await delay(150);
+    const user = mockAdminUsers.find((u) => u.id === Number(params.id));
+    if (!user) {
+      return HttpResponse.json(
+        { success: false, error: { code: 'NOT_FOUND', message: 'User not found' } },
+        { status: 404 },
+      );
+    }
+    return HttpResponse.json({ success: true, data: user });
+  }),
+
+  http.patch(`${API_BASE}/admin/users/:id/role`, async ({ params, request }) => {
+    await delay(150);
+    const user = mockAdminUsers.find((u) => u.id === Number(params.id));
+    if (!user) {
+      return HttpResponse.json(
+        { success: false, error: { code: 'NOT_FOUND', message: 'User not found' } },
+        { status: 404 },
+      );
+    }
+    const body = await request.json() as { role: string };
+    user.role = body.role;
+    return HttpResponse.json({ success: true, data: user });
+  }),
+
+  http.patch(`${API_BASE}/admin/users/:id/toggle-active`, async ({ params }) => {
+    await delay(150);
+    const user = mockAdminUsers.find((u) => u.id === Number(params.id));
+    if (!user) {
+      return HttpResponse.json(
+        { success: false, error: { code: 'NOT_FOUND', message: 'User not found' } },
+        { status: 404 },
+      );
+    }
+    user.isActive = !user.isActive;
+    return HttpResponse.json({ success: true, data: user });
+  }),
+
+  http.delete(`${API_BASE}/admin/users/:id`, async ({ params }) => {
+    await delay(150);
+    const idx = mockAdminUsers.findIndex((u) => u.id === Number(params.id));
+    if (idx === -1) {
+      return HttpResponse.json(
+        { success: false, error: { code: 'NOT_FOUND', message: 'User not found' } },
+        { status: 404 },
+      );
+    }
+    mockAdminUsers.splice(idx, 1);
+    return HttpResponse.json({ success: true, data: { message: 'User deleted' } });
+  }),
+];
+
 // ─── Health Handler ───────────────────────────────────────────────────────────
 
 export const healthHandler = [
@@ -244,5 +361,6 @@ export const handlers = [
   ...courseHandlers,
   ...enrollmentHandlers,
   ...notificationHandlers,
+  ...adminHandlers,
   ...healthHandler,
 ];
