@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, serial, integer, timestamp, index } from 'drizzle-orm/pg-core';
 import type { InferSelectModel } from 'drizzle-orm';
 import { institutionAccounts } from './institution-accounts';
 import { users } from './users';
@@ -10,10 +10,15 @@ export const institutionEnrollments = pgTable('institution_enrollments', {
   studentId: integer('student_id').notNull().references(() => users.id, { onDelete: 'restrict' }),
   courseId: integer('course_id').notNull().references(() => courses.id, { onDelete: 'restrict' }),
   enrolledAt: timestamp('enrolled_at').notNull().defaultNow(),
-}, (table) => ({
-  uniqueInstitutionStudentCourse: {
-    columns: [table.institutionAccountId, table.studentId, table.courseId],
+}, (table) => [
+  index('institution_enrollments_account_id_idx').on(table.institutionAccountId),
+  index('institution_enrollments_student_id_idx').on(table.studentId),
+  index('institution_enrollments_course_id_idx').on(table.courseId),
+  {
+    uniqueInstitutionStudentCourse: {
+      columns: [table.institutionAccountId, table.studentId, table.courseId],
+    },
   },
-}));
+]);
 
 export type InstitutionEnrollment = InferSelectModel<typeof institutionEnrollments>;

@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, text, varchar } from 'drizzle-orm/pg-core';
+import { pgTable, serial, integer, text, varchar, index } from 'drizzle-orm/pg-core';
 import type { InferSelectModel } from 'drizzle-orm';
 import { assignments } from './assignments';
 
@@ -10,6 +10,8 @@ export const quizQuestions = pgTable('quiz_questions', {
   correctOptionIndex: integer('correct_option_index').notNull(),
   points: integer('points').notNull().default(1),
   orderIndex: integer('order_index').notNull().default(0),
-});
+}, (table) => [
+  index('quiz_questions_assignment_id_idx').on(table.assignmentId),
+]);
 
 export type QuizQuestion = InferSelectModel<typeof quizQuestions>;

@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, timestamp, varchar } from 'drizzle-orm/pg-core';
+import { pgTable, serial, integer, timestamp, varchar, index } from 'drizzle-orm/pg-core';
 import type { InferSelectModel } from 'drizzle-orm';
 import { users } from './users';
 
@@ -12,6 +12,9 @@ export const betaInvites = pgTable('beta_invites', {
   maxUses: integer('max_uses').notNull().default(1),
   useCount: integer('use_count').notNull().default(0),
   createdAt: timestamp('created_at').notNull().defaultNow(),
-});
+}, (table) => [
+  index('beta_invites_invited_by_idx').on(table.invitedBy),
+  index('beta_invites_email_idx').on(table.email),
+]);
 
 export type BetaInvite = InferSelectModel<typeof betaInvites>;
