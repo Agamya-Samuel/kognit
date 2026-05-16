@@ -7,6 +7,7 @@ const config: Config = {
   testMatch: [
     '**/__tests__/**/*.spec.ts',
     '**/?(*.)+(spec).ts',
+    '**/?(*.)+(e2e-spec).ts',
   ],
   transform: {
     '^.+\\.ts$': 'ts-jest',
