@@ -24,7 +24,7 @@ describe('Auth Error Paths (e2e)', () => {
 
   let loginFn = () => Promise.resolve({ user: mockUser, tokens: { accessToken: 'at', refreshToken: 'rt', expiresIn: 900 } });
   let getProfileFn = () => Promise.resolve(mockUser);
-  let listCoursesFn = () => Promise.resolve({ courses: [], total: 0, page: 1, limit: 20, hasNext: false, hasPrev: false });
+  const listCoursesFn = () => Promise.resolve({ courses: [], total: 0, page: 1, limit: 20, hasNext: false, hasPrev: false });
   let createCourseFn = () => Promise.resolve({
     id: 1, instructorId: 1, title: 'Test Course', description: 'Test',
     domain: 'Programming', pricingType: 'free', priceInr: 0,

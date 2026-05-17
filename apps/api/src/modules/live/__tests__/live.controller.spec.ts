@@ -6,6 +6,9 @@ import {
 } from '@nestjs/common';
 import { LiveController } from '../live.controller';
 import { LiveKitService } from '../services/livekit.service';
+import { ScheduleService } from '../services/schedule.service';
+import { RecordingService } from '../services/recording.service';
+import { LiveNotificationService } from '../services/live-notification.service';
 import { LiveClassesRepository } from '../../../db/repositories/live-classes.repository';
 import { EnrollmentsRepository } from '../../../db/repositories/enrollments.repository';
 import { LecturesRepository } from '../../../db/repositories/lectures.repository';
@@ -84,6 +87,30 @@ describe('LiveController', () => {
     generateStudentToken: jest.fn(),
   };
 
+  const mockScheduleService = {
+    createSchedule: jest.fn(),
+    getSchedule: jest.fn(),
+    updateSchedule: jest.fn(),
+    cancelSchedule: jest.fn(),
+    getInstructorCalendar: jest.fn(),
+    getStudentCalendar: jest.fn(),
+    getUpcomingClasses: jest.fn(),
+    getStudentUpcomingClasses: jest.fn(),
+  };
+
+  const mockRecordingService = {
+    startRecording: jest.fn(),
+    getRecordingInfo: jest.fn(),
+    handleRecordingComplete: jest.fn(),
+    runPostSessionWorkflow: jest.fn(),
+    retryRecording: jest.fn(),
+  };
+
+  const mockNotificationService = {
+    notifyClassScheduled: jest.fn(),
+    notifyClassCancelled: jest.fn(),
+  };
+
   const mockConfigService = {
     get: jest.fn().mockReturnValue('wss://test.livekit.cloud'),
   };
@@ -96,6 +123,9 @@ describe('LiveController', () => {
       controllers: [LiveController],
       providers: [
         { provide: LiveKitService, useValue: mockLiveKitService },
+        { provide: ScheduleService, useValue: mockScheduleService },
+        { provide: RecordingService, useValue: mockRecordingService },
+        { provide: LiveNotificationService, useValue: mockNotificationService },
         { provide: LiveClassesRepository, useValue: mockLiveClassesRepo },
         { provide: EnrollmentsRepository, useValue: mockEnrollmentsRepo },
         { provide: LecturesRepository, useValue: mockLecturesRepo },

@@ -77,8 +77,8 @@ export class SubmissionService {
 
     // Auto-grade MCQ if applicable
     let autoGradedScore: number | undefined;
-    let score: number | null = null;
-    let gradedAt: Date | null = null;
+    const score: number | null = null;
+    const gradedAt: Date | null = null;
 
     if (assignment.type === 'mcq') {
       // Validate MCQ answer format
