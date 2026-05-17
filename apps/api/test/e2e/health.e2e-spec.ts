@@ -15,6 +15,10 @@ describe('Health Check (e2e)', () => {
             healthCheck: () => Promise.resolve({ status: 'ok', latencyMs: 1 }),
           },
         },
+        {
+          provide: 'SENTRY_INITIALIZED',
+          useValue: false,
+        },
       ],
     );
   });
