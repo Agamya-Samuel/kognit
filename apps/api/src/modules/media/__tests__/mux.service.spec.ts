@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { MuxService } from '../services/mux.service';
 import { InternalServerErrorException } from '@nestjs/common';
+import { createHmac } from 'crypto';
 
 describe('MuxService', () => {
   let service: MuxService;
@@ -247,11 +248,33 @@ describe('MuxService', () => {
       expect(result).toBe(true);
     });
 
-    it('should return true for valid signature format', () => {
+    it('should return true for valid signature', () => {
+      const secret = 'test_secret';
+      const body = '{"type":"video.asset.ready"}';
+      const timestamp = '1234567890';
+      const signature = createHmac('sha256', secret)
+        .update(`${timestamp}.${body}`)
+        .digest('hex');
+
+      (service as any).webhookSecret = secret;
+
+      const headers = {
+        'mux-signature': `t=${timestamp},v1=${signature}`,
+      };
+
+      const result = service.validateWebhookSignature(
+        headers,
+        body,
+      );
+
+      expect(result).toBe(true);
+    });
+
+    it('should return false for invalid signature', () => {
       (service as any).webhookSecret = 'test_secret';
 
       const headers = {
-        'mux-signature': 't=1234567890,v1=abc123',
+        'mux-signature': 't=1234567890,v1=invalid_signature',
       };
 
       const result = service.validateWebhookSignature(
@@ -259,7 +282,7 @@ describe('MuxService', () => {
         '{}',
       );
 
-      expect(result).toBe(true);
+      expect(result).toBe(false);
     });
 
     it('should return false when signature header is missing', () => {

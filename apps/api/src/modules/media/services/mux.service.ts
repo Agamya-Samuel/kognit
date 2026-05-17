@@ -1,6 +1,7 @@
 import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Mux } from '@mux/mux-node';
+import { createHmac } from 'crypto';
 
 export interface MuxAssetOptions {
   input: string; // S3 URL or direct upload URL
@@ -222,19 +223,26 @@ export class MuxService {
 
       // The signature is typically in format: t=timestamp,v1=signature
       const parts = muxSignature.split(',');
+      const timestampPart = parts.find((part) => part.startsWith('t='));
       const signaturePart = parts.find((part) => part.startsWith('v1='));
-      
-      if (!signaturePart) {
+
+      if (!timestampPart || !signaturePart) {
         this.logger.warn('Invalid signature format');
         return false;
       }
 
-      const signature = signaturePart.substring(3); // Remove 'v1='
-      
-      // In production, you would verify the HMAC signature here
-      // For now, we're accepting any valid format
-      // TODO: Implement proper HMAC signature verification
-      this.logger.log('Webhook signature validated (verification not fully implemented)');
+      const timestamp = timestampPart.substring(2);
+      const signature = signaturePart.substring(3);
+
+      // Verify HMAC-SHA256: compute expected signature from timestamp + raw body
+      const expectedSignature = createHmac('sha256', this.webhookSecret)
+        .update(`${timestamp}.${body}`)
+        .digest('hex');
+
+      if (signature !== expectedSignature) {
+        this.logger.warn('Webhook signature verification failed');
+        return false;
+      }
 
       return true;
     } catch (error) {
