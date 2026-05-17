@@ -9,7 +9,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { PaymentsService } from './services/payments.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/auth.decorators';
@@ -32,6 +32,7 @@ export class PaymentsController {
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   @Roles('student')
+  @ApiResponse({ status: 200, description: 'Razorpay order created' })
   @ApiOperation({ summary: 'Create a Razorpay order for course purchase' })
   async createOrder(
     @CurrentUser() user: JwtPayload,
@@ -52,6 +53,7 @@ export class PaymentsController {
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   @Roles('student')
+  @ApiResponse({ status: 200, description: 'Payment verified, enrollment granted' })
   @ApiOperation({ summary: 'Verify Razorpay payment and grant enrollment' })
   async verifyPayment(
     @CurrentUser() user: JwtPayload,
@@ -76,6 +78,7 @@ export class PaymentsController {
   @Get('history')
   @ApiBearerAuth()
   @Roles('student')
+  @ApiResponse({ status: 200, description: 'Payment history retrieved' })
   @ApiOperation({ summary: 'Get payment history for the current student' })
   async getPaymentHistory(
     @CurrentUser() user: JwtPayload,
@@ -105,6 +108,9 @@ export class PaymentsController {
   @Get(':id')
   @ApiBearerAuth()
   @Roles('student')
+  @ApiResponse({ status: 200, description: 'Payment details' })
+  @ApiResponse({ status: 404, description: 'Payment not found' })
+  @ApiParam({ name: 'id', description: 'Payment ID' })
   @ApiOperation({ summary: 'Get details of a specific payment' })
   async getPayment(
     @CurrentUser() user: JwtPayload,
@@ -125,6 +131,7 @@ export class PaymentsController {
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   @Roles('admin')
+  @ApiResponse({ status: 200, description: 'Refund processed' })
   @ApiOperation({ summary: 'Issue a refund for a payment (admin only)' })
   async processRefund(
     @CurrentUser() user: JwtPayload,

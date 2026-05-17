@@ -11,7 +11,7 @@ import {
   Logger,
   ParseIntPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/auth.decorators';
 import { ChatService } from './services/chat.service';
@@ -45,6 +45,8 @@ export class ChatController {
   // ═══════════════════════════════════════════════════════════════════════════
 
   @Post('messages')
+  @ApiResponse({ status: 201, description: 'Message sent' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiOperation({ summary: 'Send a message to a channel' })
   async sendMessage(
     @Body() dto: SendMessageDto,
@@ -54,6 +56,9 @@ export class ChatController {
   }
 
   @Get('channels/:channelId/messages')
+  @ApiResponse({ status: 200, description: 'Message history retrieved' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiParam({ name: 'channelId', description: 'Channel ID' })
   @ApiOperation({ summary: 'Get message history for a channel' })
   async getMessages(
     @Param('channelId', ParseIntPipe) channelId: number,
@@ -67,6 +72,9 @@ export class ChatController {
   }
 
   @Get('messages/:messageId')
+  @ApiResponse({ status: 200, description: 'Message details' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiParam({ name: 'messageId', description: 'Message ID' })
   @ApiOperation({ summary: 'Get a single message' })
   async getMessage(
     @Param('messageId', ParseIntPipe) messageId: number,
@@ -76,6 +84,9 @@ export class ChatController {
   }
 
   @Put('messages/:messageId')
+  @ApiResponse({ status: 200, description: 'Message updated' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiParam({ name: 'messageId', description: 'Message ID' })
   @ApiOperation({ summary: 'Edit a message' })
   async editMessage(
     @Param('messageId', ParseIntPipe) messageId: number,
@@ -86,6 +97,9 @@ export class ChatController {
   }
 
   @Delete('messages/:messageId')
+  @ApiResponse({ status: 200, description: 'Message deleted' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiParam({ name: 'messageId', description: 'Message ID' })
   @ApiOperation({ summary: 'Delete a message' })
   async deleteMessage(
     @Param('messageId', ParseIntPipe) messageId: number,
@@ -97,6 +111,9 @@ export class ChatController {
   // ─── Message Replies (Threading) ───────────────────────────────────────────
 
   @Get('messages/:messageId/replies')
+  @ApiResponse({ status: 200, description: 'Replies retrieved' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiParam({ name: 'messageId', description: 'Message ID' })
   @ApiOperation({ summary: 'Get replies to a message' })
   async getReplies(
     @Param('messageId', ParseIntPipe) messageId: number,
@@ -112,6 +129,9 @@ export class ChatController {
   // ─── Message Moderation ────────────────────────────────────────────────────
 
   @Post('messages/:messageId/flag')
+  @ApiResponse({ status: 200, description: 'Message flagged' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiParam({ name: 'messageId', description: 'Message ID' })
   @ApiOperation({ summary: 'Flag a message for moderation' })
   async flagMessage(
     @Param('messageId', ParseIntPipe) messageId: number,
@@ -123,6 +143,10 @@ export class ChatController {
 
   @Post('messages/:messageId/moderate')
   @Roles('instructor', 'admin')
+  @ApiResponse({ status: 200, description: 'Message moderated' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden — instructor/admin only' })
+  @ApiParam({ name: 'messageId', description: 'Message ID' })
   @ApiOperation({ summary: 'Moderate a message (flag, unflag, hide, delete)' })
   async moderateMessage(
     @Param('messageId', ParseIntPipe) messageId: number,
@@ -135,6 +159,9 @@ export class ChatController {
   // ─── Mark as Read ──────────────────────────────────────────────────────────
 
   @Post('channels/:channelId/read')
+  @ApiResponse({ status: 200, description: 'Channel marked as read' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiParam({ name: 'channelId', description: 'Channel ID' })
   @ApiOperation({ summary: 'Mark channel messages as read' })
   async markAsRead(
     @Param('channelId', ParseIntPipe) channelId: number,
@@ -149,6 +176,9 @@ export class ChatController {
 
   @Post('channels')
   @Roles('instructor', 'admin')
+  @ApiResponse({ status: 201, description: 'Channel created' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden — instructor/admin only' })
   @ApiOperation({ summary: 'Create a new channel' })
   async createChannel(
     @Body() dto: CreateChannelDto,
@@ -158,6 +188,8 @@ export class ChatController {
   }
 
   @Get('channels')
+  @ApiResponse({ status: 200, description: 'Channel list retrieved' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiOperation({ summary: 'List channels' })
   async getChannels(
     @Query() query: ChannelQueryDto,
@@ -172,6 +204,9 @@ export class ChatController {
   }
 
   @Get('channels/:channelId')
+  @ApiResponse({ status: 200, description: 'Channel details' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiParam({ name: 'channelId', description: 'Channel ID' })
   @ApiOperation({ summary: 'Get a channel by ID' })
   async getChannel(
     @Param('channelId', ParseIntPipe) channelId: number,
@@ -181,6 +216,10 @@ export class ChatController {
 
   @Put('channels/:channelId')
   @Roles('instructor', 'admin')
+  @ApiResponse({ status: 200, description: 'Channel updated' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden — instructor/admin only' })
+  @ApiParam({ name: 'channelId', description: 'Channel ID' })
   @ApiOperation({ summary: 'Update a channel' })
   async updateChannel(
     @Param('channelId', ParseIntPipe) channelId: number,
@@ -193,6 +232,9 @@ export class ChatController {
   // ─── Channel Membership ────────────────────────────────────────────────────
 
   @Post('channels/:channelId/join')
+  @ApiResponse({ status: 200, description: 'Joined channel' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiParam({ name: 'channelId', description: 'Channel ID' })
   @ApiOperation({ summary: 'Join a channel' })
   async joinChannel(
     @Param('channelId', ParseIntPipe) channelId: number,
@@ -202,6 +244,9 @@ export class ChatController {
   }
 
   @Post('channels/:channelId/leave')
+  @ApiResponse({ status: 200, description: 'Left channel' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiParam({ name: 'channelId', description: 'Channel ID' })
   @ApiOperation({ summary: 'Leave a channel' })
   async leaveChannel(
     @Param('channelId', ParseIntPipe) channelId: number,
@@ -211,6 +256,9 @@ export class ChatController {
   }
 
   @Get('channels/:channelId/members')
+  @ApiResponse({ status: 200, description: 'Member list retrieved' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiParam({ name: 'channelId', description: 'Channel ID' })
   @ApiOperation({ summary: 'List members of a channel' })
   async listMembers(
     @Param('channelId', ParseIntPipe) channelId: number,
@@ -221,6 +269,10 @@ export class ChatController {
 
   @Post('channels/:channelId/members')
   @Roles('instructor', 'admin')
+  @ApiResponse({ status: 200, description: 'Member added' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden — instructor/admin only' })
+  @ApiParam({ name: 'channelId', description: 'Channel ID' })
   @ApiOperation({ summary: 'Add a member to a channel' })
   async addMember(
     @Param('channelId', ParseIntPipe) channelId: number,
@@ -233,6 +285,9 @@ export class ChatController {
   // ─── Course Channels ───────────────────────────────────────────────────────
 
   @Get('courses/:courseId/channels')
+  @ApiResponse({ status: 200, description: 'Course channels retrieved' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiParam({ name: 'courseId', description: 'Course ID' })
   @ApiOperation({ summary: 'Get channels for a course' })
   async getCourseChannels(
     @Param('courseId', ParseIntPipe) courseId: number,
@@ -243,6 +298,8 @@ export class ChatController {
   // ─── User's Channels ───────────────────────────────────────────────────────
 
   @Get('my-channels')
+  @ApiResponse({ status: 200, description: 'User channels retrieved' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiOperation({ summary: 'Get current user channels' })
   async getMyChannels(
     @CurrentUser() user: any,

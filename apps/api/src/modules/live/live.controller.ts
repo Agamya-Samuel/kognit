@@ -13,7 +13,7 @@ import {
   BadRequestException,
   ForbiddenException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../modules/auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../modules/auth/decorators/current-user.decorator';
 import { Roles } from '../../modules/auth/decorators/auth.decorators';
@@ -345,6 +345,8 @@ export class LiveController {
   @Roles('instructor')
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
+  @ApiResponse({ status: 200, description: 'Schedule updated' })
+  @ApiParam({ name: 'liveClassId', description: 'Live class ID' })
   @ApiOperation({ summary: 'Update a live class schedule' })
   async updateSchedule(
     @CurrentUser() user: { sub: number },
@@ -363,6 +365,7 @@ export class LiveController {
   @Roles('instructor')
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
+  @ApiResponse({ status: 200, description: 'Live class cancelled' })
   @ApiOperation({ summary: 'Cancel a scheduled live class' })
   async cancelSchedule(
     @CurrentUser() user: { sub: number },
@@ -382,6 +385,7 @@ export class LiveController {
   @UseGuards(JwtAuthGuard)
   @Roles('instructor')
   @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: 'Instructor calendar retrieved' })
   @ApiOperation({ summary: 'Get instructor calendar for a date range' })
   async getInstructorCalendar(
     @CurrentUser() user: { sub: number },
@@ -401,6 +405,7 @@ export class LiveController {
   @UseGuards(JwtAuthGuard)
   @Roles('student')
   @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: 'Student calendar retrieved' })
   @ApiOperation({ summary: 'Get student calendar for a date range' })
   async getStudentCalendar(
     @CurrentUser() user: { sub: number },
@@ -419,6 +424,7 @@ export class LiveController {
   @Get('upcoming')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: 'Upcoming classes retrieved' })
   @ApiOperation({ summary: 'Get upcoming live classes' })
   async getUpcomingClasses(
     @CurrentUser() user: { sub: number; role: string },
@@ -438,6 +444,7 @@ export class LiveController {
   @Roles('instructor')
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
+  @ApiResponse({ status: 200, description: 'Recording started' })
   @ApiOperation({ summary: 'Start recording a live class' })
   async startRecording(
     @Body() dto: StartRecordingDto,
@@ -451,6 +458,8 @@ export class LiveController {
   @Get('recording/:liveClassId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: 'Recording info retrieved' })
+  @ApiParam({ name: 'liveClassId', description: 'Live class ID' })
   @ApiOperation({ summary: 'Get recording info for a live class' })
   async getRecordingInfo(
     @Param('liveClassId') liveClassId: string,
@@ -463,6 +472,7 @@ export class LiveController {
 
   @Post('recording/complete')
   @HttpCode(HttpStatus.OK)
+  @ApiResponse({ status: 200, description: 'Recording processed' })
   @ApiOperation({ summary: 'Webhook: recording uploaded to S3' })
   async recordingComplete(
     @Body() dto: RecordingWebhookDto,
@@ -477,6 +487,7 @@ export class LiveController {
   @Roles('instructor', 'admin')
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
+  @ApiResponse({ status: 200, description: 'Recording retry initiated' })
   @ApiOperation({ summary: 'Retry a failed recording pipeline' })
   async retryRecording(
     @Body() dto: RetryRecordingDto,
