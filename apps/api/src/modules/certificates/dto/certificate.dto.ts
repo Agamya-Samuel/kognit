@@ -1,5 +1,5 @@
 import { IsOptional, IsNumber, Min } from 'class-validator';
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 
 export class CertificateQueryDto {
@@ -19,6 +19,7 @@ export class CertificateQueryDto {
 }
 
 export class VerifyCertificateParamsDto {
+  @ApiProperty({ example: 'cert-abc123', description: 'Certificate unique ID' })
   @Transform(({ value }: { value: string }) => value)
   uid!: string;
 }
