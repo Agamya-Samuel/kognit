@@ -75,6 +75,10 @@ const envSchema = z.object({
   // Rate Limiting
   RATE_LIMIT_TTL: z.string().transform(Number).default(60),
   RATE_LIMIT_LIMIT: z.string().transform(Number).default(100),
+
+  // Logging & Monitoring
+  LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
+  SENTRY_DSN: z.string().optional(),
 });
 
 // Type-safe environment configuration
