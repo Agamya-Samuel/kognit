@@ -37,6 +37,9 @@ export default defineConfig({
         __dirname,
         '../../packages/shared-components/src',
       ),
+      // Force single React instance (root has 19.x, packages/ui has its own 18.x)
+      'react': path.resolve(__dirname, '../../node_modules/react'),
+      'react-dom': path.resolve(__dirname, '../../node_modules/react-dom'),
     },
   },
 });
