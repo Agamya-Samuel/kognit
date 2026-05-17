@@ -22,7 +22,40 @@ const mono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: 'EduTech - Master Tech Skills with Expert Mentors',
   description:
-    'Transform your career with live, interactive courses. Gain practical skills in Software, Data, and more.',
+    'Transform your career with live, interactive courses. Gain practical skills in Fullstack, Data Science, Android, and more — guided by industry professionals.',
+  keywords: [
+    'online learning',
+    'live classes',
+    'tech courses',
+    'fullstack development',
+    'data science',
+    'Android development',
+    'coding bootcamp',
+    'interactive learning',
+    'mentorship',
+    'career growth',
+  ],
+  authors: [{ name: 'EduTech' }],
+  metadataBase: new URL('https://eduplatform.com'),
+  openGraph: {
+    type: 'website',
+    locale: 'en_IN',
+    url: '/',
+    siteName: 'EduTech',
+    title: 'EduTech - Master Tech Skills with Expert Mentors',
+    description:
+      'Transform your career with live, interactive courses. Gain practical skills guided by industry professionals.',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'EduTech - Master Tech Skills with Expert Mentors',
+    description:
+      'Transform your career with live, interactive courses. Gain practical skills guided by industry professionals.',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
