@@ -5,7 +5,7 @@ import {
   Query,
   NotFoundException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { CertificatesService } from './certificates.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Public } from '../auth/decorators/auth.decorators';
@@ -18,6 +18,7 @@ export class CertificatesController {
 
   @Get()
   @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: 'Certificate list retrieved' })
   @ApiOperation({ summary: 'List certificates for the current student' })
   async listMyCertificates(
     @CurrentUser() user: { sub: number; role: string },
@@ -40,6 +41,9 @@ export class CertificatesController {
 
   @Get('verify/:uid')
   @Public()
+  @ApiResponse({ status: 200, description: 'Certificate verified' })
+  @ApiResponse({ status: 404, description: 'Certificate not found' })
+  @ApiParam({ name: 'uid', description: 'Certificate unique ID' })
   @ApiOperation({ summary: 'Verify a certificate by its unique ID (public)' })
   async verifyCertificate(@Param('uid') uid: string) {
     const result = await this.certificatesService.verifyCertificate(uid);
@@ -51,6 +55,9 @@ export class CertificatesController {
 
   @Get(':id')
   @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: 'Certificate details' })
+  @ApiResponse({ status: 404, description: 'Certificate not found' })
+  @ApiParam({ name: 'id', description: 'Certificate ID' })
   @ApiOperation({ summary: 'Get certificate details by ID' })
   async getCertificate(
     @CurrentUser() user: { sub: number; role: string },

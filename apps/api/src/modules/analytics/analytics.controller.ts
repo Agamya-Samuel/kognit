@@ -3,7 +3,7 @@ import {
   Get,
   Query,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { AnalyticsService } from './analytics.service';
 import { InstructorAnalyticsService } from './instructor-analytics.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -19,6 +19,7 @@ export class AnalyticsController {
 
   @Get('instructor')
   @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: 'Instructor analytics overview' })
   @ApiOperation({ summary: 'Get analytics overview for the current instructor' })
   async getInstructorAnalytics(
     @CurrentUser() user: { sub: number; role: string },
@@ -37,6 +38,7 @@ export class AnalyticsController {
 
   @Get('track')
   @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: 'Event tracked successfully' })
   @ApiOperation({ summary: 'Track a custom analytics event' })
   async trackEvent(
     @CurrentUser() user: { sub: number; role: string },
