@@ -41,12 +41,12 @@
   - [Day 27 — E2E Testing: Edge Cases & Error Paths](#day-27--e2e-testing-edge-cases--error-paths)
   - [Day 28 — Error Monitoring & Logging](#day-28--error-monitoring--logging)
   - [Day 29 — Documentation & API Docs](#day-29--documentation--api-docs)
-  - [Day 30 — Final Polish, Beta Launch Prep](#day-30--final-polish-beta-launch-prep)
+  - [Day 30 — Final Polish, Launch Prep](#day-30--final-polish-launch-prep)
 - [Post-30-Day Checklist](#post-30-day-checklist)
 
 ---
 
-> **Contingency Note:** This plan is aggressive for a solo developer. If behind schedule by more than 1 day, defer the lowest-priority items per day to the Phase 2 backlog. Days 28–30 are buffer days for catching up. Non-critical items can be deferred without blocking beta launch. Never skip testing to save time.
+> **Contingency Note:** This plan is aggressive for a solo developer. If behind schedule by more than 1 day, defer the lowest-priority items per day to the Phase 2 backlog. Days 28–30 are buffer days for catching up. Non-critical items can be deferred without blocking launch. Never skip testing to save time.
 
 ## UX States Requirements
 
@@ -1221,25 +1221,21 @@ All implementation days must include comprehensive UX states for loading, error,
 
 ---
 
-### Day 30 — Final Polish, Beta Launch Prep
+### Day 30 — Final Polish, Launch Prep
 
-**Goal:** Beta invite system, landing page, final review, soft launch
+**Goal:** Landing page, final review, soft launch
 
 | Task | Details |
 |---|---|
-| Beta invite system | Invite code generation, email invite, registration with invite code |
 | Landing page | Public landing page (`apps/web-landing`) with value proposition, course preview, CTA. Independent deploy, minimal deps, SEO-optimized |
 | Landing page deploy | Deploy `web-landing` to staging, configure subdomain (`landing.eduplatform.com`), SSL, env vars |
-| Waitlist | Email waitlist for non-invited users, notification on open beta |
 | Final code review | Comprehensive code review, TODO/FIXME cleanup, dead code removal |
 | Final test pass | Full test suite run, coverage verification, flaky test fix |
 | Performance final pass | Lighthouse audit, bundle size optimization, image optimization |
-| Soft launch | Invite-only beta launch, monitoring dashboards active, incident response ready |
+| Launch | Launch, monitoring dashboards active, incident response ready |
 
 **UX State Requirements:**
-- **Beta Flow**: Smooth invite code flow with loading states and error handling
 - **Landing Page**: Optimized loading with skeleton screens and progressive enhancement
-- **Waitlist**: Real-time waitlist position updates with email notifications
 - **Performance**: Loading performance optimization with Core Web Vitals monitoring
 - **Error Recovery**: Comprehensive error boundaries with retry mechanisms
 - **Accessibility**: Final accessibility audit with WCAG 2.1 AA compliance
@@ -1251,12 +1247,7 @@ All implementation days must include comprehensive UX states for loading, error,
 - **User Testing**: Final user testing session feedback integration
 
 **Tests Required:**
-- Unit tests for beta invite system (code generation, code validation, single-use enforcement, expiry)
 - Unit tests for landing page (render content, CTA buttons, course preview, responsive layout)
-- Unit tests for waitlist (email validation, duplicate prevention, confirmation email)
-- Integration tests: invite code generated → email sent → user registers with code → code marked used
-- Integration tests: user without invite code → registration blocked → waitlist option shown
-- E2E test: invite code flow → registration → login → dashboard access
 - E2E test: landing page → Lighthouse score > 90 on all metrics
 - E2E test: full test suite → coverage thresholds met (≥80% general, ≥95% critical) → no flaky tests → CI green
 - **UX Tests**: Complete accessibility audit for all user flows
@@ -1265,7 +1256,7 @@ All implementation days must include comprehensive UX states for loading, error,
 - **UX Tests**: Responsive testing across all device sizes
 - **UX Tests**: User experience testing with real users
 
-**Exit Criteria:** Beta invite system working, landing page live at `landing.eduplatform.com` (`apps/web-landing`), coverage thresholds met (≥80% general, ≥95% critical), soft launch successful, comprehensive production-ready UX states implemented with performance optimization, accessibility compliance, and user experience monitoring
+**Exit Criteria:** Landing page live at `landing.eduplatform.com` (`apps/web-landing`), coverage thresholds met (≥80% general, ≥95% critical), soft launch successful, comprehensive production-ready UX states implemented with performance optimization, accessibility compliance, and user experience monitoring
 
 ---
 
@@ -1276,7 +1267,6 @@ All implementation days must include comprehensive UX states for loading, error,
 - [ ] Sentry alerts operational
 - [ ] PostHog analytics capturing events
 - [ ] Dokploy staging environment stable
-- [ ] Beta invites sent to 2-3 vetted instructors
 - [ ] Landing page live with waitlist
 - [ ] Incident response runbook complete
 - [ ] Month 2-3 feature backlog prioritized
