@@ -134,11 +134,11 @@ export function Hero() {
 
             {/* CTA group */}
             <div className="animate-fade-in-up delay-300 mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
-              <Button size="lg" className="h-12 gap-2 px-8 text-base shadow-xl shadow-[hsl(var(--primary)/0.25)]">
+              <Button size="lg" className="h-12 gap-2 px-8 text-base shadow-xl shadow-[hsl(var(--primary)/0.25)]" aria-label="Start your free trial">
                 Start Your Free Trial
                 <ArrowRight size={16} />
               </Button>
-              <Button variant="outline" size="lg" className="h-12 gap-2 px-8 text-base">
+              <Button variant="outline" size="lg" className="h-12 gap-2 px-8 text-base" aria-label="Watch demo video">
                 <Play size={16} />
                 Watch Demo
               </Button>

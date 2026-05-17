@@ -89,12 +89,13 @@ export function Footer() {
             </div>
 
             {/* Social icons */}
-            <div className="mt-6 flex gap-2">
+            <div className="mt-6 flex gap-2" role="list" aria-label="Social media links">
               {socials.map((s) => (
                 <a
                   key={s.label}
                   href={s.href}
                   aria-label={s.label}
+                  role="listitem"
                   className="hover-lift inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[hsl(var(--border))] text-[hsl(var(--muted-foreground))] transition-all hover:border-[hsl(var(--primary))]/30 hover:text-[hsl(var(--primary))] hover:scale-110"
                 >
                   <s.icon size={16} />

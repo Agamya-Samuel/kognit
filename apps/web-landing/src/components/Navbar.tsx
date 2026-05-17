@@ -24,6 +24,7 @@ export function Navbar() {
         <a
           href="#"
           className="flex items-center gap-2 font-heading text-xl font-bold text-gradient"
+          aria-label="EduTech home"
         >
           <div className="gradient-primary flex h-8 w-8 items-center justify-center rounded-lg text-[hsl(var(--primary-foreground))]">
             <GraduationCap size={18} />
@@ -80,6 +81,8 @@ export function Navbar() {
 
       {/* Mobile menu */}
       <div
+        role="navigation"
+        aria-label="Mobile navigation"
         className={`overflow-hidden border-t border-[hsl(var(--border))]/50 transition-all duration-300 ease-out md:hidden ${
           mobileOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
         }`}

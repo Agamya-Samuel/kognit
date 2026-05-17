@@ -35,6 +35,7 @@ export function CTA() {
               <Button
                 size="lg"
                 className="motion-safe:animate-bounce-subtle gap-2 border-2 border-white bg-white px-8 font-semibold text-[hsl(var(--primary))] shadow-lg shadow-black/10 transition-all duration-200 hover:bg-white/90 hover:shadow-xl"
+                aria-label="Enroll today"
               >
                 Enroll Today
                 <ArrowRight size={16} />
@@ -43,6 +44,7 @@ export function CTA() {
                 variant="outline"
                 size="lg"
                 className="gap-2 border-2 border-white/30 bg-transparent px-8 text-white backdrop-blur-sm transition-all duration-200 hover:border-white/60 hover:bg-white/10"
+                aria-label="Explore all courses"
               >
                 <Users size={16} />
                 Explore All Courses
