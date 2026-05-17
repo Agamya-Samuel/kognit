@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Inject } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { RedisService } from '../redis/redis.service';
 import { Public } from '../modules/auth/decorators/auth.decorators';
@@ -7,7 +7,10 @@ import { Public } from '../modules/auth/decorators/auth.decorators';
 @Public()
 @Controller('health')
 export class HealthController {
-  constructor(private readonly redisService: RedisService) {}
+  constructor(
+    private readonly redisService: RedisService,
+    @Inject('SENTRY_INITIALIZED') private readonly sentryInitialized: boolean,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'Health check endpoint' })
@@ -32,6 +35,12 @@ export class HealthController {
                 latencyMs: { type: 'number', example: 2 },
               },
             },
+            sentry: {
+              type: 'object',
+              properties: {
+                enabled: { type: 'boolean', example: true },
+              },
+            },
           },
         },
       },
@@ -46,6 +55,9 @@ export class HealthController {
       uptime: process.uptime(),
       environment: process.env.NODE_ENV || 'development',
       redis: redisHealth,
+      sentry: {
+        enabled: this.sentryInitialized,
+      },
     };
   }
 }
