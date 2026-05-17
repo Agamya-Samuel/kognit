@@ -45,6 +45,9 @@
 | [Performance](04-engineering/05-performance.md) | Backend, frontend, infrastructure optimization checklists |
 | [Performance Checklist](04-engineering/05-performance-checklist.md) | Performance optimization checklists |
 | [UX States Specification](04-engineering/06-ux-states-specification.md) | Comprehensive UX state specifications for all platform features |
+| [Local Dev Setup](04-engineering/07-local-dev-setup.md) | Prerequisites, environment setup, running the project locally, testing |
+| [Deployment Runbook](04-engineering/08-deployment-runbook.md) | Staging/production deploy procedures, migrations, rollback |
+| [Troubleshooting](04-engineering/09-troubleshooting.md) | Common issues, diagnostic steps, resolution procedures |
 
 ### 05 — Implementation
 | File | Description |
