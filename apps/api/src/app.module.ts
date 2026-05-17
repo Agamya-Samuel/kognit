@@ -25,6 +25,8 @@ import { CertificatesModule } from './modules/certificates/certificates.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { SocketModule } from './modules/socket/socket.module';
+import { LoggerModule } from './common/logger/logger.module';
+import { SentryModule } from './common/sentry/sentry.module';
 
 // Feature modules (to be implemented)
 
@@ -41,6 +43,8 @@ import { SocketModule } from './modules/socket/socket.module';
       }],
     }),
     // Infrastructure modules
+    LoggerModule,
+    SentryModule.forRoot(),
     DatabaseModule,
     RedisModule,
     QueueModule,

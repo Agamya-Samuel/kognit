@@ -1,8 +1,9 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, VersioningType } from '@nestjs/common';
+import { ValidationPipe, VersioningType, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import { IoAdapter } from '@nestjs/platform-socket.io';
+import { Logger as PinoLogger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { SlowQueryInterceptor } from './common/interceptors/slow-query.interceptor';
@@ -13,12 +14,16 @@ import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, new ExpressAdapter(), {
-    logger: ['error', 'warn', 'log', 'debug', 'verbose'],
+    bufferLogs: true,
   });
+
+  // Use Pino as the application logger
+  app.useLogger(app.get(PinoLogger));
 
   const configService = app.get(ConfigService);
   const PORT = configService.get<number>('PORT') || 3000;
   const NODE_ENV = configService.get<string>('NODE_ENV') || 'development';
+  const logger = new Logger('Bootstrap');
 
   // Response compression (gzip)
   app.use(require('compression')({ threshold: 1024 }));
@@ -77,8 +82,11 @@ async function bootstrap() {
     new ResponseInterceptor(),
   );
 
-  // Global Exception Filter
-  app.useGlobalFilters(new HttpExceptionFilter(), new CustomThrottlerFilter());
+  // Global Exception Filters
+  app.useGlobalFilters(
+    new HttpExceptionFilter(),
+    new CustomThrottlerFilter(),
+  );
 
   // Socket.IO with Redis adapter for horizontal scaling
   const redisAdapterService = app.get(
@@ -93,7 +101,7 @@ async function bootstrap() {
   } else {
     app.useWebSocketAdapter(new IoAdapter(app));
   }
-  this?.logger?.log?.('Socket.IO adapter configured');
+  logger.log('Socket.IO adapter configured');
 
   // Swagger API Documentation
   if (NODE_ENV !== 'production') {
@@ -140,19 +148,19 @@ async function bootstrap() {
 
   // Health check endpoint
   app.getHttpServer().on('listening', () => {
-    console.log(`\n🚀 Server is running on: http://localhost:${PORT}`);
-    console.log(`📚 API Documentation: http://localhost:${PORT}/api/docs`);
-    console.log(`🏥 Health Check: http://localhost:${PORT}/api/health\n`);
-    console.log(`🌍 Environment: ${NODE_ENV}\n`);
+    logger.log(`Server is running on: http://localhost:${PORT}`);
+    logger.log(`API Documentation: http://localhost:${PORT}/api/docs`);
+    logger.log(`Health Check: http://localhost:${PORT}/api/health`);
+    logger.log(`Environment: ${NODE_ENV}`);
   });
 
   await app.listen(PORT);
 
   // Graceful shutdown handler
   const gracefulShutdown = async (signal: string) => {
-    console.log(`\n⚠️  Received ${signal}. Starting graceful shutdown...`);
+    logger.warn(`Received ${signal}. Starting graceful shutdown...`);
     await app.close();
-    console.log('✅ Application closed gracefully');
+    logger.log('Application closed gracefully');
     process.exit(0);
   };
 
@@ -161,6 +169,6 @@ async function bootstrap() {
 }
 
 bootstrap().catch((error) => {
-  console.error('❌ Failed to start application:', error);
+  console.error('Failed to start application:', error);
   process.exit(1);
 });
