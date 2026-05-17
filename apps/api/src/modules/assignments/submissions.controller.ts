@@ -10,7 +10,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { SubmissionService } from './services/submission.service';
 import { GradingService } from './services/grading.service';
 import { AssignmentsRepository } from '../../db/repositories/assignments.repository';
@@ -39,6 +39,8 @@ export class SubmissionsController {
   @HttpCode(HttpStatus.CREATED)
   @ApiBearerAuth()
   @Roles('student')
+  @ApiResponse({ status: 201, description: 'Assignment submitted' })
+  @ApiParam({ name: 'assignmentId', description: 'Assignment ID' })
   @ApiOperation({ summary: 'Submit an assignment (student only)' })
   async submitAssignment(
     @Param('assignmentId', ParseIntPipe) assignmentId: number,
@@ -81,6 +83,7 @@ export class SubmissionsController {
 
   @Get('students/me/submissions')
   @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: 'Submission history retrieved' })
   @ApiOperation({ summary: 'Get current student submission history' })
   async getMySubmissions(
     @CurrentUser() user: JwtPayload,
@@ -108,6 +111,9 @@ export class SubmissionsController {
 
   @Get('assignments/:assignmentId/my-submission')
   @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: 'Submission details' })
+  @ApiResponse({ status: 404, description: 'No submission found' })
+  @ApiParam({ name: 'assignmentId', description: 'Assignment ID' })
   @ApiOperation({ summary: "Get current student's submission for a specific assignment" })
   async getMySubmission(
     @Param('assignmentId', ParseIntPipe) assignmentId: number,
@@ -130,6 +136,8 @@ export class SubmissionsController {
   @Get('assignments/:assignmentId/submissions')
   @ApiBearerAuth()
   @Roles('instructor', 'admin')
+  @ApiResponse({ status: 200, description: 'Submission list retrieved' })
+  @ApiParam({ name: 'assignmentId', description: 'Assignment ID' })
   @ApiOperation({ summary: 'List all submissions for an assignment (instructor/admin)' })
   async listSubmissions(
     @Param('assignmentId', ParseIntPipe) assignmentId: number,
@@ -156,6 +164,9 @@ export class SubmissionsController {
 
   @Get('submissions/:id')
   @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: 'Submission details' })
+  @ApiResponse({ status: 404, description: 'Submission not found' })
+  @ApiParam({ name: 'id', description: 'Submission ID' })
   @ApiOperation({ summary: 'Get a submission by ID' })
   async getSubmission(@Param('id', ParseIntPipe) id: number) {
     const submission = await this.submissionService.getSubmissionById(id);
@@ -170,6 +181,8 @@ export class SubmissionsController {
   @Put('submissions/:id/grade')
   @ApiBearerAuth()
   @Roles('instructor', 'admin')
+  @ApiResponse({ status: 200, description: 'Submission graded' })
+  @ApiParam({ name: 'id', description: 'Submission ID' })
   @ApiOperation({ summary: 'Manually grade a submission (instructor/admin)' })
   async gradeSubmission(
     @Param('id', ParseIntPipe) id: number,
@@ -202,6 +215,7 @@ export class SubmissionsController {
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   @Roles('instructor', 'admin')
+  @ApiResponse({ status: 200, description: 'Bulk grading completed' })
   @ApiOperation({ summary: 'Bulk grade multiple submissions' })
   async bulkGrade(@CurrentUser() user: JwtPayload, @Body() dto: BulkGradeDto) {
     const result = await this.gradingService.bulkGrade(
@@ -235,6 +249,8 @@ export class SubmissionsController {
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   @Roles('instructor', 'admin')
+  @ApiResponse({ status: 200, description: 'Auto-grading completed' })
+  @ApiParam({ name: 'id', description: 'Submission ID' })
   @ApiOperation({ summary: 'Trigger auto-grading for an MCQ submission' })
   async autoGradeSubmission(@Param('id', ParseIntPipe) id: number) {
     const result = await this.gradingService.autoGradeSubmission(id);

@@ -11,7 +11,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { AssignmentService } from './services/assignment.service';
 import { QuizService } from './services/quiz.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -37,6 +37,7 @@ export class AssignmentsController {
 
   @Get()
   @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: 'Paginated assignment list' })
   @ApiOperation({ summary: 'List assignments with pagination and filtering' })
   async listAssignments(@Query() query: AssignmentQueryDto) {
     const result = await this.assignmentService.listAssignments({
@@ -62,6 +63,9 @@ export class AssignmentsController {
 
   @Get(':id')
   @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: 'Assignment details' })
+  @ApiResponse({ status: 404, description: 'Assignment not found' })
+  @ApiParam({ name: 'id', description: 'Assignment ID' })
   @ApiOperation({ summary: 'Get assignment by ID' })
   async getAssignment(@Param('id', ParseIntPipe) id: number) {
     const assignment = await this.assignmentService.getAssignmentById(id);
@@ -77,6 +81,8 @@ export class AssignmentsController {
   @HttpCode(HttpStatus.CREATED)
   @ApiBearerAuth()
   @Roles('instructor', 'admin')
+  @ApiResponse({ status: 201, description: 'Assignment created' })
+  @ApiResponse({ status: 403, description: 'Forbidden — instructor/admin only' })
   @ApiOperation({ summary: 'Create a new assignment (instructor/admin only)' })
   async createAssignment(@CurrentUser() user: JwtPayload, @Body() dto: CreateAssignmentDto) {
     const assignment = await this.assignmentService.createAssignment(user.sub, user.role, dto);
@@ -91,6 +97,8 @@ export class AssignmentsController {
   @Put(':id')
   @ApiBearerAuth()
   @Roles('instructor', 'admin')
+  @ApiResponse({ status: 200, description: 'Assignment updated' })
+  @ApiParam({ name: 'id', description: 'Assignment ID' })
   @ApiOperation({ summary: 'Update an assignment (owner or admin only)' })
   async updateAssignment(
     @Param('id', ParseIntPipe) id: number,
@@ -115,6 +123,8 @@ export class AssignmentsController {
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   @Roles('instructor', 'admin')
+  @ApiResponse({ status: 200, description: 'Assignment deleted' })
+  @ApiParam({ name: 'id', description: 'Assignment ID' })
   @ApiOperation({ summary: 'Delete an assignment (owner or admin only)' })
   async deleteAssignment(
     @Param('id', ParseIntPipe) id: number,
@@ -135,6 +145,7 @@ export class AssignmentsController {
   @HttpCode(HttpStatus.CREATED)
   @ApiBearerAuth()
   @Roles('instructor', 'admin')
+  @ApiResponse({ status: 201, description: 'Bulk assignments created' })
   @ApiOperation({ summary: 'Bulk create assignments' })
   async bulkCreateAssignments(
     @CurrentUser() user: JwtPayload,
@@ -160,6 +171,8 @@ export class AssignmentsController {
 
   @Get(':id/questions')
   @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: 'Quiz questions retrieved' })
+  @ApiParam({ name: 'id', description: 'Assignment ID' })
   @ApiOperation({ summary: 'Get quiz questions for an assignment' })
   async getQuizQuestions(
     @Param('id', ParseIntPipe) id: number,
@@ -180,6 +193,8 @@ export class AssignmentsController {
   @HttpCode(HttpStatus.CREATED)
   @ApiBearerAuth()
   @Roles('instructor', 'admin')
+  @ApiResponse({ status: 201, description: 'Question added' })
+  @ApiParam({ name: 'id', description: 'Assignment ID' })
   @ApiOperation({ summary: 'Add a quiz question to an MCQ assignment' })
   async addQuizQuestion(
     @Param('id', ParseIntPipe) id: number,
@@ -199,6 +214,8 @@ export class AssignmentsController {
   @HttpCode(HttpStatus.CREATED)
   @ApiBearerAuth()
   @Roles('instructor', 'admin')
+  @ApiResponse({ status: 201, description: 'Questions added in bulk' })
+  @ApiParam({ name: 'id', description: 'Assignment ID' })
   @ApiOperation({ summary: 'Add multiple quiz questions to an MCQ assignment' })
   async addQuizQuestions(
     @Param('id', ParseIntPipe) id: number,
@@ -217,6 +234,8 @@ export class AssignmentsController {
   @Put('questions/:questionId')
   @ApiBearerAuth()
   @Roles('instructor', 'admin')
+  @ApiResponse({ status: 200, description: 'Question updated' })
+  @ApiParam({ name: 'questionId', description: 'Question ID' })
   @ApiOperation({ summary: 'Update a quiz question' })
   async updateQuizQuestion(
     @Param('questionId', ParseIntPipe) questionId: number,
@@ -241,6 +260,8 @@ export class AssignmentsController {
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   @Roles('instructor', 'admin')
+  @ApiResponse({ status: 200, description: 'Question deleted' })
+  @ApiParam({ name: 'questionId', description: 'Question ID' })
   @ApiOperation({ summary: 'Delete a quiz question' })
   async deleteQuizQuestion(
     @Param('questionId', ParseIntPipe) questionId: number,

@@ -10,7 +10,7 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../modules/auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../modules/auth/decorators/current-user.decorator';
 import { ProgressService } from './progress.service';
@@ -71,6 +71,7 @@ export class ProgressController {
   @Get('lecture/:lectureId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiParam({ name: 'lectureId', description: 'Lecture ID' })
   @ApiOperation({ summary: 'Get progress for a specific lecture' })
   @ApiResponse({ status: 200, description: 'Progress retrieved successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -95,6 +96,7 @@ export class ProgressController {
   @Get('course/:courseId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiParam({ name: 'courseId', description: 'Course ID' })
   @ApiOperation({ summary: 'Get course progress summary for the current student' })
   @ApiResponse({ status: 200, description: 'Course progress retrieved successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -118,6 +120,7 @@ export class ProgressController {
   @Get('course/:courseId/lectures')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiParam({ name: 'courseId', description: 'Course ID' })
   @ApiOperation({ summary: 'Get per-lecture progress for a course' })
   @ApiResponse({ status: 200, description: 'Lecture progress list retrieved successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -137,6 +140,8 @@ export class ProgressController {
   @Get('history')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiQuery({ name: 'limit', required: false, description: 'Number of items' })
+  @ApiQuery({ name: 'offset', required: false, description: 'Offset for pagination' })
   @ApiOperation({ summary: 'Get watch history for the current student' })
   @ApiResponse({ status: 200, description: 'Watch history retrieved successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })

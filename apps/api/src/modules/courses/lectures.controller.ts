@@ -10,7 +10,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { LecturesService } from './lectures.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Public } from '../auth/decorators/auth.decorators';
@@ -25,6 +25,8 @@ export class LecturesController {
 
   @Public()
   @Get()
+  @ApiResponse({ status: 200, description: 'Lecture list retrieved' })
+  @ApiParam({ name: 'sectionId', description: 'Section ID' })
   @ApiOperation({ summary: 'List lectures for a section (respects free preview rules)' })
   async listLectures(
     @Param('sectionId', ParseIntPipe) sectionId: number,
@@ -46,6 +48,9 @@ export class LecturesController {
 
   @Public()
   @Get(':lectureId')
+  @ApiResponse({ status: 200, description: 'Lecture details' })
+  @ApiParam({ name: 'sectionId', description: 'Section ID' })
+  @ApiParam({ name: 'lectureId', description: 'Lecture ID' })
   @ApiOperation({ summary: 'Get a lecture by ID (respects free preview rules)' })
   async getLecture(
     @Param('sectionId', ParseIntPipe) sectionId: number,
@@ -70,6 +75,8 @@ export class LecturesController {
   @HttpCode(HttpStatus.CREATED)
   @ApiBearerAuth()
   @Roles('instructor', 'admin')
+  @ApiResponse({ status: 201, description: 'Lecture created' })
+  @ApiParam({ name: 'sectionId', description: 'Section ID' })
   @ApiOperation({ summary: 'Create a lecture in a section (owner/admin only)' })
   async createLecture(
     @Param('sectionId', ParseIntPipe) sectionId: number,
@@ -93,6 +100,9 @@ export class LecturesController {
   @Put(':lectureId')
   @ApiBearerAuth()
   @Roles('instructor', 'admin')
+  @ApiResponse({ status: 200, description: 'Lecture updated' })
+  @ApiParam({ name: 'sectionId', description: 'Section ID' })
+  @ApiParam({ name: 'lectureId', description: 'Lecture ID' })
   @ApiOperation({ summary: 'Update a lecture (owner/admin only)' })
   async updateLecture(
     @Param('sectionId', ParseIntPipe) sectionId: number,
@@ -117,6 +127,8 @@ export class LecturesController {
   @Put('reorder')
   @ApiBearerAuth()
   @Roles('instructor', 'admin')
+  @ApiResponse({ status: 200, description: 'Lectures reordered' })
+  @ApiParam({ name: 'sectionId', description: 'Section ID' })
   @ApiOperation({ summary: 'Reorder lectures within a section' })
   async reorderLectures(
     @Param('sectionId', ParseIntPipe) sectionId: number,
@@ -141,6 +153,9 @@ export class LecturesController {
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   @Roles('instructor', 'admin')
+  @ApiResponse({ status: 200, description: 'Lecture deleted' })
+  @ApiParam({ name: 'sectionId', description: 'Section ID' })
+  @ApiParam({ name: 'lectureId', description: 'Lecture ID' })
   @ApiOperation({ summary: 'Delete a lecture (owner/admin only)' })
   async deleteLecture(
     @Param('sectionId', ParseIntPipe) sectionId: number,
