@@ -5,14 +5,14 @@ export function CTA() {
   return (
     <section className="px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl">
-        <div className="gradient-cta noise-bg relative overflow-hidden rounded-3xl px-6 py-16 text-center text-white sm:px-12 sm:py-20">
+        <div className="relative overflow-hidden rounded-3xl bg-[hsl(var(--primary))] px-6 py-16 text-center text-white sm:px-12 sm:py-20">
           {/* Background decorative elements */}
           <div className="pointer-events-none absolute inset-0">
             <div className="absolute -left-20 -top-20 h-60 w-60 rounded-full bg-white/10 blur-3xl" />
             <div className="absolute -bottom-20 -right-20 h-60 w-60 rounded-full bg-white/10 blur-3xl" />
-            <div className="absolute left-[15%] top-[20%] h-3 w-3 rounded-full bg-white/40 animate-float" />
-            <div className="absolute right-[20%] bottom-[30%] h-2 w-2 rounded-full bg-white/30 animate-float delay-300" />
-            <div className="absolute left-[60%] top-[60%] h-1.5 w-1.5 rounded-full bg-white/35 animate-float delay-500" />
+            <div className="absolute left-[15%] top-[20%] h-3 w-3 rounded-full bg-white/40" />
+            <div className="absolute right-[20%] bottom-[30%] h-2 w-2 rounded-full bg-white/30" />
+            <div className="absolute left-[60%] top-[60%] h-1.5 w-1.5 rounded-full bg-white/35" />
           </div>
 
           <div className="relative z-10">

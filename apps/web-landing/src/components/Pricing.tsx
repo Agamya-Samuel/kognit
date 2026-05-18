@@ -51,12 +51,12 @@ export function Pricing() {
       <div className="mx-auto max-w-6xl">
         {/* Section header */}
         <div className="mx-auto max-w-2xl text-center">
-          <span className="mb-3 inline-block rounded-full bg-[hsl(var(--primary))]/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[hsl(var(--primary))]">
+          <Badge variant="outline" className="mb-3 rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[hsl(var(--primary))]">
             Pricing
-          </span>
+          </Badge>
           <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
             Flexible Plans for{' '}
-            <span className="text-gradient">Every Student</span>
+            <span className="text-[hsl(var(--primary))]">Every Student</span>
           </h2>
           <p className="mt-4 text-[hsl(var(--muted-foreground))]">
             Choose the path that fits your learning journey.
@@ -70,7 +70,7 @@ export function Pricing() {
               key={plan.name}
               className={`relative overflow-hidden transition-all duration-300 animate-fade-in-up ${
                 plan.popular
-                  ? 'gradient-border border-0 shadow-xl shadow-[hsl(var(--primary))]/20 hover:-translate-y-1'
+                  ? 'border-2 border-[hsl(var(--primary))] shadow-xl shadow-[hsl(var(--primary))]/20 hover:-translate-y-1'
                   : 'card-spotlight border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:shadow-lg hover:-translate-y-1'
               }`}
               style={{ animationDelay: `${index * 100}ms` }}
@@ -91,7 +91,7 @@ export function Pricing() {
                   <span className="text-sm text-[hsl(var(--muted-foreground))]">
                     &#8377;
                   </span>
-                  <span className="font-heading text-5xl font-bold text-gradient-bold">
+                  <span className="font-heading text-5xl font-bold text-[hsl(var(--primary))]">
                     {plan.price}
                   </span>
                   <span className="text-sm text-[hsl(var(--muted-foreground))]">
@@ -123,7 +123,7 @@ export function Pricing() {
                   variant={plan.variant}
                   className={`mt-8 w-full ${
                     plan.popular
-                      ? 'gradient-primary animate-gradient-shift border-0 text-white shadow-lg shadow-[hsl(var(--primary))]/25'
+                      ? 'bg-[hsl(var(--primary))] border-0 text-white shadow-lg shadow-[hsl(var(--primary))]/25'
                       : ''
                   }`}
                   size="lg"

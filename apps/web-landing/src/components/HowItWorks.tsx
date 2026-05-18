@@ -1,4 +1,5 @@
 import { UserPlus, BookOpen, GraduationCap, ArrowRight } from 'lucide-react';
+import { Badge } from '@edutech/ui';
 
 const steps = [
   {
@@ -28,17 +29,17 @@ export function HowItWorks() {
   return (
     <section
       id="how-it-works"
-      className="gradient-radial px-4 py-24 sm:px-6 lg:px-8"
+      className="px-4 py-24 sm:px-6 lg:px-8"
     >
       <div className="mx-auto max-w-6xl">
         {/* Section header */}
         <div className="mx-auto max-w-2xl text-center">
-          <span className="mb-3 inline-block rounded-full bg-[hsl(var(--primary))]/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[hsl(var(--primary))]">
+          <Badge variant="outline" className="mb-3 rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[hsl(var(--primary))]">
             How it works
-          </span>
+          </Badge>
           <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
             Your Path to{' '}
-            <span className="text-gradient">Tech Mastery</span>
+            <span className="text-[hsl(var(--primary))]">Tech Mastery</span>
           </h2>
           <p className="mt-4 text-[hsl(var(--muted-foreground))]">
             Simple steps to unlock your potential.

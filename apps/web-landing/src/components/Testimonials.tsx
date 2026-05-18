@@ -1,4 +1,4 @@
-import { Card, CardContent, Avatar } from '@edutech/ui';
+import { Card, CardContent, Avatar, Badge } from '@edutech/ui';
 import { Star, Award, Users, BookOpen } from 'lucide-react';
 
 const testimonials = [
@@ -42,17 +42,17 @@ export function Testimonials() {
   return (
     <section
       id="testimonials"
-      className="gradient-radial px-4 py-24 sm:px-6 lg:px-8"
+      className="px-4 py-24 sm:px-6 lg:px-8"
     >
       <div className="mx-auto max-w-6xl">
         {/* Section header */}
         <div className="mx-auto max-w-2xl text-center">
-          <span className="mb-3 inline-block rounded-full bg-[hsl(var(--primary))]/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[hsl(var(--primary))]">
+          <Badge variant="outline" className="mb-3 rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[hsl(var(--primary))]">
             Testimonials
-          </span>
+          </Badge>
           <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
             Hear From Our{' '}
-            <span className="text-gradient">Successful</span>{' '}
+            <span className="text-[hsl(var(--primary))]">Successful</span>{' '}
             Students
           </h2>
           <p className="mt-4 text-[hsl(var(--muted-foreground))]">
@@ -61,7 +61,7 @@ export function Testimonials() {
         </div>
 
         {/* Social proof stats bar */}
-        <div className="gradient-border mt-14 rounded-2xl p-px">
+        <div className="mt-14 rounded-2xl border border-[hsl(var(--border))] p-px">
         <div className="grid grid-cols-2 gap-4 rounded-2xl bg-[hsl(var(--card))] p-4 sm:grid-cols-4">
           {stats.map((stat, index) => (
             <div
