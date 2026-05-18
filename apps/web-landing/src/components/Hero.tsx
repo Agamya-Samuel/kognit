@@ -92,9 +92,9 @@ export function Hero() {
         />
 
         {/* Glowing orbs */}
-        <div className="absolute -top-32 left-1/4 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-[hsl(var(--primary))] opacity-[0.08] blur-[120px] animate-pulse-glow" />
-        <div className="absolute -bottom-32 right-1/4 h-[400px] w-[400px] translate-x-1/2 rounded-full bg-[hsl(var(--secondary))] opacity-[0.07] blur-[100px] animate-pulse-glow" style={{ animationDelay: '2s' }} />
-        <div className="absolute top-1/2 right-0 h-[300px] w-[300px] rounded-full bg-purple-500 opacity-[0.04] blur-[80px] animate-pulse-glow" style={{ animationDelay: '4s' }} />
+        <div className="absolute -top-32 left-1/4 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-[hsl(var(--primary))] opacity-[0.08] blur-[120px]" />
+        <div className="absolute -bottom-32 right-1/4 h-[400px] w-[400px] translate-x-1/2 rounded-full bg-[hsl(var(--secondary))] opacity-[0.07] blur-[100px]" />
+        <div className="absolute top-1/2 right-0 h-[300px] w-[300px] rounded-full bg-[hsl(var(--primary)/0.04)] blur-[80px]" />
 
         {/* Geometric accent lines */}
         <div className="absolute top-20 left-12 h-24 w-px bg-gradient-to-b from-transparent via-[hsl(var(--primary)/0.15)] to-transparent" />
@@ -123,7 +123,7 @@ export function Hero() {
               <br />
               <TypingEffect words={['Fullstack', 'Android', 'Data Science']} />
               <br />
-              <span className="text-gradient-bold">with Expert Mentors</span>
+              <span>with Experts</span>
             </h1>
 
             {/* Subtitle */}
@@ -153,7 +153,7 @@ export function Hero() {
                   </div>
                   <div>
                     <div className="text-sm font-bold text-[hsl(var(--foreground))]">{stat.value}</div>
-                    <div className="text-[11px] text-[hsl(var(--muted-foreground))]">{stat.label}</div>
+                    <div className="text-xs text-[hsl(var(--muted-foreground))]">{stat.label}</div>
                   </div>
                 </div>
               ))}
@@ -173,7 +173,7 @@ export function Hero() {
                 {/* Header */}
                 <div className="mb-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="gradient-primary flex h-10 w-10 items-center justify-center rounded-xl">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[hsl(var(--primary))]">
                       <BookOpen size={18} className="text-[hsl(var(--primary-foreground))]" />
                     </div>
                     <div>
@@ -183,12 +183,12 @@ export function Hero() {
                   </div>
                   <div className="flex items-center gap-1 rounded-full bg-[hsl(var(--success)/0.1)] px-2 py-0.5">
                     <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-[hsl(var(--success))]" />
-                    <span className="text-[10px] font-medium text-[hsl(var(--success))]">LIVE</span>
+                    <span className="text-xs font-medium text-[hsl(var(--success))]">LIVE</span>
                   </div>
                 </div>
 
                 {/* Video placeholder */}
-                <div className="gradient-primary mb-4 flex aspect-video items-center justify-center rounded-xl opacity-90">
+                <div className="mb-4 flex aspect-video items-center justify-center rounded-xl bg-[hsl(var(--primary))] opacity-90">
                   <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
                     <Play size={20} className="text-white" />
                   </div>
@@ -212,17 +212,17 @@ export function Hero() {
                       {['A', 'B', 'C', 'D'].map((letter) => (
                         <div
                           key={letter}
-                          className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-[hsl(var(--card))] bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-[8px] font-bold text-white"
+                          className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-[hsl(var(--card))] bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-[10px] font-bold text-white"
                         >
                           {letter}
                         </div>
                       ))}
                     </div>
-                    <span className="text-[11px] text-[hsl(var(--muted-foreground))]">+142 learning</span>
+                    <span className="text-xs text-[hsl(var(--muted-foreground))]">+142 learning</span>
                   </div>
                   <div className="flex items-center gap-0.5">
                     {[1, 2, 3, 4, 5].map((s) => (
-                      <Star key={s} size={10} className="fill-amber-400 text-amber-400" />
+                      <Star key={s} size={10} className="fill-[hsl(var(--warning))] text-[hsl(var(--warning))]" />
                     ))}
                   </div>
                 </div>
@@ -241,8 +241,8 @@ export function Hero() {
                     <card.icon size={13} className="text-[hsl(var(--primary))]" />
                   </div>
                   <div>
-                    <div className="text-[11px] font-medium text-[hsl(var(--foreground))]">{card.title}</div>
-                    <div className="text-[10px] text-[hsl(var(--muted-foreground))]">{card.detail}</div>
+                    <div className="text-xs font-medium text-[hsl(var(--foreground))]">{card.title}</div>
+                    <div className="text-xs text-[hsl(var(--muted-foreground))]">{card.detail}</div>
                   </div>
                 </div>
               </div>
@@ -261,7 +261,7 @@ export function Hero() {
               >
                 <course.icon size={14} className="text-[hsl(var(--primary))]" />
                 <span className="text-xs font-medium text-[hsl(var(--foreground))]">{course.label}</span>
-                <span className="text-[10px] text-[hsl(var(--muted-foreground))]">{course.students}</span>
+                <span className="text-xs text-[hsl(var(--muted-foreground))]">{course.students}</span>
                 <ChevronRight size={12} className="text-[hsl(var(--muted-foreground))] transition-transform group-hover:translate-x-0.5" />
               </div>
             ))}
