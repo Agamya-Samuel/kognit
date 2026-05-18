@@ -64,40 +64,40 @@ const categories = [
 
 const colorClasses = {
   teal: {
-    iconBg: 'bg-teal-100 dark:bg-teal-900/30',
-    iconText: 'text-teal-600 dark:text-teal-400',
-    hoverBorder: 'hover:border-teal-300 dark:hover:border-teal-700',
-    glow: 'group-hover:shadow-teal-500/20',
+    iconBg: 'bg-[hsl(var(--chart-2)/0.12)]',
+    iconText: 'text-[hsl(var(--chart-2))]',
+    hoverBorder: 'hover:border-[hsl(var(--chart-2)/0.4)]',
+    glow: 'group-hover:shadow-[hsl(var(--chart-2)/0.2)]',
   },
   violet: {
-    iconBg: 'bg-violet-100 dark:bg-violet-900/30',
-    iconText: 'text-violet-600 dark:text-violet-400',
-    hoverBorder: 'hover:border-violet-300 dark:hover:border-violet-700',
-    glow: 'group-hover:shadow-violet-500/20',
+    iconBg: 'bg-[hsl(var(--chart-1)/0.12)]',
+    iconText: 'text-[hsl(var(--chart-1))]',
+    hoverBorder: 'hover:border-[hsl(var(--chart-1)/0.4)]',
+    glow: 'group-hover:shadow-[hsl(var(--chart-1)/0.2)]',
   },
   amber: {
-    iconBg: 'bg-amber-100 dark:bg-amber-900/30',
-    iconText: 'text-amber-600 dark:text-amber-400',
-    hoverBorder: 'hover:border-amber-300 dark:hover:border-amber-700',
-    glow: 'group-hover:shadow-amber-500/20',
+    iconBg: 'bg-[hsl(var(--chart-3)/0.12)]',
+    iconText: 'text-[hsl(var(--chart-3))]',
+    hoverBorder: 'hover:border-[hsl(var(--chart-3)/0.4)]',
+    glow: 'group-hover:shadow-[hsl(var(--chart-3)/0.2)]',
   },
   rose: {
-    iconBg: 'bg-rose-100 dark:bg-rose-900/30',
-    iconText: 'text-rose-600 dark:text-rose-400',
-    hoverBorder: 'hover:border-rose-300 dark:hover:border-rose-700',
-    glow: 'group-hover:shadow-rose-500/20',
+    iconBg: 'bg-[hsl(var(--chart-5)/0.12)]',
+    iconText: 'text-[hsl(var(--chart-5))]',
+    hoverBorder: 'hover:border-[hsl(var(--chart-5)/0.4)]',
+    glow: 'group-hover:shadow-[hsl(var(--chart-5)/0.2)]',
   },
   pink: {
-    iconBg: 'bg-pink-100 dark:bg-pink-900/30',
-    iconText: 'text-pink-600 dark:text-pink-400',
-    hoverBorder: 'hover:border-pink-300 dark:hover:border-pink-700',
-    glow: 'group-hover:shadow-pink-500/20',
+    iconBg: 'bg-[hsl(var(--chart-4)/0.12)]',
+    iconText: 'text-[hsl(var(--chart-4))]',
+    hoverBorder: 'hover:border-[hsl(var(--chart-4)/0.4)]',
+    glow: 'group-hover:shadow-[hsl(var(--chart-4)/0.2)]',
   },
   cyan: {
-    iconBg: 'bg-cyan-100 dark:bg-cyan-900/30',
-    iconText: 'text-cyan-600 dark:text-cyan-400',
-    hoverBorder: 'hover:border-cyan-300 dark:hover:border-cyan-700',
-    glow: 'group-hover:shadow-cyan-500/20',
+    iconBg: 'bg-[hsl(var(--chart-2)/0.12)]',
+    iconText: 'text-[hsl(var(--chart-2))]',
+    hoverBorder: 'hover:border-[hsl(var(--chart-2)/0.4)]',
+    glow: 'group-hover:shadow-[hsl(var(--chart-2)/0.2)]',
   },
 };
 
@@ -122,12 +122,12 @@ export function CourseCategories() {
       <div className="mx-auto max-w-6xl">
         {/* Section header */}
         <div className="mx-auto max-w-2xl text-center">
-          <span className="mb-3 inline-block rounded-full bg-[hsl(var(--primary))]/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[hsl(var(--primary))]">
+          <Badge variant="outline" className="mb-3 rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[hsl(var(--primary))]">
             Courses
-          </span>
+          </Badge>
           <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
             Explore Our{' '}
-            <span className="text-gradient">Popular Courses</span>
+            <span className="text-[hsl(var(--primary))]">Popular Courses</span>
           </h2>
           <p className="mt-4 text-[hsl(var(--muted-foreground))]">
             Find your passion and accelerate your career.
