@@ -42,7 +42,7 @@ export function Footer() {
   return (
     <footer className="relative border-t border-[hsl(var(--border))] bg-[hsl(var(--muted))]/40 px-4 pt-16 pb-8 sm:px-6 lg:px-8">
       {/* Gradient accent line at top */}
-      <div className="gradient-cta absolute inset-x-0 top-0 h-[2px]" />
+      <div className="absolute inset-x-0 top-0 h-[2px] bg-[hsl(var(--primary))]" />
 
       <div className="mx-auto max-w-6xl">
         <div className="grid gap-12 lg:grid-cols-12">
@@ -52,10 +52,10 @@ export function Footer() {
               href="#"
               className="inline-flex items-center gap-2.5 font-heading text-xl font-bold"
             >
-              <div className="gradient-primary flex h-9 w-9 items-center justify-center rounded-xl text-white shadow-md shadow-[hsl(var(--primary))]/20">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[hsl(var(--primary))] text-white shadow-md shadow-[hsl(var(--primary))]/20">
                 <GraduationCap size={18} />
               </div>
-              <span className="text-gradient">EduTech</span>
+              <span className="text-[hsl(var(--primary))]">EduTech</span>
             </a>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-[hsl(var(--muted-foreground))]">
               A live-first learning platform for college students. Build
@@ -96,7 +96,7 @@ export function Footer() {
                   href={s.href}
                   aria-label={s.label}
                   role="listitem"
-                  className="hover-lift inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[hsl(var(--border))] text-[hsl(var(--muted-foreground))] transition-all hover:border-[hsl(var(--primary))]/30 hover:text-[hsl(var(--primary))] hover:scale-110"
+                  className="hover-lift inline-flex h-11 w-11 items-center justify-center rounded-lg border border-[hsl(var(--border))] text-[hsl(var(--muted-foreground))] transition-all hover:border-[hsl(var(--primary))]/30 hover:text-[hsl(var(--primary))] hover:scale-110"
                 >
                   <s.icon size={16} />
                 </a>

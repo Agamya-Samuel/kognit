@@ -23,10 +23,10 @@ export function Navbar() {
         {/* Logo */}
         <a
           href="#"
-          className="flex items-center gap-2 font-heading text-xl font-bold text-gradient"
+          className="flex items-center gap-2 font-heading text-xl font-bold text-[hsl(var(--primary))]"
           aria-label="EduTech home"
         >
-          <div className="gradient-primary flex h-8 w-8 items-center justify-center rounded-lg text-[hsl(var(--primary-foreground))]">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]">
             <GraduationCap size={18} />
           </div>
           EduTech
@@ -38,7 +38,7 @@ export function Navbar() {
             <a
               key={link.href}
               href={link.href}
-              className="rounded-md px-3 py-2 text-sm font-medium text-[hsl(var(--muted-foreground))] transition-colors hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]"
+              className="rounded-md px-3 py-2.5 text-sm font-medium text-[hsl(var(--muted-foreground))] transition-colors hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]"
             >
               {link.label}
             </a>
