@@ -16,9 +16,9 @@
     --primary: 239 84% 59%;
     --primary-foreground: 0 0% 100%;
 
-    /* Supporting: Growth Teal (#0D9488) */
-    --secondary: 175 84% 32%;
-    --secondary-foreground: 0 0% 100%;
+    /* Supporting surface */
+    --secondary: 215 16% 73%;
+    --secondary-foreground: 222 84% 5%;
 
     /* Subdued */
     --muted: 210 40% 96%;
@@ -76,8 +76,8 @@
     --primary: 239 84% 75%;
     --primary-foreground: 222 84% 5%;
 
-    --secondary: 172 66% 50%;
-    --secondary-foreground: 222 84% 5%;
+    --secondary: 215 12% 35%;
+    --secondary-foreground: 210 40% 98%;
 
     --muted: 215 25% 27%;
     --muted-foreground: 215 20% 65%;
