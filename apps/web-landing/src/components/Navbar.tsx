@@ -18,7 +18,7 @@ export function Navbar() {
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <header className="glass sticky top-0 z-50 border-b border-[hsl(var(--border))]/50">
+    <header className="sticky top-0 z-50 border-b border-[hsl(var(--border))]/50 bg-[hsl(var(--background))]">
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <a
@@ -55,7 +55,6 @@ export function Navbar() {
           >
             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
           </Button>
-          <Button size="sm" className="shadow-md shadow-[hsl(var(--primary))]/20">Get Started</Button>
         </div>
 
         {/* Mobile toggle */}
@@ -98,11 +97,6 @@ export function Navbar() {
               {link.label}
             </a>
           ))}
-          <div className="pt-2">
-            <Button className="w-full" size="sm">
-              Get Started
-            </Button>
-          </div>
         </div>
       </div>
     </header>
