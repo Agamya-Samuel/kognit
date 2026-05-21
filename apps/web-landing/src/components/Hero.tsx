@@ -23,7 +23,7 @@ const stats = [
   { icon: Users, value: '2,500+', label: 'Active Students' },
   { icon: BookOpen, value: '120+', label: 'Live Courses' },
   { icon: Award, value: '95%', label: 'Completion Rate' },
-  { icon: Star, value: '4.9', label: 'Avg Rating' },
+  { icon: Star, value: '4.7', label: 'Avg Rating' },
 ];
 
 const courseCards = [
@@ -67,7 +67,7 @@ const floatingCards = [
   {
     title: 'Top Rated',
     subtitle: 'Course rating',
-    detail: '4.9 / 5.0',
+    detail: '4.7 / 5.0',
     icon: Star,
     position: 'top-1/2 -translate-y-1/2 -right-8 xl:-right-12',
     delay: '1.3s',
@@ -76,15 +76,15 @@ const floatingCards = [
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden px-4 pb-20 pt-28 sm:px-6 sm:pb-28 sm:pt-32 lg:px-8 lg:pt-36 xl:pt-40">
+    <section className="relative overflow-hidden px-4 pb-20 pt-28 sm:px-6 sm:pb-66 lg:px-8">
       {/* Background layers */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         {/* Primary gradient wash */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary)/0.04)] via-transparent to-[hsl(var(--secondary)/0.03)]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary)/0.04)] via-transparent to-[hsl(var(--accent)/0.03)]" />
 
         {/* Grid pattern */}
         <div
-          className="absolute inset-0 opacity-[0.03]"
+          className="absolute inset-0 opacity-[0.09]"
           style={{
             backgroundImage: `linear-gradient(hsl(var(--primary)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)`,
             backgroundSize: '64px 64px',
@@ -93,12 +93,12 @@ export function Hero() {
 
         {/* Glowing orbs */}
         <div className="absolute -top-32 left-1/4 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-[hsl(var(--primary))] opacity-[0.08] blur-[120px]" />
-        <div className="absolute -bottom-32 right-1/4 h-[400px] w-[400px] translate-x-1/2 rounded-full bg-[hsl(var(--secondary))] opacity-[0.07] blur-[100px]" />
+        <div className="absolute -bottom-32 right-1/4 h-[400px] w-[400px] translate-x-1/2 rounded-full bg-[hsl(var(--accent))] opacity-[0.07] blur-[100px]" />
         <div className="absolute top-1/2 right-0 h-[300px] w-[300px] rounded-full bg-[hsl(var(--primary)/0.04)] blur-[80px]" />
 
         {/* Geometric accent lines */}
         <div className="absolute top-20 left-12 h-24 w-px bg-gradient-to-b from-transparent via-[hsl(var(--primary)/0.15)] to-transparent" />
-        <div className="absolute top-40 right-20 h-32 w-px bg-gradient-to-b from-transparent via-[hsl(var(--secondary)/0.12)] to-transparent" />
+        <div className="absolute top-40 right-20 h-32 w-px bg-gradient-to-b from-transparent via-[hsl(var(--accent)/0.12)] to-transparent" />
         <div className="absolute bottom-32 left-1/3 h-px w-40 bg-gradient-to-r from-transparent via-[hsl(var(--primary)/0.1)] to-transparent" />
       </div>
 
@@ -109,8 +109,8 @@ export function Hero() {
             {/* Trust badge */}
             <div className="animate-fade-in-up mb-6 inline-flex">
               <Badge
-                variant="warning"
-                className="gap-1.5 rounded-full border border-[hsl(var(--warning)/0.3)] bg-[hsl(var(--warning)/0.08)] px-4 py-1.5 text-sm font-semibold shadow-lg shadow-[hsl(var(--warning)/0.08)]"
+                variant="outline"
+                className="gap-1.5 rounded-full border border-[hsl(var(--warning)/0.3)] bg-[hsl(var(--warning)/0.08)] px-4 py-1.5 text-sm font-semibold text-[hsl(var(--warning))] shadow-lg shadow-[hsl(var(--warning)/0.08)]"
               >
                 <Sparkles size={14} />
                 Live Learning, Real Skills
@@ -134,11 +134,11 @@ export function Hero() {
 
             {/* CTA group */}
             <div className="animate-fade-in-up delay-300 mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
-              <Button size="lg" className="h-12 gap-2 px-8 text-base shadow-xl shadow-[hsl(var(--primary)/0.25)]" aria-label="Start your free trial">
+              <Button variant="outline" className="text-base" aria-label="Start your free trial">
                 Start Your Free Trial
                 <ArrowRight size={16} />
               </Button>
-              <Button variant="outline" size="lg" className="h-12 gap-2 px-8 text-base" aria-label="Watch demo video">
+              <Button variant="outline" className="text-base" aria-label="Watch demo video">
                 <Play size={16} />
                 Watch Demo
               </Button>
@@ -189,8 +189,8 @@ export function Hero() {
 
                 {/* Video placeholder */}
                 <div className="mb-4 flex aspect-video items-center justify-center rounded-xl bg-[hsl(var(--primary))] opacity-90">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
-                    <Play size={20} className="text-white" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[hsl(var(--primary-foreground))/0.2] backdrop-blur-sm">
+                    <Play size={20} className="text-[hsl(var(--primary-foreground))]" />
                   </div>
                 </div>
 
@@ -201,7 +201,7 @@ export function Hero() {
                     <span className="font-semibold text-[hsl(var(--primary))]">72%</span>
                   </div>
                   <div className="h-1.5 w-full overflow-hidden rounded-full bg-[hsl(var(--muted))]">
-                    <div className="h-full w-[72%] rounded-full bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--secondary))]" />
+                    <div className="h-full w-[72%] rounded-full bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--accent))]" />
                   </div>
                 </div>
 
@@ -212,7 +212,7 @@ export function Hero() {
                       {['A', 'B', 'C', 'D'].map((letter) => (
                         <div
                           key={letter}
-                          className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-[hsl(var(--card))] bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-[10px] font-bold text-white"
+                          className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-[hsl(var(--card))] bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--accent))] text-[10px] font-bold text-[hsl(var(--primary-foreground))]"
                         >
                           {letter}
                         </div>

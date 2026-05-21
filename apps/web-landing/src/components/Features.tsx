@@ -18,9 +18,9 @@ const features = [
     description:
       'Apply your knowledge with practical, hands-on assignments. Develop a portfolio that will stand out.',
     detail: 'Practical assignments, portfolio-ready outcomes.',
-    gradient: 'from-[hsl(var(--secondary))]/15 to-[hsl(var(--secondary))]/5',
-    iconColor: 'text-[hsl(var(--secondary))]',
-    iconBg: 'bg-[hsl(var(--secondary))]/10',
+    gradient: 'from-[hsl(var(--accent))]/15 to-[hsl(var(--accent))]/5',
+    iconColor: 'text-[hsl(var(--accent))]',
+    iconBg: 'bg-[hsl(var(--accent))]/10',
   },
   {
     icon: Users,
@@ -42,7 +42,7 @@ export function Features() {
   };
 
   return (
-    <section id="features" className="px-4 py-20 sm:px-6 lg:px-8">
+    <section id="features" className="px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
         {/* Section header */}
         <div className="mx-auto max-w-2xl text-center">

@@ -14,7 +14,7 @@ const steps = [
     step: '02',
     title: 'Choose Your Course',
     description: 'Browse live courses in Software, Data, and more.',
-    accent: 'secondary',
+    accent: 'accent',
   },
   {
     icon: GraduationCap,
@@ -68,16 +68,16 @@ export function HowItWorks() {
                   <div className={`relative flex h-[6.5rem] w-[6.5rem] items-center justify-center rounded-2xl ${
                     item.accent === 'primary'
                       ? 'bg-gradient-to-br from-[hsl(var(--primary))]/15 to-[hsl(var(--primary))]/5'
-                      : 'bg-gradient-to-br from-[hsl(var(--secondary))]/15 to-[hsl(var(--secondary))]/5'
+                      : 'bg-gradient-to-br from-[hsl(var(--accent))]/15 to-[hsl(var(--accent))]/5'
                   } ring-2 ${
-	                    item.accent === 'primary' ? 'ring-[hsl(var(--primary))]/20' : 'ring-[hsl(var(--secondary))]/20'
+	                    item.accent === 'primary' ? 'ring-[hsl(var(--primary))]/20' : 'ring-[hsl(var(--accent))]/20'
 	                  } transition-all duration-300 hover:shadow-lg hover:ring-[hsl(var(--primary))]/30`}>
                     <item.icon
                       size={30}
                       className={
                         item.accent === 'primary'
                           ? 'text-[hsl(var(--primary))]'
-                          : 'text-[hsl(var(--secondary))]'
+                          : 'text-[hsl(var(--accent))]'
                       }
                     />
                   </div>
@@ -85,7 +85,7 @@ export function HowItWorks() {
                   <span className={`absolute -right-2 -top-2 flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold shadow-md ${
                     item.accent === 'primary'
                       ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]'
-                      : 'bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))]'
+                      : 'bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))]'
                   }`}>
                     {item.step}
                   </span>
