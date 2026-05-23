@@ -2,7 +2,8 @@
 
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import {
   LayoutDashboard,
   BookOpen,
@@ -12,6 +13,7 @@ import {
   LogOut,
 } from 'lucide-react';
 import { Button } from '@edutech/ui';
+import { useAuth } from '../../lib/auth-context';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -23,6 +25,29 @@ const navItems = [
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { isAuthenticated, isLoading, user, logout } = useAuth();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push('/auth/login');
+    }
+  }, [isAuthenticated, isLoading, router]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-950">
+        <div className="text-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent align-[-0.125em]" />
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -58,7 +83,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             variant="outline"
             className="w-full"
             onClick={() => {
-              // TODO: Implement logout
+              logout();
+              router.push('/auth/login');
             }}
           >
             <LogOut className="mr-2 h-4 w-4" />
@@ -74,7 +100,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           </h2>
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-700 dark:text-gray-300">
-              Welcome, Instructor
+              Welcome, {user?.name || 'Instructor'}
             </span>
           </div>
         </header>

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
 export const api = axios.create({
   baseURL: API_BASE,
@@ -13,7 +13,13 @@ export const api = axios.create({
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
-    // Add auth token if available (cookie-based for now)
+    // Add auth token if available
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('accessToken');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
     return config;
   },
   (error) => {
@@ -30,9 +36,13 @@ api.interceptors.response.use(
       
       // Handle 401 Unauthorized
       if (status === 401) {
-        // Redirect to login
+        // Clear tokens and redirect to login
         if (typeof window !== 'undefined') {
-          window.location.href = '/auth/login';
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          if (!window.location.pathname.startsWith('/auth')) {
+            window.location.href = '/auth/login';
+          }
         }
       }
       
