@@ -4,11 +4,14 @@ import {
   Get,
   Body,
   Req,
+  Res,
   UseGuards,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
+import { ConfigService } from '@nestjs/config';
+import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
@@ -16,7 +19,7 @@ import { RolesGuard } from './guards/roles.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { Public } from './decorators/auth.decorators';
 import type { JwtPayload } from './strategies';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import {
   LoginDto,
   RequestEmailVerificationDto,
@@ -29,9 +32,52 @@ import {
 } from './dto/auth.dto';
 
 @ApiTags('Authentication')
-@Controller('api/v1/auth')
+@Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService,
+  ) {}
+
+  // ─── OAuth ────────────────────────────────────────────────────────────────
+
+  @Public()
+  @Get('google')
+  @HttpCode(HttpStatus.OK)
+  @ApiResponse({ status: 200, description: 'Redirects to Google OAuth' })
+  @ApiOperation({ summary: 'Initiate Google OAuth flow' })
+  async googleAuth(@Req() req: Request, @Res() res: Response) {
+    const redirect = req.query.redirect as string;
+    const state = redirect ? encodeURIComponent(redirect) : undefined;
+    const passport = require('passport');
+    passport.authenticate('google', {
+      scope: ['email', 'profile'],
+      state,
+    })(req, res);
+  }
+
+  @Public()
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  @ApiResponse({ status: 200, description: 'OAuth callback redirects to frontend' })
+  @ApiOperation({ summary: 'Google OAuth callback' })
+  async googleAuthCallback(@Req() req: Request, @Res() res: Response) {
+    const { user, tokens, isNewUser } = req.user as {
+      user: any;
+      tokens: { accessToken: string; refreshToken: string };
+      isNewUser: boolean;
+    };
+
+    const state = req.query.state as string;
+    const defaultOrigin = this.configService.get<string>('CORS_ORIGINS')?.split(',')[0] || 'http://localhost:3002';
+    const redirectBase = state ? decodeURIComponent(state) : `${defaultOrigin}/auth/callback`;
+    const separator = redirectBase.includes('?') ? '&' : '?';
+    const callbackUrl = `${redirectBase}${separator}accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}&isNewUser=${isNewUser}`;
+
+    return res.redirect(callbackUrl);
+  }
+
+  // ─── Email-First Registration ─────────────────────────────────────────────
 
   // ─── Email-First Registration ─────────────────────────────────────────
 
