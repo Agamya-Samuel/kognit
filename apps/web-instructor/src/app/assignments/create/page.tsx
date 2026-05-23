@@ -2,15 +2,20 @@
 
 import { useState } from 'react';
 import { useCreateAssignment } from '@/hooks/useAssignments';
+import { useInstructorCourses } from '@/hooks/useCourses';
 import { quizApi } from '@/lib/assignments-api';
+import { toast } from 'sonner';
+import { Card, CardContent } from '@edutech/ui';
+import { Spinner } from '@edutech/ui';
 
 type Step = 'details' | 'questions' | 'review';
 
 export default function CreateAssignmentPage() {
   const { create, isLoading: isCreating } = useCreateAssignment();
+  const { data: courses, isLoading: coursesLoading } = useInstructorCourses();
   const [currentStep, setCurrentStep] = useState<Step>('details');
   const [assignmentData, setAssignmentData] = useState({
-    lectureId: 1,
+    lectureId: 0,
     title: '',
     description: '',
     type: 'short' as 'mcq' | 'short' | 'code',
@@ -19,6 +24,7 @@ export default function CreateAssignmentPage() {
     lateWindowHours: 0,
     latePenaltyPercent: 0,
   });
+  const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
   const [questions, setQuestions] = useState<
     Array<{ questionText: string; options: string[]; correctOptionIndex: number; points: number }>
   >([]);
@@ -39,10 +45,10 @@ export default function CreateAssignmentPage() {
       if (assignmentData.type === 'mcq' && questions.length > 0) {
         await quizApi.addQuestions(result.assignment.id, questions);
       }
-      alert('Assignment created successfully!');
+      toast.success('Assignment created successfully!');
       window.location.href = '/assignments';
     } else {
-      alert(result.error || 'Failed to create assignment');
+      toast.error(result.error || 'Failed to create assignment');
     }
   };
 
@@ -63,9 +69,20 @@ export default function CreateAssignmentPage() {
     setQuestions(questions.filter((_, i) => i !== index));
   };
 
-  const isDetailsValid = assignmentData.title && assignmentData.dueAt && assignmentData.maxScore > 0;
+  const isDetailsValid = assignmentData.title && assignmentData.dueAt && assignmentData.maxScore > 0 && assignmentData.lectureId > 0;
   const isQuestionsValid = assignmentData.type !== 'mcq' || questions.length > 0;
   const canSubmit = isDetailsValid && isQuestionsValid;
+
+  const selectedCourse = courses?.find(c => c.id === selectedCourseId);
+  const allLectures = selectedCourse?.sections?.flatMap(s => s.lectures || []) || [];
+
+  if (coursesLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner className="h-8 w-8" />
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -111,6 +128,51 @@ export default function CreateAssignmentPage() {
         <div className="rounded-lg border bg-card p-6 shadow-sm">
           {currentStep === 'details' && (
             <div className="space-y-6">
+              <div>
+                <label className="mb-2 block text-sm font-medium">Course *</label>
+                <select
+                  value={selectedCourseId || ''}
+                  onChange={(e) => {
+                    const courseId = Number(e.target.value);
+                    setSelectedCourseId(courseId || null);
+                    setAssignmentData({ ...assignmentData, lectureId: 0 });
+                  }}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                  required
+                >
+                  <option value="">Select a course</option>
+                  {courses?.map((course) => (
+                    <option key={course.id} value={course.id}>
+                      {course.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium">Lecture *</label>
+                <select
+                  value={assignmentData.lectureId || ''}
+                  onChange={(e) => setAssignmentData({ ...assignmentData, lectureId: Number(e.target.value) })}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                  disabled={!selectedCourseId || allLectures.length === 0}
+                  required
+                >
+                  <option value="">Select a lecture</option>
+                  {allLectures.map((lecture) => (
+                    <option key={lecture.id} value={lecture.id}>
+                      {lecture.title}
+                    </option>
+                  ))}
+                </select>
+                {!selectedCourseId && (
+                  <p className="mt-1 text-xs text-gray-500">Select a course to see available lectures</p>
+                )}
+                {selectedCourseId && allLectures.length === 0 && (
+                  <p className="mt-1 text-xs text-gray-500">No lectures available in this course</p>
+                )}
+              </div>
+
               <div>
                 <label className="mb-2 block text-sm font-medium">Title *</label>
                 <input

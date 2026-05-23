@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useGrading } from '@/hooks/useGrading';
+import { toast } from 'sonner';
 
 interface BulkGradingModalProps {
   submissions: Array<{ id: number; studentName: string; maxScore: number }>;
@@ -56,13 +57,13 @@ export function BulkGradingModal({ submissions, isOpen, onClose, onSuccess }: Bu
 
     const result = await bulkGrade(bulkGradeData);
     if (result.success) {
-      alert(`Successfully graded ${result.results.length} submissions!`);
+      toast.success(`Successfully graded ${result.results.length} submissions!`);
       onSuccess();
       onClose();
       setGrades({});
       setSelectAll(false);
     } else {
-      alert(`Failed to grade some submissions. Errors: ${result.errors.join(', ')}`);
+      toast.error(`Failed to grade some submissions. Errors: ${result.errors.join(', ')}`);
     }
   };
 

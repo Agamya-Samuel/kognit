@@ -7,6 +7,7 @@ import { useGrading } from '@/hooks/useGrading';
 import { GradingForm } from '@/components/GradingForm';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
+import { toast } from 'sonner';
 
 export default function AssignmentGradingPage({ params }: { params: { id: string } }) {
   const { data: assignment, isLoading: assignmentLoading, error: assignmentError } = useAssignment(params.id);
@@ -27,21 +28,21 @@ export default function AssignmentGradingPage({ params }: { params: { id: string
     if (selectedSubmission === null) return;
     const result = await grade(selectedSubmission, score, feedback);
     if (result.success) {
-      alert('Grade submitted successfully!');
+      toast.success('Grade submitted successfully!');
       setSelectedSubmission(null);
       refetchSubmissions();
     } else {
-      alert(result.error || 'Failed to submit grade');
+      toast.error(result.error || 'Failed to submit grade');
     }
   };
 
   const handleAutoGrade = async (submissionId: number) => {
     const result = await autoGrade(submissionId);
     if (result.success) {
-      alert('Auto-grading completed!');
+      toast.success('Auto-grading completed!');
       refetchSubmissions();
     } else {
-      alert(result.error || 'Failed to auto-grade');
+      toast.error(result.error || 'Failed to auto-grade');
     }
   };
 
