@@ -13,6 +13,7 @@ import * as bcrypt from 'bcrypt';
 import { UsersRepository } from '../../db/repositories/users.repository';
 import { EmailVerificationsRepository } from '../../db/repositories/email-verifications.repository';
 import { RefreshTokensRepository } from '../../db/repositories/refresh-tokens.repository';
+import { UserAuthProvidersRepository } from '../../db/repositories/user-auth-providers.repository';
 import { PasswordService } from './services/password.service';
 import { TokenService, TokenPayload } from './services/token.service';
 import { LockoutService } from './services/lockout.service';
@@ -34,6 +35,7 @@ export class AuthService {
     private readonly usersRepo: UsersRepository,
     private readonly emailVerificationsRepo: EmailVerificationsRepository,
     private readonly refreshTokensRepo: RefreshTokensRepository,
+    private readonly userAuthProvidersRepo: UserAuthProvidersRepository,
     private readonly passwordService: PasswordService,
     private readonly tokenService: TokenService,
     private readonly lockoutService: LockoutService,
@@ -424,6 +426,84 @@ export class AuthService {
     // Also check the DB
     const user = await this.usersRepo.findById(userId);
     return !user?.isActive;
+  }
+
+  // ─── OAuth ──────────────────────────────────────────────────────────────────
+
+  /**
+   * Handle OAuth login (Google, GitHub, etc.)
+   * Links existing account or creates new one
+   */
+  async handleOAuthLogin(params: {
+    provider: string;
+    providerId: string;
+    email: string;
+    name: string;
+    avatarUrl?: string;
+  }): Promise<{ user: any; tokens: TokenPayload; isNewUser: boolean }> {
+    const { provider, providerId, email, name, avatarUrl } = params;
+
+    // Check if this OAuth account is already linked
+    const existingProvider = await this.userAuthProvidersRepo.findByProviderAndProviderId(
+      provider,
+      providerId,
+    );
+
+    if (existingProvider) {
+      // Account already linked - return existing user
+      const user = await this.usersRepo.findById(existingProvider.userId);
+      if (!user || !user.isActive) {
+        throw new ForbiddenException('Account has been deactivated.');
+      }
+
+      const tokens = await this.tokenService.generateTokenPair(user);
+      this.logger.log(`OAuth login via ${provider}: ${user.id} (${email})`);
+      return { user: this.sanitizeUser(user), tokens, isNewUser: false };
+    }
+
+    // Check if an existing user has this email (account linking)
+    const existingUser = await this.usersRepo.findByEmail(email);
+
+    if (existingUser) {
+      // Link Google account to existing user
+      if (!existingUser.isActive) {
+        throw new ForbiddenException('Account has been deactivated.');
+      }
+
+      await this.userAuthProvidersRepo.create({
+        userId: existingUser.id,
+        provider,
+        providerId,
+      });
+
+      const tokens = await this.tokenService.generateTokenPair(existingUser);
+      this.logger.log(`OAuth account linked via ${provider}: ${existingUser.id} (${email})`);
+      return { user: this.sanitizeUser(existingUser), tokens, isNewUser: false };
+    }
+
+    // Create new user with OAuth (instructor role, no password)
+    const user = await this.usersRepo.create({
+      email,
+      name,
+      passwordHash: null,
+      role: 'instructor',
+      avatarUrl: avatarUrl || null,
+      isVerified: true,
+      isActive: true,
+      deletedAt: null,
+    });
+
+    // Create OAuth provider link
+    await this.userAuthProvidersRepo.create({
+      userId: user.id,
+      provider,
+      providerId,
+    });
+
+    const tokens = await this.tokenService.generateTokenPair(user);
+    this.logger.log(`New user registered via ${provider} OAuth: ${user.id} (${email})`);
+
+    return { user: this.sanitizeUser(user), tokens, isNewUser: true };
   }
 
   // ─── Helpers ────────────────────────────────────────────────────────────
