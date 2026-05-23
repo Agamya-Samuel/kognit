@@ -8,7 +8,7 @@ interface CourseDetailLayoutProps {
 
 export async function generateMetadata({ params }: CourseDetailLayoutProps): Promise<Metadata> {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/courses/${params.id}`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses/${params.id}`, {
       cache: 'no-store',
     });
     const data = await response.json();

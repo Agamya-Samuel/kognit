@@ -12,7 +12,7 @@ import { http, HttpResponse, delay } from 'msw';
  *   const server = setupServer(...handlers);
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL!;
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 
