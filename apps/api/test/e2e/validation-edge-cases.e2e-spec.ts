@@ -2,6 +2,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { UnauthorizedException } from '@nestjs/common';
 import { AuthController } from '../../src/modules/auth/auth.controller';
 import { AuthService } from '../../src/modules/auth/auth.service';
+import { ConfigService } from '@nestjs/config';
 import { createE2EApp } from './helpers/e2e-app.helper';
 
 const JWT_SECRET = 'test-jwt-secret-key-for-e2e-testing-min-32-chars';
@@ -30,6 +31,7 @@ describe('Validation Edge Cases (e2e)', () => {
             requestRegistrationVerification: (...a: any[]) => registerFn(...a),
           },
         },
+        { provide: ConfigService, useValue: { get: (key: string) => key === 'CORS_ORIGINS' ? 'http://localhost:3002' : null } },
         {
           provide: APP_GUARD,
           useValue: {

@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { AuthController } from '../../src/modules/auth/auth.controller';
 import { AuthService } from '../../src/modules/auth/auth.service';
+import { ConfigService } from '@nestjs/config';
 import { createE2EApp } from './helpers/e2e-app.helper';
 
 const JWT_SECRET = 'test-jwt-secret-key-for-e2e-testing-min-32-chars';
@@ -41,6 +42,7 @@ describe('Auth (e2e)', () => {
             forgotPassword: (...a: any[]) => forgotPasswordFn(...a),
           },
         },
+        { provide: ConfigService, useValue: { get: (key: string) => key === 'CORS_ORIGINS' ? 'http://localhost:3002' : null } },
         // Register mock guards as global APP_GUARD providers
         {
           provide: APP_GUARD,

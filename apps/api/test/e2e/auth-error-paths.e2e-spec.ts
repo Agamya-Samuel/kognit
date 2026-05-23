@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { AuthController } from '../../src/modules/auth/auth.controller';
 import { AuthService } from '../../src/modules/auth/auth.service';
+import { ConfigService } from '@nestjs/config';
 import { CoursesController } from '../../src/modules/courses/courses.controller';
 import { CoursesService } from '../../src/modules/courses/courses.service';
 import { createE2EApp } from './helpers/e2e-app.helper';
@@ -42,6 +43,7 @@ describe('Auth Error Paths (e2e)', () => {
             getProfile: (...a: any[]) => getProfileFn(...a),
           },
         },
+        { provide: ConfigService, useValue: { get: (key: string) => key === 'CORS_ORIGINS' ? 'http://localhost:3002' : null } },
         {
           provide: CoursesService,
           useValue: {

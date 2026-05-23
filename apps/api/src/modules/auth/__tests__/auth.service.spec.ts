@@ -11,6 +11,7 @@ import { PasswordResetService } from '../services/password-reset.service';
 import { UsersRepository } from '../../../db/repositories/users.repository';
 import { EmailVerificationsRepository } from '../../../db/repositories/email-verifications.repository';
 import { RefreshTokensRepository } from '../../../db/repositories/refresh-tokens.repository';
+import { UserAuthProvidersRepository } from '../../../db/repositories/user-auth-providers.repository';
 import { CacheService } from '../../../common/services/cache.service';
 
 // ─── Inline Test Factories ─────────────────────────────────────────────
@@ -112,6 +113,7 @@ describe('AuthService', () => {
         { provide: UsersRepository, useValue: usersRepo },
         { provide: EmailVerificationsRepository, useValue: {} },
         { provide: RefreshTokensRepository, useValue: refreshTokensRepo },
+        { provide: UserAuthProvidersRepository, useValue: {} },
         { provide: PasswordService, useValue: passwordService },
         { provide: TokenService, useValue: tokenService },
         { provide: LockoutService, useValue: lockoutService },
