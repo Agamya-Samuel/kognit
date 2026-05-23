@@ -2,16 +2,16 @@
   "preset": "ts-jest",
   "testEnvironment": "node",
   "rootDir": "..",
-  "testMatch": ["<rootDir>/test/e2e/**/*.e2e-spec.ts", "<rootDir>/test/integration/**/*.e2e-spec.ts"],
+  "testMatch": ["<rootDir>/test/integration/**/*.e2e-spec.ts"],
   "transform": {
     "^.+\\.ts$": "ts-jest"
   },
   "moduleNameMapper": {
     "^@/(.*)$": "<rootDir>/src/$1"
   },
-  "setupFilesAfterEnv": ["<rootDir>/test/e2e/setup.ts"],
+  "setupFilesAfterEnv": ["<rootDir>/test/setup.ts"],
   "verbose": true,
-  "testTimeout": 60000,
+  "testTimeout": 30000,
   "clearMocks": true,
   "resetMocks": true,
   "restoreMocks": true
