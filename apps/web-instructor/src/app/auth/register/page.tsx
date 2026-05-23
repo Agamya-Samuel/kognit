@@ -7,11 +7,14 @@ import { Button } from '@edutech/ui';
 import { Input } from '@edutech/ui';
 import { Label } from '@edutech/ui';
 import { ArrowRight, Mail, ShieldCheck, User, Lock } from 'lucide-react';
+import { useAuth } from '@/lib/auth-context';
+import api from '@/lib/api';
 
 type Step = 'email' | 'verify' | 'complete';
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [step, setStep] = useState<Step>('email');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -35,15 +38,11 @@ export default function RegisterPage() {
     setError('');
 
     try {
-      // TODO: Call API to request verification code
-      console.log('Requesting code for:', email);
-      
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await api.post('/auth/register/request', { email });
       setIsEmailSent(true);
       setStep('verify');
-    } catch (err) {
-      setError('Failed to send verification code. Please try again.');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to send verification code. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -55,14 +54,10 @@ export default function RegisterPage() {
     setError('');
 
     try {
-      // TODO: Call API to verify code
-      console.log('Verifying code:', code);
-      
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await api.post('/auth/register/verify', { email, code });
       setStep('complete');
-    } catch (err) {
-      setError('Invalid verification code. Please try again.');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Invalid verification code. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -80,14 +75,10 @@ export default function RegisterPage() {
     }
 
     try {
-      // TODO: Call API to complete registration
-      console.log('Completing registration:', { email, name, password });
-      
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      router.push('/dashboard');
-    } catch (err) {
-      setError('Registration failed. Please try again.');
+      await api.post('/auth/register/complete', { email, code, name, password });
+      router.push('/auth/login');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
       setIsLoading(false);
     }

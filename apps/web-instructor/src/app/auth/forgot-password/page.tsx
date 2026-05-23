@@ -7,6 +7,7 @@ import { Input } from '@edutech/ui';
 import { Label } from '@edutech/ui';
 import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
+import api from '@/lib/api';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -20,14 +21,10 @@ export default function ForgotPasswordPage() {
     setError('');
 
     try {
-      // TODO: Call API to send reset email
-      console.log('Sending reset email to:', email);
-      
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await api.post('/auth/forgot-password', { email });
       setIsSuccess(true);
-    } catch (err) {
-      setError('Failed to send reset email. Please try again.');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to send reset email. Please try again.');
     } finally {
       setIsLoading(false);
     }
