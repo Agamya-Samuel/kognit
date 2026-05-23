@@ -19,7 +19,7 @@ import type { JwtPayload } from '../auth/strategies';
 import { CreateSectionDto, UpdateSectionDto, ReorderSectionsDto } from './dto/section.dto';
 
 @ApiTags('Sections')
-@Controller('api/v1/courses/:courseId/sections')
+@Controller('courses/:courseId/sections')
 export class SectionsController {
   constructor(private readonly sectionsService: SectionsService) {}
 

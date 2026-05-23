@@ -22,7 +22,7 @@ import {
 } from './dto/payment.dto';
 
 @ApiTags('Payments')
-@Controller('api/v1/payments')
+@Controller('payments')
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 

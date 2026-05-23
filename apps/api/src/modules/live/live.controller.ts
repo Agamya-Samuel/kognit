@@ -47,7 +47,7 @@ import {
 } from './dto/live.dto';
 
 @ApiTags('live')
-@Controller('api/v1/live')
+@Controller('live')
 export class LiveController {
   private readonly logger = new Logger(LiveController.name);
 

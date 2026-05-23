@@ -41,8 +41,11 @@ async function bootstrap() {
   });
 
   // CORS Configuration
+  const corsOrigins = (configService.get<string>('CORS_ORIGINS') || '')
+    .split(',')
+    .filter(Boolean);
   app.enableCors({
-    origin: configService.get<string>('FRONTEND_URL') || 'http://localhost:3000',
+    origin: corsOrigins,
     credentials: true,
   });
 

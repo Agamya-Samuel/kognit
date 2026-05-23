@@ -13,7 +13,7 @@ import { WsAuthenticatedUser } from '../socket/guards/ws-jwt.guard';
 
 @WebSocketGateway({
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: (process.env.CORS_ORIGINS).split(','),
     credentials: true,
   },
   namespace: '/chat',

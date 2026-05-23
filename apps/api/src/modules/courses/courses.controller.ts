@@ -20,7 +20,7 @@ import type { JwtPayload } from '../auth/strategies';
 import { CreateCourseDto, UpdateCourseDto, CourseQueryDto } from './dto/course.dto';
 
 @ApiTags('Courses')
-@Controller('api/v1/courses')
+@Controller('courses')
 export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
 

@@ -14,7 +14,7 @@ import { AdminService } from './admin.service';
 
 @ApiTags('Admin')
 @ApiBearerAuth()
-@Controller('api/v1/admin')
+@Controller('admin')
 @Roles('admin')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}

@@ -25,7 +25,7 @@ import {
 } from './dto/assignment.dto';
 
 @ApiTags('Submissions')
-@Controller('api/v1')
+@Controller()
 export class SubmissionsController {
   constructor(
     private readonly submissionService: SubmissionService,

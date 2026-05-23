@@ -18,7 +18,7 @@ import { IncomingMessageSchema, validateMessage } from './schemas/message.schema
 
 @WebSocketGateway({
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: (process.env.CORS_ORIGINS).split(','),
     credentials: true,
   },
   namespace: '/',

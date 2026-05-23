@@ -31,7 +31,7 @@ import {
 
 @ApiTags('chat')
 @ApiBearerAuth()
-@Controller('api/v1/chat')
+@Controller('chat')
 export class ChatController {
   private readonly logger = new Logger(ChatController.name);
 
