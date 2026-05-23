@@ -13,28 +13,9 @@ import { EmailVerificationsRepository } from '../../../db/repositories/email-ver
 import { RefreshTokensRepository } from '../../../db/repositories/refresh-tokens.repository';
 import { UserAuthProvidersRepository } from '../../../db/repositories/user-auth-providers.repository';
 import { CacheService } from '../../../common/services/cache.service';
+import { createUser } from '../../../test/factories';
 
 // ─── Inline Test Factories ─────────────────────────────────────────────
-
-function createUser(overrides: Record<string, any> = {}) {
-  const id = overrides.id ?? Math.floor(Math.random() * 10000);
-  return {
-    id,
-    email: overrides.email ?? `user${id}@edutech.test`,
-    passwordHash: overrides.passwordHash ?? '$2b$12$hashedpassword',
-    role: overrides.role ?? 'student',
-    name: overrides.name ?? `Test User ${id}`,
-    avatarUrl: overrides.avatarUrl ?? null,
-    isVerified: overrides.isVerified ?? false,
-    isActive: overrides.isActive ?? true,
-    deletedAt: overrides.deletedAt ?? null,
-    createdAt: overrides.createdAt ?? new Date(),
-    updatedAt: overrides.updatedAt ?? new Date(),
-    ...overrides,
-  };
-}
-
-// ─── Mock Helpers ───────────────────────────────────────────────────────
 
 function createMockCacheService(): Record<string, jest.Mock> {
   return {

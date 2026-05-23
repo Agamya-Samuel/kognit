@@ -2,26 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from '../auth.controller';
 import { AuthService } from '../auth.service';
 import { ConflictException, UnauthorizedException, BadRequestException, ForbiddenException } from '@nestjs/common';
-
-// ─── Inline Test Factory ────────────────────────────────────────────────
-
-function createUser(overrides: Record<string, any> = {}) {
-  const id = overrides.id ?? 1;
-  return {
-    id,
-    email: overrides.email ?? 'user@test.com',
-    passwordHash: overrides.passwordHash ?? '$2b$12$hashed',
-    role: overrides.role ?? 'student',
-    name: overrides.name ?? 'Test User',
-    avatarUrl: overrides.avatarUrl ?? null,
-    isVerified: overrides.isVerified ?? false,
-    isActive: overrides.isActive ?? true,
-    deletedAt: overrides.deletedAt ?? null,
-    createdAt: overrides.createdAt ?? new Date(),
-    updatedAt: overrides.updatedAt ?? new Date(),
-    ...overrides,
-  };
-}
+import { createUser } from '../../../test/factories';
 
 // ─── Test Suite ─────────────────────────────────────────────────────────
 

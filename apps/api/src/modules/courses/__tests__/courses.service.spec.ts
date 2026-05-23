@@ -8,58 +8,9 @@ import { CoursesService } from '../courses.service';
 import { CoursesRepository } from '../../../db/repositories/courses.repository';
 import { SectionsRepository } from '../../../db/repositories/sections.repository';
 import { LecturesRepository } from '../../../db/repositories/lectures.repository';
+import { createCourse, createSection, createLecture } from '../../../test/factories';
 
-// ─── Inline Test Factories ─────────────────────────────────────────────
-
-function createCourse(overrides: Record<string, any> = {}) {
-  const id = overrides.id ?? Math.floor(Math.random() * 10000);
-  return {
-    id,
-    instructorId: overrides.instructorId ?? 1,
-    title: overrides.title ?? `Test Course ${id}`,
-    description: overrides.description ?? 'A test course',
-    thumbnailUrl: null,
-    domain: overrides.domain ?? 'Programming',
-    pricingType: overrides.pricingType ?? 'free',
-    priceInr: overrides.priceInr ?? 0,
-    isPublished: overrides.isPublished ?? false,
-    deletedAt: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    ...overrides,
-  };
-}
-
-function createSection(overrides: Record<string, any> = {}) {
-  const id = overrides.id ?? Math.floor(Math.random() * 10000);
-  return {
-    id,
-    courseId: overrides.courseId ?? 1,
-    title: overrides.title ?? `Test Section ${id}`,
-    orderIndex: overrides.orderIndex ?? 0,
-    createdAt: new Date(),
-    ...overrides,
-  };
-}
-
-function createLecture(overrides: Record<string, any> = {}) {
-  const id = overrides.id ?? Math.floor(Math.random() * 10000);
-  return {
-    id,
-    sectionId: overrides.sectionId ?? 1,
-    title: overrides.title ?? `Test Lecture ${id}`,
-    description: overrides.description ?? 'A test lecture',
-    orderIndex: overrides.orderIndex ?? 0,
-    type: overrides.type ?? 'video',
-    muxAssetId: overrides.muxAssetId ?? 'asset-123',
-    muxPlaybackId: overrides.muxPlaybackId ?? 'playback-123',
-    durationSeconds: overrides.durationSeconds ?? 300,
-    isFreePreview: overrides.isFreePreview ?? false,
-    isPublished: overrides.isPublished ?? false,
-    createdAt: new Date(),
-    ...overrides,
-  };
-}
+// ─── Mock Helpers ───────────────────────────────────────────────────────
 
 // ─── Mock Helpers ───────────────────────────────────────────────────────
 

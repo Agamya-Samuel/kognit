@@ -6,38 +6,7 @@ import {
 import { SectionsService } from '../sections.service';
 import { SectionsRepository } from '../../../db/repositories/sections.repository';
 import { CoursesRepository } from '../../../db/repositories/courses.repository';
-
-// ─── Inline Test Factories ─────────────────────────────────────────────
-
-function createCourse(overrides: Record<string, any> = {}) {
-  return {
-    id: overrides.id ?? 1,
-    instructorId: overrides.instructorId ?? 10,
-    title: 'Test Course',
-    description: 'A test course',
-    thumbnailUrl: null,
-    domain: 'Programming',
-    pricingType: 'free',
-    priceInr: 0,
-    isPublished: overrides.isPublished ?? true,
-    deletedAt: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    ...overrides,
-  };
-}
-
-function createSection(overrides: Record<string, any> = {}) {
-  const id = overrides.id ?? Math.floor(Math.random() * 10000);
-  return {
-    id,
-    courseId: overrides.courseId ?? 1,
-    title: overrides.title ?? `Test Section ${id}`,
-    orderIndex: overrides.orderIndex ?? 0,
-    createdAt: new Date(),
-    ...overrides,
-  };
-}
+import { createCourse, createSection } from '../../../test/factories';
 
 // ─── Mock Helpers ───────────────────────────────────────────────────────
 

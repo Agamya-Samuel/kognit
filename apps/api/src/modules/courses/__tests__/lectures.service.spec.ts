@@ -7,55 +7,9 @@ import { LecturesService } from '../lectures.service';
 import { LecturesRepository } from '../../../db/repositories/lectures.repository';
 import { SectionsRepository } from '../../../db/repositories/sections.repository';
 import { CoursesRepository } from '../../../db/repositories/courses.repository';
+import { createCourse, createSection, createLecture } from '../../../test/factories';
 
-// ─── Inline Test Factories ─────────────────────────────────────────────
-
-function createCourse(overrides: Record<string, any> = {}) {
-  return {
-    id: overrides.id ?? 1,
-    instructorId: overrides.instructorId ?? 10,
-    title: 'Test Course',
-    description: 'A test course',
-    thumbnailUrl: null,
-    domain: 'Programming',
-    pricingType: 'free',
-    priceInr: 0,
-    isPublished: overrides.isPublished ?? true,
-    deletedAt: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    ...overrides,
-  };
-}
-
-function createSection(overrides: Record<string, any> = {}) {
-  return {
-    id: overrides.id ?? 1,
-    courseId: overrides.courseId ?? 1,
-    title: 'Test Section',
-    orderIndex: 0,
-    createdAt: new Date(),
-    ...overrides,
-  };
-}
-
-function createLecture(overrides: Record<string, any> = {}) {
-  const id = overrides.id ?? Math.floor(Math.random() * 10000);
-  return {
-    id,
-    sectionId: overrides.sectionId ?? 1,
-    title: overrides.title ?? `Test Lecture ${id}`,
-    description: overrides.description ?? 'A test lecture',
-    orderIndex: overrides.orderIndex ?? 0,
-    type: overrides.type ?? 'video',
-    muxAssetId: overrides.muxAssetId ?? 'asset-123',
-    muxPlaybackId: overrides.muxPlaybackId ?? 'playback-123',
-    durationSeconds: overrides.durationSeconds ?? 300,
-    isFreePreview: overrides.isFreePreview ?? false,
-    isPublished: overrides.isPublished ?? false,
-    createdAt: new Date(),
-    ...overrides,
-  };
+// ─── Mock Helpers ───────────────────────────────────────────────────────
 }
 
 // ─── Mock Helpers ───────────────────────────────────────────────────────

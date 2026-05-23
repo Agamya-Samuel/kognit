@@ -5,67 +5,7 @@ import { LecturesRepository } from '../../../db/repositories/lectures.repository
 import { SectionsRepository } from '../../../db/repositories/sections.repository';
 import { EnrollmentsRepository } from '../../../db/repositories/enrollments.repository';
 import { CoursesRepository } from '../../../db/repositories/courses.repository';
-
-// ─── Inline Test Factories ─────────────────────────────────────────────
-
-function createLecture(overrides: Record<string, any> = {}) {
-  return {
-    id: 1,
-    sectionId: 10,
-    title: 'Test Lecture',
-    description: 'A test lecture',
-    orderIndex: 0,
-    type: 'video',
-    muxAssetId: null,
-    muxPlaybackId: null,
-    durationSeconds: 600,
-    isFreePreview: false,
-    isPublished: true,
-    createdAt: new Date(),
-    ...overrides,
-  };
-}
-
-function createProgress(overrides: Record<string, any> = {}) {
-  return {
-    id: 1,
-    studentId: 100,
-    lectureId: 1,
-    watchedSeconds: 300,
-    isCompleted: false,
-    lastWatchedAt: new Date(),
-    ...overrides,
-  };
-}
-
-function createSection(overrides: Record<string, any> = {}) {
-  return {
-    id: 10,
-    courseId: 5,
-    title: 'Test Section',
-    orderIndex: 0,
-    createdAt: new Date(),
-    ...overrides,
-  };
-}
-
-function createCourse(overrides: Record<string, any> = {}) {
-  return {
-    id: 5,
-    instructorId: 1,
-    title: 'Test Course',
-    description: 'A test course',
-    thumbnailUrl: null,
-    domain: 'Programming',
-    pricingType: 'free',
-    priceInr: 0,
-    isPublished: true,
-    deletedAt: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    ...overrides,
-  };
-}
+import { createLecture, createProgress, createSection, createCourse } from '../../../test/factories';
 
 // ─── Mock Factories ─────────────────────────────────────────────────────
 
