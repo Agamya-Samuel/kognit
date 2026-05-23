@@ -137,14 +137,17 @@ The API server starts at `http://localhost:3000`.
 # Unit tests (from apps/api)
 npm test
 
+# Integration tests (HTTP tests with mocked providers)
+npm run test:integration
+
+# E2E tests (full-stack with real database)
+npm run test:e2e
+
 # Watch mode
 npm run test:watch
 
 # Coverage
 npm run test:cov
-
-# E2E tests
-npm run test:e2e
 
 # Type checking
 npm run typecheck

@@ -32,9 +32,9 @@
 
 | Test Type | Backend | Frontend |
 |---|---|---|
-| Unit | `*.spec.ts` | `*.test.tsx` / `*.test.ts` |
-| Integration | `*.integration.spec.ts` | `*.integration.test.tsx` |
-| E2E | `*.e2e-spec.ts` | `*.e2e.test.ts` (Playwright) |
+| Unit | `*.spec.ts` in `src/modules/**/__tests__/` | `*.test.tsx` / `*.test.ts` |
+| Integration | `*.e2e-spec.ts` in `test/integration/` | `*.integration.test.tsx` |
+| E2E | `*.e2e-spec.ts` in `test/e2e/` | `*.e2e.test.ts` (Playwright) |
 
 ---
 
@@ -86,6 +86,40 @@ it('should create enrollment on successful payment', async () => {
 - Use test containers for real database
 - Seed minimal data per test (not full database)
 
+### Test Directory Structure (Backend)
+
+```
+apps/api/
+├── src/
+│   └── modules/
+│       └── <module>/
+│           └── __tests__/          # Unit tests (colocated)
+│               └── *.spec.ts
+└── test/
+    ├── tsconfig.json              # Test TypeScript config (includes Jest types)
+    ├── setup.ts                   # Global test setup (custom matchers)
+    ├── helpers/                   # Shared test utilities
+    │   ├── app.helper.ts
+    │   └── db.helper.ts
+    ├── factories/                 # DEPRECATED: moved to src/test/
+    └── integration/               # Integration tests (HTTP + mocked providers)
+        └── *.e2e-spec.ts
+    └── e2e/                       # E2E tests (full-stack with real DB)
+        └── setup.ts
+        └── *.e2e-spec.ts
+└── src/test/
+    └── factories/                 # Shared test data factories
+        └── index.ts
+```
+
+**Test Types:**
+- **Unit tests** (`src/modules/**/__tests__/*.spec.ts`) — Mocked dependencies, isolated logic
+- **Integration tests** (`test/integration/*.e2e-spec.ts`) — HTTP tests with mocked providers via `createE2EApp()`
+- **E2E tests** (`test/e2e/*.e2e-spec.ts`) — Full-stack tests with real database via `setupE2EApp()`
+
+**Factory Functions:**
+All test data factories live in `src/test/factories/index.ts`. Import from `../../test/factories` in integration tests or `../../../test/factories` in unit tests. Factories support overrides: `createUser({ role: 'admin' })`.
+
 ---
 
 ## Coverage Scripts
@@ -96,6 +130,7 @@ Each app and package has its own test script. Root scripts aggregate all results
 {
   "test": "turbo run test",
   "test:watch": "turbo run test --watch",
+  "test:integration": "turbo run test:integration",
   "test:api:cov": "turbo run test:cov --filter=api",
   "test:web-student:cov": "turbo run test:cov --filter=web-student",
   "test:web-instructor:cov": "turbo run test:cov --filter=web-instructor",
