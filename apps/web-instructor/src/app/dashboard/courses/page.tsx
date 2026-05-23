@@ -54,10 +54,12 @@ export default function CoursesPage() {
             Manage your courses, track enrollments, and monitor performance.
           </p>
         </div>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          Create Course
-        </Button>
+        <Link href="/dashboard/courses/create" className="gap-2">
+          <Button className="gap-2">
+            <Plus className="h-4 w-4" />
+            Create Course
+          </Button>
+        </Link>
       </div>
 
       {/* Summary Cards */}

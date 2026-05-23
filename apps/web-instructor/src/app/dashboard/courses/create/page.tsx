@@ -11,6 +11,7 @@ import { LecturesStep } from '@/components/course-creation/LecturesStep';
 import { PricingStep } from '@/components/course-creation/PricingStep';
 import { ReviewStep } from '@/components/course-creation/ReviewStep';
 import { useCreateCourse } from '@/hooks/useCourses';
+import { toast } from 'sonner';
 
 type Step = 'details' | 'sections' | 'lectures' | 'pricing' | 'review';
 
@@ -54,15 +55,27 @@ export default function CreateCoursePage() {
   };
 
   const handleSubmit = () => {
-    // Submit course to API
-    createCourse(courseData, {
+    if (!courseData.title || !courseData.domain) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    const createData = {
+      title: courseData.title,
+      description: courseData.description,
+      domain: courseData.domain,
+      pricingType: courseData.pricingType,
+      priceInr: courseData.priceInr,
+    };
+
+    createCourse(createData, {
       onSuccess: (data) => {
-        console.log('Course created successfully:', data);
-        // TODO: Navigate to course edit page or show success message
+        toast.success('Course created successfully!');
+        window.location.href = `/dashboard/courses/${data.id}`;
       },
       onError: (error) => {
         console.error('Failed to create course:', error);
-        // TODO: Show error toast
+        toast.error('Failed to create course. Please try again.');
       },
     });
   };

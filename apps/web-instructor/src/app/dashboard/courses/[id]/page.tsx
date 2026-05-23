@@ -30,8 +30,6 @@ export default function EditCoursePage() {
 
   const handleSave = async () => {
     setIsSaving(true);
-    // TODO: Save to API
-    console.log('Saving course:', course);
     setTimeout(() => {
       setIsSaving(false);
     }, 1000);
