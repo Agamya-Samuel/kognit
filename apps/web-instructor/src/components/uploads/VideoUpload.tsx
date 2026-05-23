@@ -57,7 +57,7 @@ export function VideoUpload({
         try {
           const response = await fetch(`/api/v1/uploads/${upload.uploadId}`, {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
             },
           });
 

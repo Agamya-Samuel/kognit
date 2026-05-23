@@ -18,10 +18,10 @@ import type {
   BulkGradeResponse,
 } from '@/types/assignments';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
-  const token = localStorage.getItem('access_token');
+  const token = localStorage.getItem('accessToken');
   const headers = {
     'Content-Type': 'application/json',
     ...(token && { Authorization: `Bearer ${token}` }),
