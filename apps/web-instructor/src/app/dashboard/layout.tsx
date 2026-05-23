@@ -11,6 +11,8 @@ import {
   DollarSign,
   Settings,
   LogOut,
+  ClipboardList,
+  Calendar,
 } from 'lucide-react';
 import { Button } from '@edutech/ui';
 import { useAuth } from '../../lib/auth-context';
@@ -18,6 +20,8 @@ import { useAuth } from '../../lib/auth-context';
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/courses', label: 'Courses', icon: BookOpen },
+  { href: '/assignments', label: 'Assignments', icon: ClipboardList },
+  { href: '/dashboard/schedule', label: 'Schedule', icon: Calendar },
   { href: '/dashboard/students', label: 'Students', icon: Users },
   { href: '/dashboard/analytics', label: 'Analytics', icon: DollarSign },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },

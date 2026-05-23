@@ -1,29 +1,46 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@edutech/ui';
+import { Card, CardContent, CardHeader, CardTitle, Spinner } from '@edutech/ui';
 import { Users, BookOpen, DollarSign, Calendar } from 'lucide-react';
+import { useDashboardMetrics, useRecentActivity, useUpcomingClasses } from '@/hooks/useCourses';
+import Link from 'next/link';
 
 export default function DashboardPage() {
-  // TODO: Replace with actual data from API
-  const metrics = [
-    { label: 'Total Students', value: '1,234', icon: Users, change: '+12%' },
-    { label: 'Active Courses', value: '8', icon: BookOpen, change: '+2' },
-    { label: 'Total Revenue', value: '₹2,45,000', icon: DollarSign, change: '+18%' },
-    { label: 'Upcoming Classes', value: '3', icon: Calendar, change: '' },
+  const { data: metrics, isLoading: metricsLoading, error: metricsError } = useDashboardMetrics();
+  const { data: recentActivity, isLoading: activityLoading } = useRecentActivity();
+  const { data: upcomingClasses, isLoading: classesLoading } = useUpcomingClasses();
+
+  const metricsData = metrics || {
+    totalStudents: 0,
+    activeCourses: 0,
+    totalRevenue: 0,
+    upcomingClasses: 0,
+  };
+
+  const safeNumber = (val: number | undefined | null): number => (typeof val === 'number' ? val : 0);
+
+  const metricsList = [
+    { label: 'Total Students', value: safeNumber(metricsData.totalStudents).toLocaleString(), icon: Users, change: '+12%' },
+    { label: 'Active Courses', value: safeNumber(metricsData.activeCourses).toString(), icon: BookOpen, change: '+2' },
+    { label: 'Total Revenue', value: `₹${safeNumber(metricsData.totalRevenue).toLocaleString('en-IN')}`, icon: DollarSign, change: '+18%' },
+    { label: 'Upcoming Classes', value: safeNumber(metricsData.upcomingClasses).toString(), icon: Calendar, change: '' },
   ];
 
-  const recentActivity = [
-    { id: 1, type: 'enrollment', message: 'John Doe enrolled in TypeScript Basics', time: '2 min ago' },
-    { id: 2, type: 'completion', message: 'Jane Smith completed React Patterns', time: '15 min ago' },
-    { id: 3, type: 'review', message: 'New review: "Excellent course!" on Node.js Fundamentals', time: '1 hour ago' },
-    { id: 4, type: 'enrollment', message: 'Mike Johnson enrolled in Advanced React', time: '2 hours ago' },
-  ];
+  if (metricsLoading || activityLoading || classesLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner className="h-8 w-8" />
+      </div>
+    );
+  }
 
-  const upcomingClasses = [
-    { id: 1, title: 'TypeScript Live Session', time: 'Today, 3:00 PM', enrolled: 45 },
-    { id: 2, title: 'React Patterns Q&A', time: 'Tomorrow, 10:00 AM', enrolled: 32 },
-    { id: 3, title: 'Node.js Best Practices', time: 'Friday, 2:00 PM', enrolled: 28 },
-  ];
+  if (metricsError) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-red-600">Failed to load dashboard metrics. Please try again.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -37,7 +54,7 @@ export default function DashboardPage() {
 
       {/* Metrics Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {metrics.map((metric) => {
+        {metricsList.map((metric) => {
           const Icon = metric.icon;
           return (
             <Card key={metric.label}>
@@ -70,15 +87,19 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentActivity.map((activity) => (
-                <div key={activity.id} className="flex items-start gap-3 border-b border-gray-100 dark:border-gray-800 pb-3 last:border-0 last:pb-0">
-                  <div className="mt-1 h-2 w-2 rounded-full bg-blue-500" />
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-900 dark:text-white">{activity.message}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{activity.time}</p>
+              {recentActivity?.length ? (
+                recentActivity.map((activity) => (
+                  <div key={activity.id} className="flex items-start gap-3 border-b border-gray-100 dark:border-gray-800 pb-3 last:border-0 last:pb-0">
+                    <div className="mt-1 h-2 w-2 rounded-full bg-blue-500" />
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-900 dark:text-white">{activity.message}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{activity.time}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-sm text-gray-500 dark:text-gray-400">No recent activity</p>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -90,27 +111,31 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {upcomingClasses.map((classItem) => (
-                <div
-                  key={classItem.id}
-                  className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-3 last:border-0 last:pb-0"
-                >
-                  <div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      {classItem.title}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{classItem.time}</p>
+              {upcomingClasses?.length ? (
+                upcomingClasses.map((classItem) => (
+                  <div
+                    key={classItem.id}
+                    className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-3 last:border-0 last:pb-0"
+                  >
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {classItem.title}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{classItem.time}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        {classItem.enrolledCount} enrolled
+                      </span>
+                      <Link href={`/live/${classItem.id}`} className="rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90">
+                        Start
+                      </Link>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      {classItem.enrolled} enrolled
-                    </span>
-                    <button className="rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90">
-                      Start
-                    </button>
-                  </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-sm text-gray-500 dark:text-gray-400">No upcoming classes</p>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -123,15 +148,15 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent>
           <div className="flex gap-3">
-            <button className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
+            <Link href="/dashboard/courses/create" className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
               Create Course
-            </button>
-            <button className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+            </Link>
+            <Link href="/dashboard/schedule" className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
               Schedule Class
-            </button>
-            <button className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+            </Link>
+            <Link href="/dashboard/analytics" className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
               View Analytics
-            </button>
+            </Link>
           </div>
         </CardContent>
       </Card>

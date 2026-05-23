@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
+import { useAuth } from '@/lib/auth-context';
 
 // Types
 export interface Course {
@@ -64,12 +65,15 @@ export interface UpcomingClass {
 // ─── Queries ───────────────────────────────────────────────────────────────────
 
 export function useInstructorCourses() {
+  const { user } = useAuth();
+  
   return useQuery({
     queryKey: ['courses', 'instructor'],
     queryFn: async () => {
-      const { data } = await api.get('/courses?instructorId=2'); // TODO: Get actual instructor ID
-      return data.data;
+      const response = await api.get(`/courses?instructorId=${user?.id}`);
+      return response.data.data || response.data;
     },
+    enabled: !!user?.id,
   });
 }
 
@@ -77,8 +81,8 @@ export function useCourse(id: number | string) {
   return useQuery({
     queryKey: ['course', id],
     queryFn: async () => {
-      const { data } = await api.get(`/courses/${id}`);
-      return data.data;
+      const response = await api.get(`/courses/${id}`);
+      return response.data.data || response.data;
     },
     enabled: !!id,
   });
@@ -88,13 +92,8 @@ export function useDashboardMetrics() {
   return useQuery({
     queryKey: ['dashboard', 'metrics'],
     queryFn: async () => {
-      // TODO: Replace with actual API endpoint
-      return {
-        totalStudents: 1234,
-        activeCourses: 8,
-        totalRevenue: 245000,
-        upcomingClasses: 3,
-      };
+      const response = await api.get('/analytics/instructor');
+      return response.data.data || response.data;
     },
   });
 }
@@ -103,12 +102,9 @@ export function useRecentActivity() {
   return useQuery({
     queryKey: ['dashboard', 'activity'],
     queryFn: async () => {
-      // TODO: Replace with actual API endpoint
-      return [
-        { id: 1, type: 'enrollment', message: 'John Doe enrolled in TypeScript Basics', time: '2 min ago' },
-        { id: 2, type: 'completion', message: 'Jane Smith completed React Patterns', time: '15 min ago' },
-        { id: 3, type: 'review', message: 'New review: "Excellent course!" on Node.js Fundamentals', time: '1 hour ago' },
-      ] as ActivityItem[];
+      const response = await api.get('/analytics/instructor');
+      const data = response.data.data || response.data;
+      return (data.recentActivity || []) as ActivityItem[];
     },
   });
 }
@@ -117,11 +113,9 @@ export function useUpcomingClasses() {
   return useQuery({
     queryKey: ['dashboard', 'upcoming-classes'],
     queryFn: async () => {
-      // TODO: Replace with actual API endpoint
-      return [
-        { id: 1, title: 'TypeScript Live Session', time: 'Today, 3:00 PM', enrolledCount: 45 },
-        { id: 2, title: 'React Patterns Q&A', time: 'Tomorrow, 10:00 AM', enrolledCount: 32 },
-      ] as UpcomingClass[];
+      const response = await api.get('/live/upcoming');
+      const data = response.data.data || response.data;
+      return (data || []) as UpcomingClass[];
     },
   });
 }
@@ -133,14 +127,12 @@ export function useCreateCourse() {
 
   return useMutation({
     mutationFn: async (courseData: Partial<Course>) => {
-      const { data } = await api.post('/courses', courseData);
-      return data.data;
+      const response = await api.post('/courses', courseData);
+      return response.data.data || response.data;
     },
     onSuccess: (_data, _variables) => {
       // Invalidate and refetch courses list
       queryClient.invalidateQueries({ queryKey: ['courses', 'instructor'] });
-      // Optionally navigate to the new course
-      // router.push(`/dashboard/courses/${data.id}`);
     },
     onError: (error) => {
       console.error('Failed to create course:', error);
@@ -153,8 +145,8 @@ export function useUpdateCourse() {
 
   return useMutation({
     mutationFn: async ({ id, ...courseData }: Partial<Course> & { id: number }) => {
-      const { data } = await api.put(`/courses/${id}`, courseData);
-      return data.data;
+      const response = await api.put(`/courses/${id}`, courseData);
+      return response.data.data || response.data;
     },
     onSuccess: (_data, variables) => {
       // Invalidate specific course query
@@ -191,8 +183,8 @@ export function useCreateSection() {
 
   return useMutation({
     mutationFn: async ({ courseId, ...sectionData }: Partial<Section> & { courseId: number }) => {
-      const { data } = await api.post(`/courses/${courseId}/sections`, sectionData);
-      return data.data;
+      const response = await api.post(`/courses/${courseId}/sections`, sectionData);
+      return response.data.data || response.data;
     },
     onSuccess: () => {
       // Invalidate course query to refresh sections
@@ -209,8 +201,8 @@ export function useUpdateSection() {
 
   return useMutation({
     mutationFn: async ({ courseId, sectionId, ...sectionData }: Partial<Section> & { courseId: number; sectionId: number }) => {
-      const { data } = await api.put(`/courses/${courseId}/sections/${sectionId}`, sectionData);
-      return data.data;
+      const response = await api.put(`/courses/${courseId}/sections/${sectionId}`, sectionData);
+      return response.data.data || response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['course'] });
@@ -243,8 +235,8 @@ export function useReorderSections() {
 
   return useMutation({
     mutationFn: async ({ courseId, sections }: { courseId: number; sections: Array<{ id: number; order: number }> }) => {
-      const { data } = await api.put(`/courses/${courseId}/sections/reorder`, { sections });
-      return data.data;
+      const response = await api.put(`/courses/${courseId}/sections/reorder`, { sections });
+      return response.data.data || response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['course'] });
@@ -260,8 +252,8 @@ export function useCreateLecture() {
 
   return useMutation({
     mutationFn: async ({ courseId, sectionId, ...lectureData }: Partial<Lecture> & { courseId: number; sectionId: number }) => {
-      const { data } = await api.post(`/courses/${courseId}/sections/${sectionId}/lectures`, lectureData);
-      return data.data;
+      const response = await api.post(`/courses/${courseId}/sections/${sectionId}/lectures`, lectureData);
+      return response.data.data || response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['course'] });
@@ -277,8 +269,8 @@ export function useUpdateLecture() {
 
   return useMutation({
     mutationFn: async ({ courseId, sectionId, lectureId, ...lectureData }: Partial<Lecture> & { courseId: number; sectionId: number; lectureId: number }) => {
-      const { data } = await api.put(`/courses/${courseId}/sections/${sectionId}/lectures/${lectureId}`, lectureData);
-      return data.data;
+      const response = await api.put(`/courses/${courseId}/sections/${sectionId}/lectures/${lectureId}`, lectureData);
+      return response.data.data || response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['course'] });
@@ -311,8 +303,8 @@ export function useReorderLectures() {
 
   return useMutation({
     mutationFn: async ({ courseId, sectionId, lectures }: { courseId: number; sectionId: number; lectures: Array<{ id: number; order: number }> }) => {
-      const { data } = await api.put(`/courses/${courseId}/sections/${sectionId}/lectures/reorder`, { lectures });
-      return data.data;
+      const response = await api.put(`/courses/${courseId}/sections/${sectionId}/lectures/reorder`, { lectures });
+      return response.data.data || response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['course'] });
@@ -328,8 +320,8 @@ export function useUpdateCoursePublishStatus() {
 
   return useMutation({
     mutationFn: async ({ courseId, isPublished }: { courseId: number; isPublished: boolean }) => {
-      const { data } = await api.patch(`/courses/${courseId}/publish`, { isPublished });
-      return data.data;
+      const response = await api.patch(`/courses/${courseId}/publish`, { isPublished });
+      return response.data.data || response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses', 'instructor'] });
