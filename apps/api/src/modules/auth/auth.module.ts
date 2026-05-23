@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { ConfigService, ConfigModule } from '@nestjs/config';
 import { DRIZZLE_DB } from '../../db/database.module';
 
 // Repositories
@@ -8,10 +9,12 @@ import { UsersRepository } from '../../db/repositories/users.repository';
 import { EmailVerificationsRepository } from '../../db/repositories/email-verifications.repository';
 import { PasswordResetsRepository } from '../../db/repositories/password-resets.repository';
 import { RefreshTokensRepository } from '../../db/repositories/refresh-tokens.repository';
+import { UserAuthProvidersRepository } from '../../db/repositories/user-auth-providers.repository';
 
 // Strategies
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
+import { GoogleOAuthStrategy } from './strategies/google-oauth.strategy';
 
 // Guards
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -50,12 +53,24 @@ const repositories = [
     useFactory: (db: any) => new RefreshTokensRepository(db),
     inject: [DRIZZLE_DB],
   },
+  {
+    provide: UserAuthProvidersRepository,
+    useFactory: (db: any) => new UserAuthProvidersRepository(db),
+    inject: [DRIZZLE_DB],
+  },
 ];
 
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
-    JwtModule.register({}),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'),
+        signOptions: { expiresIn: (configService.get<string>('JWT_EXPIRY') || '15m') as any },
+      }),
+      inject: [ConfigService],
+    }),
   ],
   controllers: [AuthController],
   providers: [
@@ -63,6 +78,7 @@ const repositories = [
     // Strategies
     JwtStrategy,
     JwtRefreshStrategy,
+    GoogleOAuthStrategy,
     // Guards
     JwtAuthGuard,
     JwtRefreshGuard,
