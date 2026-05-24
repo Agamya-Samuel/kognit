@@ -23,6 +23,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   setTokens: (accessToken: string, refreshToken: string) => void;
+  refreshTokens: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -55,10 +56,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       setUser(response.data);
     } catch {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      setAccessToken(null);
-      setRefreshToken(null);
+      const storedRefreshToken = localStorage.getItem('refreshToken');
+      if (storedRefreshToken) {
+        try {
+          const refreshResponse = await axios.post(`${API_BASE}/auth/refresh`, { refreshToken: storedRefreshToken });
+          const { data } = refreshResponse.data;
+          localStorage.setItem('accessToken', data.accessToken);
+          localStorage.setItem('refreshToken', data.refreshToken);
+          setAccessToken(data.accessToken);
+          setRefreshToken(data.refreshToken);
+          fetchProfile(data.accessToken);
+        } catch {
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          setAccessToken(null);
+          setRefreshToken(null);
+        }
+      } else {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        setAccessToken(null);
+        setRefreshToken(null);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -91,6 +110,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     fetchProfile(access);
   }, [fetchProfile]);
 
+  const refreshTokens = useCallback(async () => {
+    const storedRefreshToken = localStorage.getItem('refreshToken');
+    if (storedRefreshToken) {
+      try {
+        const response = await axios.post(`${API_BASE}/auth/refresh`, { refreshToken: storedRefreshToken });
+        const { data } = response.data;
+        localStorage.setItem('accessToken', data.accessToken);
+        localStorage.setItem('refreshToken', data.refreshToken);
+        setAccessToken(data.accessToken);
+        setRefreshToken(data.refreshToken);
+        await fetchProfile(data.accessToken);
+      } catch {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        setAccessToken(null);
+        setRefreshToken(null);
+        setUser(null);
+        throw new Error('Failed to refresh token');
+      }
+    } else {
+      throw new Error('No refresh token available');
+    }
+  }, [fetchProfile]);
+
   const value = {
     user,
     accessToken,
@@ -100,6 +143,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     login,
     logout,
     setTokens,
+    refreshTokens,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
