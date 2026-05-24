@@ -10,8 +10,7 @@ import { Textarea } from '@edutech/ui';
 import { ArrowLeft, Save } from 'lucide-react';
 import { useAssignment } from '@/hooks/useAssignments';
 import { useUpdateAssignment } from '@/hooks/useAssignments';
-import { Spinner } from '@edutech/ui';
-import { toast } from 'sonner';
+import Link from 'next/link';
 
 export default function EditAssignmentPage() {
   const params = useParams();
@@ -32,7 +31,7 @@ export default function EditAssignmentPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <Spinner className="h-8 w-8" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent" />
       </div>
     );
   }
@@ -40,7 +39,7 @@ export default function EditAssignmentPage() {
   if (!assignment) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500 dark:text-gray-400">Assignment not found</p>
+        <p className="text-muted-foreground">Assignment not found</p>
       </div>
     );
   }
@@ -50,23 +49,24 @@ export default function EditAssignmentPage() {
     try {
       const assignmentId = Number(Array.isArray(params.id) ? params.id[0] : (params.id || ''));
       await update({ id: assignmentId, dto: formData });
-      toast.success('Assignment updated successfully!');
-      router.push('/assignments');
+      router.push('/dashboard/assignments');
     } catch (error) {
-      toast.error('Failed to update assignment');
+      console.error('Failed to update assignment');
     }
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="outline" size="sm" onClick={() => router.back()} className="gap-2">
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </Button>
+        <Link href="/dashboard/assignments">
+          <Button variant="outline" size="sm" className="gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
+        </Link>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Edit Assignment</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Assignment ID: {params.id}</p>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Edit Assignment</h1>
+          <p className="text-sm text-muted-foreground">Assignment ID: {params.id}</p>
         </div>
       </div>
 
