@@ -1,17 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import { authService } from '@edutech/api-client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@edutech/ui';
 import { Button } from '@edutech/ui';
 import { Input } from '@edutech/ui';
 import { Label } from '@edutech/ui';
-import { Lock, ArrowLeft, CheckCircle } from 'lucide-react';
-import Link from 'next/link';
-import api from '@/lib/api';
+import { CheckCircle, Lock, ArrowLeft } from 'lucide-react';
 
 export default function ResetPasswordPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
 
@@ -40,7 +39,7 @@ export default function ResetPasswordPage() {
     }
 
     try {
-      await api.post('/auth/reset-password', { token, password, confirmPassword });
+      await authService.resetPassword(token, password, confirmPassword);
       setIsSuccess(true);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to reset password. Please try again.');

@@ -7,14 +7,12 @@ import { Button } from '@edutech/ui';
 import { Input } from '@edutech/ui';
 import { Label } from '@edutech/ui';
 import { ArrowRight, Mail, ShieldCheck, User, Lock } from 'lucide-react';
-import { useAuth } from '@/lib/auth-context';
-import api from '@/lib/api';
+import { authService } from '@edutech/api-client';
 
 type Step = 'email' | 'verify' | 'complete';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { login } = useAuth();
   const [step, setStep] = useState<Step>('email');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -38,7 +36,7 @@ export default function RegisterPage() {
     setError('');
 
     try {
-      await api.post('/auth/register/request', { email });
+      await authService.requestVerificationCode(email);
       setIsEmailSent(true);
       setStep('verify');
     } catch (err: any) {
@@ -54,7 +52,7 @@ export default function RegisterPage() {
     setError('');
 
     try {
-      await api.post('/auth/register/verify', { email, code });
+      await authService.verifyCode(email, code);
       setStep('complete');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Invalid verification code. Please try again.');
@@ -75,7 +73,7 @@ export default function RegisterPage() {
     }
 
     try {
-      await api.post('/auth/register/complete', { email, code, name, password });
+      await authService.completeRegistration(email, code, name, password);
       router.push('/auth/login');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
