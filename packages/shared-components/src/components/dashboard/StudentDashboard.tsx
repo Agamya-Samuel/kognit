@@ -1,8 +1,7 @@
 "use client"
 
-import * as React from "react"
 import { ArrowRight, BookOpen, CheckCircle2, Clock, Award } from "lucide-react"
-import { Card, CardContent } from "@edutech/ui"
+import { Card, CardContent, Skeleton } from "@edutech/ui"
 import { MetricCard, MetricCardGrid } from "./MetricCard"
 import { ActivityList } from "./ActivityList"
 import { QuickActions } from "./QuickActions"
@@ -70,10 +69,10 @@ export function StudentDashboard({
   }
 
   const metricsList = [
-    { label: "Enrolled Courses", value: metricsData.enrolledCourses, icon: BookOpen, trend: "neutral" as const },
-    { label: "Completed", value: metricsData.completedCourses, icon: CheckCircle2, trend: "neutral" as const },
-    { label: "Watch Time", value: formatDuration(metricsData.watchTime), icon: Clock, trend: "neutral" as const },
-    { label: "Certificates", value: metricsData.certificates, icon: Award, trend: "neutral" as const },
+    { label: "Enrolled Courses", value: metricsData.enrolledCourses, icon: <BookOpen className="h-5 w-5 text-muted-foreground" />, trend: "neutral" as const },
+    { label: "Completed", value: metricsData.completedCourses, icon: <CheckCircle2 className="h-5 w-5 text-muted-foreground" />, trend: "neutral" as const },
+    { label: "Watch Time", value: formatDuration(metricsData.watchTime), icon: <Clock className="h-5 w-5 text-muted-foreground" />, trend: "neutral" as const },
+    { label: "Certificates", value: metricsData.certificates, icon: <Award className="h-5 w-5 text-muted-foreground" />, trend: "neutral" as const },
   ]
 
   return (

@@ -1,8 +1,5 @@
 "use client"
 
-import * as React from "react"
-import { Menu } from "lucide-react"
-import { Button } from "@edutech/ui"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@edutech/ui"
-import { Avatar, AvatarFallback, AvatarImage } from "@edutech/ui"
+import { Avatar } from "@edutech/ui"
 import { LogOut, Settings, User } from "lucide-react"
 
 interface UserMenuProps {
@@ -26,7 +23,7 @@ interface UserMenuProps {
 }
 
 export function UserMenu({ user, onLogout, onProfile, onSettings }: UserMenuProps) {
-  const initials = user.name
+  const initials = (user.name ?? "")
     .split(" ")
     .map((n) => n[0])
     .join("")
@@ -37,10 +34,7 @@ export function UserMenu({ user, onLogout, onProfile, onSettings }: UserMenuProp
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button className="flex items-center gap-3 rounded-full hover:bg-accent transition-colors p-1">
-          <Avatar className="h-8 w-8">
-            {user.avatarUrl && <AvatarImage src={user.avatarUrl} alt={user.name} />}
-            <AvatarFallback>{initials}</AvatarFallback>
-          </Avatar>
+          <Avatar className="h-8 w-8" src={user.avatarUrl ?? null} alt={user.name} fallback={initials} />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
