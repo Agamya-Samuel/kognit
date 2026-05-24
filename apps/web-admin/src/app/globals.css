@@ -2,6 +2,9 @@
 @import '@edutech/ui/tokens';
 @import '@edutech/ui/tailwind-theme';
 
+@source "../../../../packages/shared-components/src";
+@source "../../../../packages/ui/src";
+
 @layer base {
   * {
     @apply border-border;
