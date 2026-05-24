@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from 'next-themes';
 import { PostHogProvider } from '@/lib/posthog';
+import { ApiProvider } from '@edutech/api-client';
 import { useState } from 'react';
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -11,8 +12,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 5 * 60 * 1000, // 5 minutes
-            gcTime: 10 * 60 * 1000, // 10 minutes
+            staleTime: 5 * 60 * 1000,
+            gcTime: 10 * 60 * 1000,
             retry: 1,
             refetchOnWindowFocus: false,
           },
@@ -31,7 +32,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
         enableSystem
         disableTransitionOnChange
       >
-        <PostHogProvider>{children}</PostHogProvider>
+        <ApiProvider>
+          <PostHogProvider>{children}</PostHogProvider>
+        </ApiProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
