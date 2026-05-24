@@ -91,8 +91,8 @@ export default function InstructorAssignmentsPage() {
             ))}
           </div>
         ) : error ? (
-          <ErrorState message={error} onRetry={refetch} />
-        ) : assignments.length === 0 ? (
+          <ErrorState message={error.message || 'Failed to load assignments'} onRetry={refetch} />
+        ) : !assignments || assignments.length === 0 ? (
           <EmptyState
             title="No assignments found"
             description="Create your first assignment to get started."

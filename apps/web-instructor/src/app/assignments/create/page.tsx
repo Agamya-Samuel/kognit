@@ -2,17 +2,15 @@
 
 import { useState } from 'react';
 import { useCreateAssignment } from '@/hooks/useAssignments';
-import { useInstructorCourses } from '@/hooks/useCourses';
-import { quizApi } from '@/lib/assignments-api';
+import { useMyCourses } from '@/hooks/useCourses';
 import { toast } from 'sonner';
-import { Card, CardContent } from '@edutech/ui';
 import { Spinner } from '@edutech/ui';
 
 type Step = 'details' | 'questions' | 'review';
 
 export default function CreateAssignmentPage() {
-  const { create, isLoading: isCreating } = useCreateAssignment();
-  const { data: courses, isLoading: coursesLoading } = useInstructorCourses();
+  const createAssignment = useCreateAssignment();
+  const { data: courses, isLoading: coursesLoading } = useMyCourses();
   const [currentStep, setCurrentStep] = useState<Step>('details');
   const [assignmentData, setAssignmentData] = useState({
     lectureId: 0,
@@ -40,15 +38,11 @@ export default function CreateAssignmentPage() {
   };
 
   const handleSubmit = async () => {
-    const result = await create(assignmentData);
-    if (result.success && result.assignment) {
-      if (assignmentData.type === 'mcq' && questions.length > 0) {
-        await quizApi.addQuestions(result.assignment.id, questions);
-      }
+    try {
+      await createAssignment.mutateAsync(assignmentData);
       toast.success('Assignment created successfully!');
-      window.location.href = '/assignments';
-    } else {
-      toast.error(result.error || 'Failed to create assignment');
+    } catch (error) {
+      toast.error('Failed to create assignment');
     }
   };
 
@@ -72,9 +66,6 @@ export default function CreateAssignmentPage() {
   const isDetailsValid = assignmentData.title && assignmentData.dueAt && assignmentData.maxScore > 0 && assignmentData.lectureId > 0;
   const isQuestionsValid = assignmentData.type !== 'mcq' || questions.length > 0;
   const canSubmit = isDetailsValid && isQuestionsValid;
-
-  const selectedCourse = courses?.find(c => c.id === selectedCourseId);
-  const allLectures = selectedCourse?.sections?.flatMap(s => s.lectures || []) || [];
 
   if (coursesLoading) {
     return (
@@ -155,21 +146,13 @@ export default function CreateAssignmentPage() {
                   value={assignmentData.lectureId || ''}
                   onChange={(e) => setAssignmentData({ ...assignmentData, lectureId: Number(e.target.value) })}
                   className="w-full rounded-md border border-input bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                  disabled={!selectedCourseId || allLectures.length === 0}
+                  disabled={!selectedCourseId}
                   required
                 >
                   <option value="">Select a lecture</option>
-                  {allLectures.map((lecture) => (
-                    <option key={lecture.id} value={lecture.id}>
-                      {lecture.title}
-                    </option>
-                  ))}
                 </select>
                 {!selectedCourseId && (
                   <p className="mt-1 text-xs text-gray-500">Select a course to see available lectures</p>
-                )}
-                {selectedCourseId && allLectures.length === 0 && (
-                  <p className="mt-1 text-xs text-gray-500">No lectures available in this course</p>
                 )}
               </div>
 
@@ -418,7 +401,7 @@ export default function CreateAssignmentPage() {
           <div className="mt-8 flex justify-between">
             <button
               onClick={handleBack}
-              disabled={currentStep === 'details' || isCreating}
+              disabled={currentStep === 'details' || createAssignment.isPending}
               className="rounded-md border border-input bg-background px-6 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
             >
               Back
@@ -430,7 +413,7 @@ export default function CreateAssignmentPage() {
                 disabled={
                   (currentStep === 'details' && !isDetailsValid) ||
                   (currentStep === 'questions' && !isQuestionsValid) ||
-                  isCreating
+                  createAssignment.isPending
                 }
                 className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
               >
@@ -439,10 +422,10 @@ export default function CreateAssignmentPage() {
             ) : (
               <button
                 onClick={handleSubmit}
-                disabled={!canSubmit || isCreating}
+                disabled={!canSubmit || createAssignment.isPending}
                 className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {isCreating ? 'Creating...' : 'Create Assignment'}
+                {createAssignment.isPending ? 'Creating...' : 'Create Assignment'}
               </button>
             )}
           </div>

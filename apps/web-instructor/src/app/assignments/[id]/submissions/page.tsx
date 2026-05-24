@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import type { Submission } from '@edutech/types';
 import { useAssignment } from '@/hooks/useAssignments';
 import { useAssignmentSubmissions } from '@/hooks/useGrading';
 import { useGrading } from '@/hooks/useGrading';
@@ -17,12 +18,12 @@ export default function AssignmentGradingPage({ params }: { params: { id: string
   const [selectedSubmission, setSelectedSubmission] = useState<number | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  const filteredSubmissions = submissions.filter((sub) => {
+  const filteredSubmissions = submissions ? submissions.filter((sub: Submission) => {
     if (statusFilter === 'all') return true;
     if (statusFilter === 'ungraded') return sub.score === null;
     if (statusFilter === 'graded') return sub.score !== null;
     return true;
-  });
+  }) : [];
 
   const handleGrade = async (score: number, feedback: string) => {
     if (selectedSubmission === null) return;
@@ -69,10 +70,11 @@ export default function AssignmentGradingPage({ params }: { params: { id: string
   }
 
   if (assignmentError || submissionsError) {
+    const errorMsg = (assignmentError?.message || submissionsError?.message || 'Failed to load data') as string;
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="mx-auto max-w-6xl">
-          <ErrorState message={assignmentError || submissionsError || 'Failed to load data'} />
+          <ErrorState message={errorMsg} />
         </div>
       </div>
     );
@@ -92,11 +94,11 @@ export default function AssignmentGradingPage({ params }: { params: { id: string
     );
   }
 
-  const gradedCount = submissions.filter((s) => s.score !== null).length;
-  const ungradedCount = submissions.length - gradedCount;
+  const gradedCount = submissions?.filter((s: Submission) => s.score !== null).length || 0;
+  const ungradedCount = (submissions?.length || 0) - gradedCount;
   const averageScore =
-    gradedCount > 0
-      ? Math.round(submissions.filter((s) => s.score !== null).reduce((acc, s) => acc + s.score!, 0) / gradedCount)
+    gradedCount > 0 && submissions
+      ? Math.round(submissions.filter((s: Submission) => s.score !== null).reduce((acc: number, s: Submission) => acc + (s.score || 0), 0) / gradedCount)
       : 0;
 
   return (
@@ -112,7 +114,7 @@ export default function AssignmentGradingPage({ params }: { params: { id: string
           <h1 className="mb-2 text-3xl font-bold">{assignment.title}</h1>
           <div className="flex items-center gap-6 text-sm">
             <span className="text-muted-foreground">Max Score: {assignment.maxScore}</span>
-            <span className="text-muted-foreground">Total Submissions: {submissions.length}</span>
+              <span className="text-muted-foreground">Total Submissions: {submissions?.length || 0}</span>
             <span className="text-green-600">Graded: {gradedCount}</span>
             <span className="text-orange-600">Ungraded: {ungradedCount}</span>
             <span className="text-blue-600">Average Score: {averageScore}</span>
@@ -164,7 +166,7 @@ export default function AssignmentGradingPage({ params }: { params: { id: string
               ← Back to submissions list
             </button>
             <GradingForm
-              submission={submissions.find((s) => s.id === selectedSubmission)!}
+              submission={submissions?.find((s: Submission) => s.id === selectedSubmission)!}
               maxScore={assignment.maxScore}
               onSubmit={handleGrade}
               onCancel={() => setSelectedSubmission(null)}
@@ -190,11 +192,10 @@ export default function AssignmentGradingPage({ params }: { params: { id: string
                 </tr>
               </thead>
               <tbody>
-                {filteredSubmissions.map((submission) => (
+                {filteredSubmissions.map((submission: Submission) => (
                   <tr key={submission.id} className="border-b hover:bg-accent/50">
                     <td className="px-6 py-4">
-                      <div className="font-medium">{submission.student?.name}</div>
-                      <div className="text-sm text-muted-foreground">{submission.student?.email}</div>
+                      <div className="font-medium">Student #{submission.studentId}</div>
                     </td>
                     <td className="px-6 py-4 text-sm">{formatDate(submission.submittedAt)}</td>
                     <td className="px-6 py-4">

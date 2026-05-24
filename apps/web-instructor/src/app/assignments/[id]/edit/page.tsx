@@ -16,8 +16,9 @@ import { toast } from 'sonner';
 export default function EditAssignmentPage() {
   const params = useParams();
   const router = useRouter();
-  const { data: assignment, isLoading } = useAssignment(params.id);
-  const { update, isPending: isUpdating } = useUpdateAssignment();
+  const { data: assignment, isLoading } = useAssignment(Array.isArray(params.id) ? params.id[0] : (params.id || ''));
+  const updateAssignment = useUpdateAssignment();
+  const { mutateAsync: update, isPending: isUpdating } = updateAssignment;
 
   const [formData, setFormData] = useState({
     title: '',
@@ -46,12 +47,13 @@ export default function EditAssignmentPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = await update(Number(params.id), formData);
-    if (result.success) {
+    try {
+      const assignmentId = Number(Array.isArray(params.id) ? params.id[0] : (params.id || ''));
+      await update({ id: assignmentId, dto: formData });
       toast.success('Assignment updated successfully!');
       router.push('/assignments');
-    } else {
-      toast.error(result.error || 'Failed to update assignment');
+    } catch (error) {
+      toast.error('Failed to update assignment');
     }
   };
 
