@@ -20,6 +20,15 @@ export type { LoginFormProps } from './components/LoginForm';
 export { SignupForm } from './components/SignupForm';
 export type { SignupFormProps } from './components/SignupForm';
 
+export { AuthLayout } from './components/AuthLayout';
+export type { AuthLayoutProps } from './components/AuthLayout';
+
+export { ForgotPasswordForm } from './components/ForgotPasswordForm';
+export type { ForgotPasswordFormProps } from './components/ForgotPasswordForm';
+
+export { ResetPasswordForm } from './components/ResetPasswordForm';
+export type { ResetPasswordFormProps } from './components/ResetPasswordForm';
+
 // Dashboard Components
 export {
   DashboardShell,
@@ -51,6 +60,9 @@ export { EmptyState } from './components/EmptyState';
 export { ErrorState } from './components/ErrorState';
 
 // Hooks
+export { useAuth, AuthProvider } from './hooks/useAuth';
+export type { AuthContextType, User } from './hooks/useAuth';
+
 export { usePlaybackUrl } from './hooks/usePlaybackUrl';
 export type { PlaybackUrlState, VideoStatusResponse } from './hooks/usePlaybackUrl';
 
