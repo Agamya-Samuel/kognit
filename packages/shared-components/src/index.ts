@@ -14,6 +14,35 @@ export type { LiveClassRoomProps } from './components/LiveClassRoom';
 export { ConnectionQualityIndicator } from './components/ConnectionQualityIndicator';
 export type { ConnectionQualityIndicatorProps } from './components/ConnectionQualityIndicator';
 
+// Dashboard Components
+export {
+  DashboardShell,
+  DashboardSidebar,
+  DashboardHeader,
+  MobileSidebar,
+  NavSection,
+  UserMenu,
+  MetricCard,
+  MetricCardGrid,
+  ActivityList,
+  QuickActions,
+  StatusBadge,
+  StudentDashboard,
+} from './components/dashboard';
+
+export type {
+  DashboardShellProps,
+  NavItem,
+  ActivityItem,
+  QuickAction,
+  StatusVariant,
+} from './components/dashboard';
+
+// State Components
+export { EmptyState } from './components/EmptyState';
+
+export { ErrorState } from './components/ErrorState';
+
 // Hooks
 export { usePlaybackUrl } from './hooks/usePlaybackUrl';
 export type { PlaybackUrlState, VideoStatusResponse } from './hooks/usePlaybackUrl';
