@@ -111,6 +111,12 @@ export class CourseQueryDto {
   @IsOptional()
   instructorId?: number;
 
+  @ApiPropertyOptional({ example: true, description: 'Return only courses for current instructor' })
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  @IsOptional()
+  instructorOnly?: boolean;
+
   @ApiPropertyOptional({ example: 'react', description: 'Search term' })
   @IsString()
   @IsOptional()

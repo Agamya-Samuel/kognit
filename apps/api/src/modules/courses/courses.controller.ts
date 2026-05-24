@@ -24,20 +24,24 @@ import { CreateCourseDto, UpdateCourseDto, CourseQueryDto } from './dto/course.d
 export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
 
-  // ─── Public: Browse Courses ─────────────────────────────────────────────
+  // ─── Public/Authenticated: Browse Courses ────────────────────────────────────
 
-  @Public()
   @Get()
   @ApiResponse({ status: 200, description: 'Paginated course list' })
-  @ApiOperation({ summary: 'List published courses with pagination, filtering, and search' })
-  async listCourses(@Query() query: CourseQueryDto) {
-    // Public listing only shows published courses
+  @ApiOperation({ summary: 'List courses with pagination, filtering, and search' })
+  async listCourses(@Query() query: CourseQueryDto, @CurrentUser() user?: JwtPayload) {
+    // Handle instructorOnly: when true, filter by current user's instructor ID
+    // Also, if authenticated, show unpublished courses belonging to this instructor
+    const instructorId = query.instructorOnly && user?.sub ? user.sub : query.instructorId;
+
+    const shouldShowUnpublished = query.instructorOnly && user?.sub;
+
     const result = await this.coursesService.listCourses({
       page: query.page,
       limit: query.limit,
       domain: query.domain,
-      isPublished: query.isPublished ?? true,
-      instructorId: query.instructorId,
+      isPublished: shouldShowUnpublished ? undefined : query.isPublished ?? true,
+      instructorId,
       search: query.search,
     });
 
