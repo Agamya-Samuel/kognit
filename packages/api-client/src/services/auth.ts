@@ -1,6 +1,25 @@
 import { getApiClient } from '../index';
 
+export interface LoginResponse {
+  user: {
+    id: number;
+    email: string;
+    name: string;
+    role: string;
+    avatarUrl?: string;
+    isVerified: boolean;
+  };
+  tokens: {
+    accessToken: string;
+    refreshToken: string;
+  };
+}
+
 export const authService = {
+  async login(email: string, password: string) {
+    return getApiClient().post<LoginResponse>('/auth/login', { email, password });
+  },
+
   async requestVerificationCode(email: string) {
     return getApiClient().post<any>('/auth/register/request', { email });
   },
