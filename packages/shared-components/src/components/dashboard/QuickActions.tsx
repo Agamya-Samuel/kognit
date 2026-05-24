@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@edutech/ui"
 import { Button } from "@edutech/ui"
