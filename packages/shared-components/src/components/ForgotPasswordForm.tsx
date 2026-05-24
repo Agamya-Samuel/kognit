@@ -10,10 +10,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@edutech/ui';
-import { Button, Input, Field, FieldGroup, FieldLabel, FieldDescription, cn } from '@edutech/ui';
+import { Button, Input, Field, FieldGroup, FieldLabel, cn } from '@edutech/ui';
 import { forgotPasswordSchema } from '@edutech/validation';
 
-export interface ForgotPasswordFormProps extends React.ComponentProps<'div'> {
+export interface ForgotPasswordFormProps extends Omit<React.ComponentProps<'div'>, 'onSubmit'> {
   onSubmit: (email: string) => void | Promise<void>;
   onBackClick?: () => void;
   isLoading?: boolean;

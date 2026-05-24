@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import {
   Card,
   CardContent,
@@ -11,16 +12,26 @@ import {
   CardTitle,
 } from '@edutech/ui';
 import { Button, Input, Field, FieldGroup, FieldLabel, FieldDescription, cn } from '@edutech/ui';
-import { resetPasswordSchema } from '@edutech/validation';
+import { passwordPolicy } from '@edutech/validation';
 
-export interface ResetPasswordFormProps extends React.ComponentProps<'div'> {
+export interface ResetPasswordFormProps extends Omit<React.ComponentProps<'div'>, 'onSubmit'> {
   token: string | null;
   onSubmit: (token: string, password: string, confirmPassword: string) => void | Promise<void>;
   onBackClick?: () => void;
   isLoading?: boolean;
 }
 
-type FormData = { password: string; confirmPassword: string };
+const resetFormSchema = z
+  .object({
+    password: passwordPolicy,
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
+
+type FormData = z.infer<typeof resetFormSchema>;
 
 export const ResetPasswordForm = React.forwardRef<HTMLDivElement, ResetPasswordFormProps>(
   ({ className, token, onSubmit, onBackClick, isLoading, ...props }, ref) => {
@@ -30,8 +41,8 @@ export const ResetPasswordForm = React.forwardRef<HTMLDivElement, ResetPasswordF
       register,
       handleSubmit,
       formState: { errors },
-    } = useForm<FormData>({
-      resolver: zodResolver(resetPasswordSchema),
+    } = useForm({
+      resolver: zodResolver(resetFormSchema),
     });
 
     const handleFormSubmit = async (data: FormData) => {
