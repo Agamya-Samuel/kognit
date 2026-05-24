@@ -2,6 +2,8 @@
 
 import { useVerifyCertificate } from '@/hooks/useCertificates';
 import { useParams } from 'next/navigation';
+import { Card, CardContent, CardHeader, CardTitle, Badge, Skeleton } from '@edutech/ui';
+import { CheckCircle2, XCircle, Award } from 'lucide-react';
 
 export default function VerifyCertificatePage() {
   const params = useParams();
@@ -10,8 +12,16 @@ export default function VerifyCertificatePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-pulse text-gray-400">Verifying certificate...</div>
+      <div className="min-h-screen flex items-center justify-center p-8">
+        <div className="max-w-md w-full">
+          <Card>
+            <CardContent className="p-8 text-center">
+              <Skeleton className="h-20 w-20 rounded-full mx-auto mb-4" />
+              <Skeleton className="h-8 w-1/2 mx-auto mb-2" />
+              <Skeleton className="h-4 w-3/4 mx-auto" />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
@@ -20,47 +30,66 @@ export default function VerifyCertificatePage() {
   const cert = data?.data?.certificate;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
+    <div className="min-h-screen flex items-center justify-center p-8 bg-muted/30">
       <div className="max-w-md w-full">
         {isValid && cert ? (
-          <div className="bg-white rounded-lg border border-green-200 p-8 text-center">
-            <div className="text-5xl mb-4 text-green-500">&#10003;</div>
-            <h1 className="text-2xl font-bold text-green-700 mb-2">Valid Certificate</h1>
-            <p className="text-gray-600 mb-6">This certificate is authentic.</p>
+          <Card className="border-green-200 bg-gradient-to-br from-green-50 to-white">
+            <CardHeader className="text-center">
+              <div className="mx-flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
+                <CheckCircle2 className="h-12 w-12 text-green-600" />
+              </div>
+              <CardTitle className="text-2xl text-green-700">Valid Certificate</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="bg-background rounded-lg p-4 space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Student</span>
+                  <span className="text-sm font-medium">{cert.studentName}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Course</span>
+                  <span className="text-sm font-medium">{cert.courseTitle}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Instructor</span>
+                  <span className="text-sm font-medium">{cert.instructorName}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Issued</span>
+                  <span className="text-sm font-medium">
+                    {new Date(cert.issuedAt).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Certificate ID</span>
+                  <span className="text-xs font-mono text-muted-foreground">{cert.certificateUid}</span>
+                </div>
+              </div>
 
-            <div className="bg-gray-50 rounded-lg p-4 text-left space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-500">Student</span>
-                <span className="text-sm font-medium">{cert.studentName}</span>
+              <div className="flex items-center justify-center gap-2 text-sm text-green-700">
+                <Award className="h-4 w-4" />
+                <span>This certificate is authentic and verified</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-500">Course</span>
-                <span className="text-sm font-medium">{cert.courseTitle}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-500">Instructor</span>
-                <span className="text-sm font-medium">{cert.instructorName}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-500">Issued</span>
-                <span className="text-sm font-medium">
-                  {new Date(cert.issuedAt).toLocaleDateString('en-IN', {
-                    year: 'numeric', month: 'long', day: 'numeric',
-                  })}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-500">Certificate ID</span>
-                <span className="text-xs font-mono text-gray-600">{cert.certificateUid}</span>
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         ) : (
-          <div className="bg-white rounded-lg border border-red-200 p-8 text-center">
-            <div className="text-5xl mb-4 text-red-500">&#10007;</div>
-            <h1 className="text-2xl font-bold text-red-700 mb-2">Invalid Certificate</h1>
-            <p className="text-gray-600">This certificate ID could not be verified.</p>
-          </div>
+          <Card className="border-destructive/50 bg-gradient-to-br from-destructive/5 to-background">
+            <CardHeader className="text-center">
+              <div className="mx-flex h-20 w-20 items-center justify-center rounded-full bg-destructive/10">
+                <XCircle className="h-12 w-12 text-destructive" />
+              </div>
+              <CardTitle className="text-2xl text-destructive">Invalid Certificate</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-center text-muted-foreground">
+                This certificate ID could not be verified. Please check the ID and try again.
+              </p>
+            </CardContent>
+          </Card>
         )}
       </div>
     </div>
