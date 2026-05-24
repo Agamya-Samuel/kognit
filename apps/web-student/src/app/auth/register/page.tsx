@@ -141,7 +141,7 @@ export default function RegisterPage() {
                   {...verifyForm.register('code')}
                   error={verifyForm.formState.errors.code?.message}
                 />
-                <FieldDescription>Code sent to {email}</FieldDescription>
+                <FieldDescription className="mt-2">Code sent to {email}</FieldDescription>
               </Field>
               <Field>
                 <Button type="submit" className="w-full" isLoading={isLoading}>
@@ -150,7 +150,7 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setStep('email')}
-                  className="w-full text-sm text-muted-foreground hover:text-foreground"
+                  className="mt-3 w-full text-sm text-muted-foreground hover:text-foreground"
                 >
                   Change email address
                 </button>
@@ -169,7 +169,7 @@ export default function RegisterPage() {
               <Field>
                 <FieldLabel htmlFor="password">Password</FieldLabel>
                 <Input id="password" type="password" {...completeForm.register('password')} error={completeForm.formState.errors.password?.message} />
-                <FieldDescription>Must be at least 8 characters with uppercase, lowercase, and number.</FieldDescription>
+                <FieldDescription className="mt-2">Must be at least 8 characters with uppercase, lowercase, and number.</FieldDescription>
               </Field>
               <Field>
                 <FieldLabel htmlFor="confirmPassword">Confirm Password</FieldLabel>

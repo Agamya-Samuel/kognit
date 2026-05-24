@@ -56,10 +56,10 @@ export const SignupForm = React.forwardRef<HTMLDivElement, SignupFormProps>(
                     <FieldLabel htmlFor="confirmPassword">Confirm Password</FieldLabel>
                     <Input id="confirmPassword" type="password" {...register('confirmPassword')} error={errors.confirmPassword?.message} />
                   </Field>
-                  <FieldDescription>
-                    Must be at least 8 characters long, 1 uppercase, 1 lowercase, and 1 number.
-                  </FieldDescription>
                 </Field>
+                <FieldDescription className="mt-2">
+                  Must be at least 8 characters long, 1 uppercase, 1 lowercase, and 1 number.
+                </FieldDescription>
                 <Field>
                   <Button type="submit" className="w-full" isLoading={isLoading}>
                     Create Account

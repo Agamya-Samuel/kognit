@@ -72,7 +72,7 @@ export const LoginForm = React.forwardRef<HTMLDivElement, LoginFormProps>(
                     )}
                   </Field>
                 )}
-                {hasSocialLogin && <FieldSeparator>Or continue with</FieldSeparator>}
+                {hasSocialLogin && <FieldSeparator className="my-4">Or continue with</FieldSeparator>}
                 <Field>
                   <FieldLabel htmlFor="email">Email</FieldLabel>
                   <Input id="email" type="email" placeholder="m@example.com" {...register('email')} error={errors.email?.message} />
