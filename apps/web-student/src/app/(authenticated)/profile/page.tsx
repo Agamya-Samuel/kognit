@@ -3,9 +3,11 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Input, Label, Avatar, AvatarFallback, AvatarImage, Switch, Separator, Badge } from '@edutech/ui';
 import { User, Mail, MapPin, GraduationCap, Settings, Shield, LogOut, Save, AlertTriangle, Trash2 } from 'lucide-react';
+import { useAuth } from '@edutech/shared-components';
 
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
+  const { logout } = useAuth();
   const [formData, setFormData] = useState({
     name: 'Student Name',
     email: 'student@example.com',
@@ -19,8 +21,7 @@ export default function ProfilePage() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    logout();
     window.location.href = '/auth/login';
   };
 

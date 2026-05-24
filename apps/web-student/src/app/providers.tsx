@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from 'next-themes';
 import { PostHogProvider } from '@/lib/posthog';
 import { ApiProvider } from '@edutech/api-client';
+import { AuthProvider } from '@edutech/shared-components';
 import { useState } from 'react';
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -32,8 +33,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
         enableSystem
         disableTransitionOnChange
       >
-        <ApiProvider>
-          <PostHogProvider>{children}</PostHogProvider>
+        <ApiProvider loginPath="/auth/login">
+          <AuthProvider>
+            <PostHogProvider>{children}</PostHogProvider>
+          </AuthProvider>
         </ApiProvider>
       </ThemeProvider>
     </QueryClientProvider>

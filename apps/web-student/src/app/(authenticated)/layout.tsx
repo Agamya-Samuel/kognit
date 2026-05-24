@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
-import { DashboardShell } from '@edutech/shared-components';
+import { DashboardShell, useAuth } from '@edutech/shared-components';
 import {
   LayoutDashboard,
   BookOpen,
@@ -38,6 +38,7 @@ const navItems: NavItem[] = [
 
 export default function AuthenticatedLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const { logout } = useAuth();
 
   const activeLabel = navItems.find((item) => pathname === item.href || pathname?.startsWith(item.href + '/'))?.label || 'Dashboard';
 
@@ -49,8 +50,7 @@ export default function AuthenticatedLayout({ children }: { children: ReactNode 
         user={{ name: 'Student' }}
         headerTitle={activeLabel}
         onLogout={() => {
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
+          logout();
           window.location.href = '/auth/login';
         }}
       >
