@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Spinner } from '@edutech/ui';
 import { CheckCircle2, XCircle, PauseCircle, Search, ChevronLeft, ChevronRight } from 'lucide-react';
-import api from '@/lib/api';
+import { adminService } from '@edutech/api-client';
 
 interface Course {
   id: number;
@@ -49,11 +49,7 @@ export default function CoursesPage() {
       if (publishFilter === 'draft') params.isPublished = false;
       if (search) params.search = search;
 
-      const { data } = await api.get<{ success: boolean; data: CoursesResponse }>(
-        '/admin/courses',
-        { params },
-      );
-      const result = data.data ?? data;
+      const result = await adminService.getCourses(params) as CoursesResponse;
       setCourses(result.courses ?? []);
       setTotal(result.total ?? 0);
     } catch {
@@ -72,35 +68,35 @@ export default function CoursesPage() {
 
   const handleApprove = async (id: number) => {
     try {
-      await api.patch(`/admin/courses/${id}/approve`);
+      await adminService.approveCourse(id);
       fetchCourses();
     } catch {
-      // Silently fail
+      console.error('Failed to approve course:', id);
     }
   };
 
   const handleSuspend = async () => {
     if (!actionId) return;
     try {
-      await api.patch(`/admin/courses/${actionId}/suspend`);
+      await adminService.suspendCourse(actionId, reason);
       setActionId(null);
       setActionType(null);
       fetchCourses();
     } catch {
-      // Silently fail
+      console.error('Failed to suspend course:', actionId);
     }
   };
 
   const handleReject = async () => {
     if (!actionId || !reason.trim()) return;
     try {
-      await api.patch(`/admin/courses/${actionId}/reject`, { reason });
+      await adminService.rejectCourse(actionId, reason);
       setActionId(null);
       setActionType(null);
       setReason('');
       fetchCourses();
     } catch {
-      // Silently fail
+      console.error('Failed to reject course:', actionId);
     }
   };
 

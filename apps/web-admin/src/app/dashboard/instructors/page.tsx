@@ -3,30 +3,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, Button, Spinner } from '@edutech/ui';
 import { CheckCircle2, XCircle, ChevronLeft, ChevronRight } from 'lucide-react';
-import api from '@/lib/api';
-
-interface InstructorProfile {
-  id: number;
-  userId: number;
-  userName: string;
-  userEmail: string;
-  bio: string | null;
-  expertise: string[];
-  approvalStatus: 'pending' | 'approved' | 'rejected';
-  createdAt: string;
-}
-
-interface InstructorsResponse {
-  instructors: InstructorProfile[];
-  total: number;
-  page: number;
-  limit: number;
-}
-
-const STATUS_FILTERS = ['pending', 'approved', 'rejected'];
+import { adminService } from '@edutech/api-client';
 
 export default function InstructorsPage() {
-  const [instructors, setInstructors] = useState<InstructorProfile[]>([]);
+  const [instructors, setInstructors] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
@@ -38,11 +18,11 @@ export default function InstructorsPage() {
   const fetchInstructors = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await api.get<{ success: boolean; data: InstructorsResponse }>(
-        '/admin/instructors',
-        { params: { page, limit, status: statusFilter } },
-      );
-      const result = data.data ?? data;
+      const result = await adminService.getInstructors({
+        page,
+        limit,
+        status: statusFilter,
+      });
       setInstructors(result.instructors ?? []);
       setTotal(result.total ?? 0);
     } catch {
@@ -61,30 +41,33 @@ export default function InstructorsPage() {
 
   const handleApprove = async (id: number) => {
     try {
-      await api.patch(`/admin/instructors/${id}/approve`);
+      await adminService.approveInstructor(id);
       fetchInstructors();
     } catch {
-      // Silently fail
+      console.error('Failed to approve instructor:', id);
     }
   };
 
   const handleReject = async () => {
     if (!rejectingId || !rejectReason.trim()) return;
     try {
-      await api.patch(`/admin/instructors/${rejectingId}/reject`, { reason: rejectReason });
+      await adminService.rejectInstructor(rejectingId, rejectReason);
       setRejectingId(null);
       setRejectReason('');
       fetchInstructors();
     } catch {
-      // Silently fail
+      console.error('Failed to reject instructor:', rejectingId);
     }
   };
 
   const statusColor = (status: string) => {
     switch (status) {
-      case 'approved': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-      case 'rejected': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-      default: return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+      case 'approved':
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      case 'rejected':
+        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+      default:
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
     }
   };
 
