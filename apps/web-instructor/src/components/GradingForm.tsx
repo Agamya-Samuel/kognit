@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Submission } from '@/types/assignments';
+import type { Submission } from '@edutech/types';
 
 interface GradingFormProps {
   submission: Submission;

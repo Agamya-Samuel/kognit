@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { UploadCloud, X, Check, AlertCircle, Pause, RefreshCw } from 'lucide-react';
+import { uploadsService } from '@edutech/api-client';
 
 interface FileUploadProps {
   lectureId: number;
@@ -47,7 +48,6 @@ export function VideoUpload({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Poll upload progress
   useEffect(() => {
     let pollInterval: NodeJS.Timeout;
 
@@ -55,42 +55,32 @@ export function VideoUpload({
       setIsPolling(true);
       pollInterval = setInterval(async () => {
         try {
-          const response = await fetch(`/api/v1/uploads/${upload.uploadId}`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-            },
-          });
-
-          if (!response.ok) {
-            throw new Error('Failed to fetch upload progress');
-          }
-
-          const progress = await response.json();
+          const progress = await uploadsService.getStatus(upload.uploadId.toString());
 
           setUpload((prev) => {
             if (!prev) return null;
 
             return {
               ...prev,
-              status: progress.status,
-              progress: progress.status === 'complete' ? 100 : prev.progress,
-              errorMessage: progress.errorMessage,
+              status: progress.status === 'completed' ? 'complete' : progress.status as any,
+              progress: progress.status === 'completed' ? 100 : prev.progress,
+              errorMessage: progress.error,
             };
           });
 
-          if (progress.status === 'complete') {
+          if (progress.status === 'completed') {
             setIsPolling(false);
             clearInterval(pollInterval);
             onUploadComplete?.(upload.uploadId);
           } else if (progress.status === 'failed') {
             setIsPolling(false);
             clearInterval(pollInterval);
-            onUploadError?.(progress.errorMessage || 'Upload failed');
+            onUploadError?.(progress.error || 'Upload failed');
           }
         } catch (error) {
           console.error('Error polling upload progress:', error);
         }
-      }, 2000); // Poll every 2 seconds
+      }, 2000);
     }
 
     return () => {
@@ -139,13 +129,11 @@ export function VideoUpload({
   };
 
   const handleFileSelection = (file: File) => {
-    // Validate file type
     if (!allowedTypes.includes(file.type)) {
       onUploadError?.(`Invalid file type. Allowed types: ${allowedTypes.join(', ')}`);
       return;
     }
 
-    // Validate file size
     if (file.size > maxSize) {
       onUploadError?.(`File size exceeds maximum allowed size of ${maxSize / 1024 / 1024}MB`);
       return;
@@ -160,28 +148,14 @@ export function VideoUpload({
     try {
       abortControllerRef.current = new AbortController();
 
-      // Request upload URL
-      const response = await fetch(`/api/v1/uploads/request-url/${lectureId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({
-          fileName: selectedFile.name,
-          contentType: selectedFile.type,
-          fileSize: selectedFile.size,
-        }),
+      const uploadData = await uploadsService.requestUrl(lectureId, {
+        fileName: selectedFile.name,
+        contentType: selectedFile.type,
+        fileSize: selectedFile.size,
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to request upload URL');
-      }
-
-      const uploadData = await response.json();
-
       setUpload({
-        uploadId: uploadData.uploadId,
+        uploadId: Number(uploadData.uploadId),
         status: 'uploading',
         progress: 0,
         fileName: selectedFile.name,
@@ -189,18 +163,7 @@ export function VideoUpload({
         uploadUrl: uploadData.uploadUrl,
       });
 
-      // Upload to S3
       await uploadToS3(uploadData.uploadUrl, selectedFile, abortControllerRef.current.signal);
-
-      // Update status to uploading
-      await fetch(`/api/v1/uploads/${uploadData.uploadId}/status`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({ status: 'uploading' }),
-      });
     } catch (error: any) {
       if (error.name !== 'AbortError') {
         console.error('Upload error:', error);
@@ -216,7 +179,6 @@ export function VideoUpload({
       xhr.open('PUT', url);
       xhr.setRequestHeader('Content-Type', file.type);
 
-      // Track progress
       xhr.upload.addEventListener('progress', (e) => {
         if (e.lengthComputable) {
           const progress = (e.loaded / e.total) * 100;
@@ -224,7 +186,6 @@ export function VideoUpload({
         }
       });
 
-      // Handle completion
       xhr.addEventListener('load', () => {
         if (xhr.status >= 200 && xhr.status < 300) {
           resolve(xhr.response);
@@ -233,17 +194,14 @@ export function VideoUpload({
         }
       });
 
-      // Handle errors
       xhr.addEventListener('error', () => {
         reject(new Error('Network error during upload'));
       });
 
-      // Handle abort
       xhr.addEventListener('abort', () => {
         reject(new DOMException('Upload aborted', 'AbortError'));
       });
 
-      // Listen for abort signal
       signal.addEventListener('abort', () => {
         xhr.abort();
       });
@@ -255,19 +213,12 @@ export function VideoUpload({
   const handleCancelUpload = async () => {
     if (!upload?.uploadId) return;
 
-    // Abort S3 upload
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
 
-    // Cancel upload on server
     try {
-      await fetch(`/api/v1/uploads/${upload.uploadId}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
+      await uploadsService.deleteUpload(upload.uploadId.toString());
     } catch (error) {
       console.error('Error cancelling upload:', error);
     }
@@ -390,7 +341,6 @@ export function VideoUpload({
             )}
           </div>
 
-          {/* Progress bar */}
           {upload.status === 'uploading' && (
             <>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-2">
@@ -410,7 +360,6 @@ export function VideoUpload({
             </>
           )}
 
-          {/* Status messages */}
           {upload.status === 'complete' && (
             <div className="flex items-center text-green-600 dark:text-green-400">
               <Check className="h-5 w-5 mr-2" />
