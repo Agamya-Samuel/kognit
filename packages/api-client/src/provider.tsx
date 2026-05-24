@@ -15,6 +15,13 @@ export function ApiProvider({ children, loginPath = '/auth/login' }: ApiProvider
     initApiClient({
       baseURL: process.env.NEXT_PUBLIC_API_URL!,
       getToken: () => typeof window !== 'undefined' ? localStorage.getItem(TOKEN_KEY) : null,
+      getRefreshToken: () => typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null,
+      onTokenRefreshed: (accessToken, refreshToken) => {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(TOKEN_KEY, accessToken);
+          localStorage.setItem('refreshToken', refreshToken);
+        }
+      },
       onUnauthorized: () => {
         if (typeof window !== 'undefined') {
           localStorage.removeItem(TOKEN_KEY);
