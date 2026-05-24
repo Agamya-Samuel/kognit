@@ -5,9 +5,10 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@edutech/ui';
 import { Button } from '@edutech/ui';
 import { Badge } from '@edutech/ui';
-import { Plus, Edit, Eye } from 'lucide-react';
+import { Plus, Edit, Eye, BookOpen, Users, DollarSign } from 'lucide-react';
 import type { Course } from '@edutech/types';
 import { useMyCourses } from '@/hooks/useCourses';
+import { StatCard, StatsRow } from '@/components/StatsRow';
 
 interface CourseWithMetrics extends Course {
   enrollmentCount: number;
@@ -21,90 +22,65 @@ export default function CoursesPage() {
     return (
       <div className="flex h-96 items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-500 dark:text-gray-400">Failed to load courses</p>
-          <button onClick={() => window.location.reload()} className="mt-4 text-blue-600 hover:text-blue-700">
+          <p className="text-muted-foreground">Failed to load courses</p>
+          <Button onClick={() => window.location.reload()} variant="outline" className="mt-4">
             Try Again
-          </button>
+          </Button>
         </div>
       </div>
     );
   }
 
-  const courseList = courses?.map(c => ({ ...c, enrollmentCount: 0, revenue: 0 })) || [];
+  const courseList = courses?.map((c: Course) => ({ ...c, enrollmentCount: 0, revenue: 0 })) || [] as CourseWithMetrics[];
+
+  const totalEnrollments = courseList.reduce((sum: number, c: CourseWithMetrics) => sum + (c.enrollmentCount || 0), 0);
+  const totalRevenue = courseList.reduce((sum: number, c: CourseWithMetrics) => sum + (c.revenue || 0), 0);
+  const publishedCount = courseList.filter((c: CourseWithMetrics) => c.isPublished).length;
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Courses</h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Courses</h1>
+          <p className="mt-2 text-muted-foreground">
             Manage your courses, track enrollments, and monitor performance.
           </p>
         </div>
-        <Link href="/dashboard/courses/create" className="gap-2">
-          <Button className="gap-2">
-            <Plus className="h-4 w-4" />
+        <Link href="/dashboard/courses/create">
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
             Create Course
           </Button>
         </Link>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
-              Total Courses
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <Skeleton className="h-8 w-16" />
-            ) : (
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                {courseList.length}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+      <StatsRow>
+        <StatCard
+          title="Total Courses"
+          value={isLoading ? '...' : courseList.length.toString()}
+          icon={BookOpen}
+          iconClassName="bg-blue-500/10 text-blue-600 dark:text-blue-400"
+        />
+        <StatCard
+          title="Published"
+          value={isLoading ? '...' : publishedCount.toString()}
+          icon={BookOpen}
+          iconClassName="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+        />
+        <StatCard
+          title="Total Enrollments"
+          value={isLoading ? '...' : totalEnrollments.toLocaleString()}
+          icon={Users}
+          iconClassName="bg-purple-500/10 text-purple-600 dark:text-purple-400"
+        />
+        <StatCard
+          title="Total Revenue"
+          value={`₹${isLoading ? '...' : totalRevenue.toLocaleString('en-IN')}`}
+          icon={DollarSign}
+          iconClassName="bg-orange-500/10 text-orange-600 dark:text-orange-400"
+        />
+      </StatsRow>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
-              Published Courses
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <Skeleton className="h-8 w-16" />
-            ) : (
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                {courseList.filter((c: CourseWithMetrics) => c.isPublished).length}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
-              Total Enrollments
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <Skeleton className="h-8 w-16" />
-            ) : (
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                {courseList.reduce((sum: number, c: CourseWithMetrics) => sum + (c.enrollmentCount || 0), 0)}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Courses Table */}
       <Card>
         <CardHeader>
           <CardTitle>Your Courses</CardTitle>
@@ -113,35 +89,31 @@ export default function CoursesPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-200 dark:border-gray-800">
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+                <tr className="border-b">
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">
                     Course
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">
                     Status
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">
                     Enrollments
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">
                     Revenue
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">
                     Last Updated
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+                  <th className="px-4 py-3 text-right text-xs font-medium uppercase text-muted-foreground">
                     Actions
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {isLoading ? (
-                  // Skeleton loading rows
                   Array.from({ length: 3 }).map((_, index) => (
-                    <tr
-                      key={`skeleton-${index}`}
-                      className="border-b border-gray-100 dark:border-gray-800"
-                    >
+                    <tr key={`skeleton-${index}`} className="border-b">
                       <td className="px-4 py-4">
                         <div className="space-y-2">
                           <Skeleton className="h-5 w-48" />
@@ -170,47 +142,41 @@ export default function CoursesPage() {
                   ))
                 ) : (
                   courseList.map((course: CourseWithMetrics) => (
-                  <tr
-                    key={course.id}
-                    className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50"
-                  >
-                    <td className="px-4 py-4">
-                      <div>
-                        <div className="font-medium text-gray-900 dark:text-white">
-                          {course.title}
+                    <tr
+                      key={course.id}
+                      className="border-b hover:bg-accent/50 transition-colors"
+                    >
+                      <td className="px-4 py-4">
+                        <div>
+                          <div className="font-medium text-foreground">{course.title}</div>
+                          <div className="text-sm text-muted-foreground">{course.domain}</div>
                         </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {course.domain}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4">
-                      <Badge variant={course.isPublished ? 'default' : 'secondary'}>
-                        {course.isPublished ? 'Published' : 'Draft'}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-4 text-sm text-gray-900 dark:text-white">
-                      {course.enrollmentCount}
-                    </td>
-                    <td className="px-4 py-4 text-sm text-gray-900 dark:text-white">
-                      ₹{(course.revenue || 0).toLocaleString('en-IN')}
-                    </td>
-                    <td className="px-4 py-4 text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(course.updatedAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-4 py-4 text-right">
-                      <div className="flex justify-end gap-2">
-                        <Link href={`/dashboard/courses/${course.id}`}>
-                          <Button variant="ghost" size="sm">
-                            <Edit className="h-4 w-4" />
+                      </td>
+                      <td className="px-4 py-4">
+                        <Badge variant={course.isPublished ? 'default' : 'secondary'}>
+                          {course.isPublished ? 'Published' : 'Draft'}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-4 text-sm text-foreground">{course.enrollmentCount}</td>
+                      <td className="px-4 py-4 text-sm text-foreground">
+                        ₹{(course.revenue || 0).toLocaleString('en-IN')}
+                      </td>
+                      <td className="px-4 py-4 text-sm text-muted-foreground">
+                        {new Date(course.updatedAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-4 py-4 text-right">
+                        <div className="flex justify-end gap-2">
+                          <Link href={`/dashboard/courses/${course.id}`}>
+                            <Button variant="ghost" size="icon">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                          <Button variant="ghost" size="icon">
+                            <Eye className="h-4 w-4" />
                           </Button>
-                        </Link>
-                        <Button variant="ghost" size="sm">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
+                        </div>
+                      </td>
+                    </tr>
                   ))
                 )}
               </tbody>
