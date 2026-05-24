@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import { Badge } from "@edutech/ui"
 import { cn } from "../../lib/utils"
 
