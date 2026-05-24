@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@edutech/ui';
 import { Button } from '@edutech/ui';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@edutech/ui';
 import { Input } from '@edutech/ui';
 import { Label } from '@edutech/ui';
-import { Spinner } from '@edutech/ui';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@edutech/ui';
 import { Plus, Calendar as CalendarIcon, Clock, Users, Video, Eye, Edit } from 'lucide-react';
 import { useUpcomingClasses } from '@/hooks/useCourses';
 import { useInstructorSchedule } from '@/hooks/useSchedule';
+import { StatCard, StatsRow } from '@/components/StatsRow';
 
 export default function SchedulePage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -35,151 +37,53 @@ export default function SchedulePage() {
     });
   };
 
+  const thisWeekCount = calendarData.filter((event: any) => {
+    const eventDate = new Date(event.date);
+    const now = new Date();
+    const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    return eventDate >= now && eventDate <= weekFromNow;
+  }).length;
+
+  const totalEnrolled = scheduledClasses.reduce((acc, cls: any) => acc + (cls.enrolledCount || 0), 0);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Schedule</h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Schedule</h1>
+          <p className="mt-2 text-muted-foreground">
             Manage your live class schedule and upcoming sessions
           </p>
         </div>
-        <Button onClick={() => setShowCreateModal(true)} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Schedule Class
-        </Button>
-      </div>
-
-      {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <Spinner className="h-8 w-8" />
-        </div>
-      ) : (
-        <>
-          <div className="grid gap-6 lg:grid-cols-3">
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CalendarIcon className="h-5 w-5" />
-                  Calendar View
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-96 flex items-center justify-center text-gray-500 dark:text-gray-400">
-                  Calendar component coming soon
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Stats</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
-                    <CalendarIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Total Scheduled</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{scheduledClasses.length}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
-                    <Users className="h-5 w-5 text-green-600 dark:text-green-400" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Total Enrolled</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                      {scheduledClasses.reduce((acc, cls: any) => acc + (cls.enrolledCount || 0), 0)}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
-                    <Video className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">This Week</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                      {calendarData.length}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Upcoming Classes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {scheduledClasses.length === 0 ? (
-                <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                  No upcoming classes scheduled
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {scheduledClasses.map((cls: any) => (
-                    <div
-                      key={cls.id}
-                      className="flex items-start justify-between p-4 border border-gray-200 dark:border-gray-800 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800"
-                    >
-                      <div className="flex-1">
-                        <h3 className="font-medium text-gray-900 dark:text-white">{cls.title}</h3>
-                        <div className="mt-2 flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                          <div className="flex items-center gap-1">
-                            <CalendarIcon className="h-4 w-4" />
-                            <span>{formatDate(cls.time)}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-4 w-4" />
-                            <span>{formatTime(cls.time)}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Users className="h-4 w-4" />
-                            <span>{cls.enrolledCount || 0} enrolled</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <button className="p-2 text-blue-600 hover:text-blue-700">
-                          <Eye className="h-4 w-4" />
-                        </button>
-                        <button className="p-2 text-gray-600 hover:text-gray-700">
-                          <Edit className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </>
-      )}
-
-      {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <Card className="w-full max-w-lg">
-            <CardHeader>
-              <CardTitle>Schedule Live Class</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+        <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Schedule Class
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Schedule Live Class</DialogTitle>
+              <DialogDescription>Create a new live class session for your students.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="title">Class Title</Label>
                 <Input id="title" placeholder="Enter class title" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="course">Course</Label>
-                <select
-                  id="course"
-                  className="w-full px-3 py-2 border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-                >
-                  <option value="">Select a course</option>
-                </select>
+                <Select>
+                  <SelectTrigger id="course">
+                    <SelectValue placeholder="Select a course" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="course1">TypeScript Basics</SelectItem>
+                    <SelectItem value="course2">React Patterns</SelectItem>
+                    <SelectItem value="course3">Node.js Fundamentals</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -199,11 +103,156 @@ export default function SchedulePage() {
                 <Button variant="outline" onClick={() => setShowCreateModal(false)}>
                   Cancel
                 </Button>
-                <Button>Schedule Class</Button>
+                <Button onClick={() => setShowCreateModal(false)}>Schedule Class</Button>
               </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <StatsRow>
+        <StatCard
+          title="Total Scheduled"
+          value={scheduledClasses.length.toString()}
+          icon={CalendarIcon}
+          iconClassName="bg-blue-500/10 text-blue-600 dark:text-blue-400"
+        />
+        <StatCard
+          title="Total Enrolled"
+          value={totalEnrolled.toString()}
+          icon={Users}
+          iconClassName="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+        />
+        <StatCard
+          title="This Week"
+          value={thisWeekCount.toString()}
+          icon={Video}
+          iconClassName="bg-purple-500/10 text-purple-600 dark:text-purple-400"
+        />
+      </StatsRow>
+
+      {isLoading ? (
+        <Card>
+          <CardContent className="flex items-center justify-center py-12">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent" />
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          <div className="grid gap-6 lg:grid-cols-3">
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CalendarIcon className="h-5 w-5" />
+                  Calendar View
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-96 flex items-center justify-center text-muted-foreground">
+                  Calendar component coming soon
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Upcoming Classes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {scheduledClasses.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
+                    <CalendarIcon className="h-8 w-8 mb-2" />
+                    <p>No upcoming classes scheduled</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {scheduledClasses.slice(0, 5).map((cls: any) => (
+                      <div
+                        key={cls.id}
+                        className="rounded-lg border p-4 hover:bg-accent/50 transition-colors"
+                      >
+                        <h3 className="font-medium text-foreground">{cls.title}</h3>
+                        <div className="mt-2 flex flex-col gap-2 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <CalendarIcon className="h-3.5 w-3.5" />
+                            <span>{formatDate(cls.time)}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-3.5 w-3.5" />
+                            <span>{formatTime(cls.time)}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Users className="h-3.5 w-3.5" />
+                            <span>{cls.enrolledCount || 0} enrolled</span>
+                          </div>
+                        </div>
+                        <div className="mt-3 flex gap-2">
+                          <Button variant="outline" size="sm" className="flex-1">
+                            <Eye className="h-3.5 w-3.5 mr-1" />
+                            View
+                          </Button>
+                          <Button variant="outline" size="sm" className="flex-1">
+                            <Edit className="h-3.5 w-3.5 mr-1" />
+                            Edit
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>All Scheduled Classes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {scheduledClasses.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
+                  <CalendarIcon className="h-8 w-8 mb-2" />
+                  <p>No upcoming classes scheduled</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {scheduledClasses.map((cls: any) => (
+                    <div
+                      key={cls.id}
+                      className="flex items-start justify-between rounded-lg border p-4 hover:bg-accent/50 transition-colors"
+                    >
+                      <div className="flex-1">
+                        <h3 className="font-medium text-foreground">{cls.title}</h3>
+                        <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <CalendarIcon className="h-4 w-4" />
+                            <span>{formatDate(cls.time)}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-4 w-4" />
+                            <span>{formatTime(cls.time)}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Users className="h-4 w-4" />
+                            <span>{cls.enrolledCount || 0} enrolled</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 ml-4">
+                        <Button variant="outline" size="icon">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="outline" size="icon">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
-        </div>
+        </>
       )}
     </div>
   );
