@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { Clock, CheckCircle, Play, BookOpen, ArrowRight } from 'lucide-react';
 import { progressService } from '@edutech/api-client';
 import type { WatchHistoryResponse } from '@/types/courses';
+import { EmptyState, ErrorState, StatusBadge } from '@edutech/shared-components';
+import { Progress } from '@edutech/ui';
 
 export default function WatchHistoryPage() {
   const router = useRouter();
@@ -44,150 +46,128 @@ export default function WatchHistoryPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Watch History</h1>
-          <p className="text-gray-500 mt-1">Track your learning progress across all courses</p>
-        </div>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">Watch History</h1>
+        <p className="text-muted-foreground mt-1">Track your learning progress across all courses</p>
+      </div>
 
-        {isLoading && (
-          <div className="space-y-4">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="bg-white rounded-lg border p-4 animate-pulse">
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 bg-gray-200 rounded-full" />
-                  <div className="flex-1">
-                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
-                    <div className="h-3 bg-gray-200 rounded w-1/2" />
-                  </div>
+      {isLoading && (
+        <div className="space-y-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="bg-card rounded-lg border p-4 animate-pulse">
+              <div className="flex items-start gap-4">
+                <div className="w-8 h-8 bg-muted rounded-full" />
+                <div className="flex-1">
+                  <div className="h-4 bg-muted rounded w-3/4 mb-2" />
+                  <div className="h-3 bg-muted rounded w-1/2" />
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          ))}
+        </div>
+      )}
 
-        {error && (
-          <div className="bg-white rounded-lg border p-8 text-center">
-            <p className="text-red-500 mb-4">Failed to load watch history</p>
-            <button
-              onClick={() => refetch()}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors"
-            >
-              Try Again
-            </button>
-          </div>
-        )}
+      {error && (
+        <ErrorState
+          message="Failed to load watch history"
+          onRetry={() => refetch()}
+        />
+      )}
 
-        {data && data.items.length === 0 && (
-          <div className="bg-white rounded-lg border p-12 text-center">
-            <BookOpen size={48} className="mx-auto text-gray-300 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No watch history yet</h3>
-            <p className="text-gray-500 mb-6">
-              Start watching lectures to see your progress here.
-            </p>
-            <button
-              onClick={() => router.push('/courses')}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors"
-            >
-              Browse Courses
-              <ArrowRight size={16} />
-            </button>
-          </div>
-        )}
+      {data && data.items.length === 0 && (
+        <EmptyState
+          title="No watch history yet"
+          description="Start watching lectures to see your progress here."
+          icon={<BookOpen className="h-12 w-12 text-muted-foreground" />}
+          action={{
+            label: "Browse Courses",
+            onClick: () => router.push('/courses')
+          }}
+        />
+      )}
 
-        {data && data.items.length > 0 && (
-          <>
-            <div className="space-y-3">
-              {data.items.map((item) => (
-                <button
-                  key={`${item.lectureId}-${item.lastWatchedAt}`}
-                  onClick={() =>
-                    router.push(`/courses/${item.courseId}/lectures/${item.lectureId}`)
-                  }
-                  className="w-full text-left bg-white rounded-lg border hover:border-blue-300 hover:shadow-sm transition-all p-4"
-                >
-                  <div className="flex items-start gap-4">
-                    <div
-                      className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-                        item.isCompleted
-                          ? 'bg-green-100 text-green-600'
-                          : 'bg-blue-100 text-blue-600'
-                      }`}
-                    >
-                      {item.isCompleted ? (
-                        <CheckCircle size={20} />
-                      ) : (
-                        <Play size={20} />
+      {data && data.items.length > 0 && (
+        <>
+          <div className="space-y-3">
+            {data.items.map((item) => (
+              <button
+                key={`${item.lectureId}-${item.lastWatchedAt}`}
+                onClick={() =>
+                  router.push(`/courses/${item.courseId}/lectures/${item.lectureId}`)
+                }
+                className="w-full text-left bg-card rounded-lg border hover:border-primary/50 hover:shadow-sm transition-all p-4"
+              >
+                <div className="flex items-start gap-4">
+                  <div
+                    className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                      item.isCompleted
+                        ? 'bg-success/10 text-success'
+                        : 'bg-primary/10 text-primary'
+                    }`}
+                  >
+                    {item.isCompleted ? (
+                      <CheckCircle size={20} />
+                    ) : (
+                      <Play size={20} />
+                    )}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-medium text-foreground truncate">
+                        {item.lectureTitle}
+                      </h3>
+                      {item.isCompleted && (
+                        <StatusBadge status="completed" />
                       )}
                     </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <span className="truncate">{item.courseTitle}</span>
+                      <span>&middot;</span>
+                      <span>{item.sectionTitle}</span>
+                    </div>
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-medium text-gray-900 truncate">
-                          {item.lectureTitle}
-                        </h3>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <span className="truncate">{item.courseTitle}</span>
-                        <span>&middot;</span>
-                        <span>{item.sectionTitle}</span>
-                      </div>
+                    <div className="mt-2">
+                      <Progress value={item.progressPercentage} />
+                    </div>
 
-                      <div className="mt-2 flex items-center gap-3">
-                        <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full transition-all ${
-                              item.isCompleted ? 'bg-green-500' : 'bg-blue-500'
-                            }`}
-                            style={{ width: `${item.progressPercentage}%` }}
-                          />
-                        </div>
-                        <span className="text-xs font-medium text-gray-400">
-                          {item.progressPercentage}%
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
-                        <span className="flex items-center gap-1">
-                          <Clock size={12} />
-                          {formatDuration(item.watchedSeconds)} / {formatDuration(item.lectureDuration)}
-                        </span>
-                        <span>{formatDate(item.lastWatchedAt)}</span>
-                        {item.isCompleted && (
-                          <span className="text-green-600 font-medium">Completed</span>
-                        )}
-                      </div>
+                    <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Clock size={12} />
+                        {formatDuration(item.watchedSeconds)} / {formatDuration(item.lectureDuration)}
+                      </span>
+                      <span>{formatDate(item.lastWatchedAt)}</span>
                     </div>
                   </div>
-                </button>
-              ))}
-            </div>
+                </div>
+              </button>
+            ))}
+          </div>
 
-            {data.total > limit && (
-              <div className="flex items-center justify-center gap-4 mt-8">
-                <button
-                  onClick={() => setPage(Math.max(0, page - 1))}
-                  disabled={page === 0}
-                  className="px-4 py-2 text-sm rounded-lg border hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  Previous
-                </button>
-                <span className="text-sm text-gray-500">
-                  Page {page + 1} of {Math.ceil(data.total / limit)}
-                </span>
-                <button
-                  onClick={() => setPage(page + 1)}
-                  disabled={(page + 1) * limit >= data.total}
-                  className="px-4 py-2 text-sm rounded-lg border hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  Next
-                </button>
-              </div>
-            )}
-          </>
-        )}
-      </div>
+          {data.total > limit && (
+            <div className="flex items-center justify-center gap-4 mt-8">
+              <button
+                onClick={() => setPage(Math.max(0, page - 1))}
+                disabled={page === 0}
+                className="px-4 py-2 text-sm rounded-lg border hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Previous
+              </button>
+              <span className="text-sm text-muted-foreground">
+                Page {page + 1} of {Math.ceil(data.total / limit)}
+              </span>
+              <button
+                onClick={() => setPage(page + 1)}
+                disabled={(page + 1) * limit >= data.total}
+                className="px-4 py-2 text-sm rounded-lg border hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
