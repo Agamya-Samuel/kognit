@@ -3,8 +3,13 @@
 import { useState } from 'react';
 import { useCreateAssignment } from '@/hooks/useAssignments';
 import { useMyCourses } from '@/hooks/useCourses';
-import { toast } from 'sonner';
-import { Spinner } from '@edutech/ui';
+import { Button } from '@edutech/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@edutech/ui';
+import { Input } from '@edutech/ui';
+import { Label } from '@edutech/ui';
+import { Textarea } from '@edutech/ui';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@edutech/ui';
+import { CheckCircle2, Circle } from 'lucide-react';
 
 type Step = 'details' | 'questions' | 'review';
 
@@ -40,9 +45,10 @@ export default function CreateAssignmentPage() {
   const handleSubmit = async () => {
     try {
       await createAssignment.mutateAsync(assignmentData);
-      toast.success('Assignment created successfully!');
+      console.log('Assignment created successfully');
+      window.location.href = '/dashboard/assignments';
     } catch (error) {
-      toast.error('Failed to create assignment');
+      console.error('Failed to create assignment');
     }
   };
 
@@ -67,172 +73,178 @@ export default function CreateAssignmentPage() {
   const isQuestionsValid = assignmentData.type !== 'mcq' || questions.length > 0;
   const canSubmit = isDetailsValid && isQuestionsValid;
 
+  const steps = [
+    { id: 'details' as Step, label: 'Details', description: 'Basic information' },
+    { id: 'questions' as Step, label: 'Questions', description: assignmentData.type === 'mcq' ? 'Add quiz questions' : 'Review requirements' },
+    { id: 'review' as Step, label: 'Review', description: 'Preview & publish' },
+  ];
+
+  const currentStepIndex = steps.findIndex((step) => step.id === currentStep);
+
   if (coursesLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <Spinner className="h-8 w-8" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent" />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mx-auto max-w-3xl">
-        <div className="mb-8">
-          <h1 className="mb-2 text-3xl font-bold">Create Assignment</h1>
-          <p className="text-muted-foreground">Create a new assignment or quiz for your students</p>
-        </div>
+    <div className="max-w-4xl mx-auto space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Create Assignment</h1>
+        <p className="mt-2 text-muted-foreground">Create a new assignment or quiz for your students</p>
+      </div>
 
-        {/* Progress Steps */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            {['details', 'questions', 'review'].map((step, index) => (
-              <div key={step} className="flex items-center">
-                <div
-                  className={`flex h-10 w-10 items-center justify-center rounded-full font-medium ${
-                    currentStep === step
-                      ? 'bg-primary text-primary-foreground'
-                      : index < ['details', 'questions', 'review'].indexOf(currentStep)
-                      ? 'bg-green-500 text-white'
-                      : 'bg-muted text-muted-foreground'
-                  }`}
-                >
-                  {index + 1}
-                </div>
-                <div className="ml-2 font-medium capitalize">{step}</div>
-                {index < 2 && (
-                  <div className="mx-8 h-1 w-24 bg-muted">
-                    <div
-                      className={`h-full transition-all ${
-                        index < ['details', 'questions', 'review'].indexOf(currentStep) ? 'bg-green-500' : 'bg-muted'
-                      }`}
-                      style={{ width: '100%' }}
-                    />
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between mb-8">
+            {steps.map((step, index) => (
+              <div key={step.id} className="flex items-center flex-1">
+                <div className="flex flex-col items-center">
+                  <div
+                    className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium ${
+                      index === currentStepIndex
+                        ? 'bg-primary text-primary-foreground'
+                        : index < currentStepIndex
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-muted text-muted-foreground'
+                    }`}
+                  >
+                    {index < currentStepIndex ? <CheckCircle2 className="h-5 w-5" /> : index + 1}
                   </div>
+                  <div className="mt-2 text-center">
+                    <div className={`text-sm font-medium ${
+                      index === currentStepIndex ? 'text-foreground' : index < currentStepIndex ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground'
+                    }`}>
+                      {step.label}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {step.description}
+                    </div>
+                  </div>
+                </div>
+                {index < steps.length - 1 && (
+                  <div className={`mx-2 h-0.5 flex-1 ${index < currentStepIndex ? 'bg-emerald-600' : 'bg-muted'}`} />
                 )}
               </div>
             ))}
           </div>
-        </div>
 
-        {/* Step Content */}
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
           {currentStep === 'details' && (
             <div className="space-y-6">
-              <div>
-                <label className="mb-2 block text-sm font-medium">Course *</label>
-                <select
-                  value={selectedCourseId || ''}
-                  onChange={(e) => {
-                    const courseId = Number(e.target.value);
-                    setSelectedCourseId(courseId || null);
-                    setAssignmentData({ ...assignmentData, lectureId: 0 });
-                  }}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                  required
-                >
-                  <option value="">Select a course</option>
-                  {courses?.map((course) => (
-                    <option key={course.id} value={course.id}>
-                      {course.title}
-                    </option>
-                  ))}
-                </select>
+              <div className="space-y-2">
+                <Label htmlFor="course">Course *</Label>
+                <Select value={selectedCourseId?.toString()} onValueChange={(val) => {
+                  const courseId = Number(val);
+                  setSelectedCourseId(courseId || null);
+                  setAssignmentData({ ...assignmentData, lectureId: 0 });
+                }}>
+                  <SelectTrigger id="course">
+                    <SelectValue placeholder="Select a course" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {courses?.map((course) => (
+                      <SelectItem key={course.id} value={course.id.toString()}>
+                        {course.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
-              <div>
-                <label className="mb-2 block text-sm font-medium">Lecture *</label>
-                <select
-                  value={assignmentData.lectureId || ''}
-                  onChange={(e) => setAssignmentData({ ...assignmentData, lectureId: Number(e.target.value) })}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                  disabled={!selectedCourseId}
-                  required
-                >
-                  <option value="">Select a lecture</option>
-                </select>
+              <div className="space-y-2">
+                <Label htmlFor="lecture">Lecture *</Label>
+                <Select disabled={!selectedCourseId} value={assignmentData.lectureId.toString()} onValueChange={(val) => setAssignmentData({ ...assignmentData, lectureId: Number(val) })}>
+                  <SelectTrigger id="lecture">
+                    <SelectValue placeholder="Select a lecture" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Select a lecture</SelectItem>
+                  </SelectContent>
+                </Select>
                 {!selectedCourseId && (
-                  <p className="mt-1 text-xs text-gray-500">Select a course to see available lectures</p>
+                  <p className="text-xs text-muted-foreground">Select a course to see available lectures</p>
                 )}
               </div>
 
-              <div>
-                <label className="mb-2 block text-sm font-medium">Title *</label>
-                <input
-                  type="text"
+              <div className="space-y-2">
+                <Label htmlFor="title">Title *</Label>
+                <Input
+                  id="title"
                   value={assignmentData.title}
                   onChange={(e) => setAssignmentData({ ...assignmentData, title: e.target.value })}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                   placeholder="Assignment title"
                 />
               </div>
 
-              <div>
-                <label className="mb-2 block text-sm font-medium">Description</label>
-                <textarea
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
                   value={assignmentData.description}
                   onChange={(e) => setAssignmentData({ ...assignmentData, description: e.target.value })}
                   rows={4}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                   placeholder="Describe the assignment..."
                 />
               </div>
 
-              <div>
-                <label className="mb-2 block text-sm font-medium">Type *</label>
-                <select
-                  value={assignmentData.type}
-                  onChange={(e) => setAssignmentData({ ...assignmentData, type: e.target.value as any })}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                >
-                  <option value="short">Short Answer</option>
-                  <option value="code">Code Assignment</option>
-                  <option value="mcq">Multiple Choice Quiz</option>
-                </select>
+              <div className="space-y-2">
+                <Label htmlFor="type">Type *</Label>
+                <Select value={assignmentData.type} onValueChange={(val) => setAssignmentData({ ...assignmentData, type: val as any })}>
+                  <SelectTrigger id="type">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="short">Short Answer</SelectItem>
+                    <SelectItem value="code">Code Assignment</SelectItem>
+                    <SelectItem value="mcq">Multiple Choice Quiz</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
-              <div>
-                <label className="mb-2 block text-sm font-medium">Max Score *</label>
-                <input
+              <div className="space-y-2">
+                <Label htmlFor="maxScore">Max Score *</Label>
+                <Input
+                  id="maxScore"
                   type="number"
                   min="1"
                   value={assignmentData.maxScore}
                   onChange={(e) => setAssignmentData({ ...assignmentData, maxScore: Number(e.target.value) })}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
 
-              <div>
-                <label className="mb-2 block text-sm font-medium">Due Date *</label>
-                <input
+              <div className="space-y-2">
+                <Label htmlFor="dueAt">Due Date *</Label>
+                <Input
+                  id="dueAt"
                   type="datetime-local"
                   value={assignmentData.dueAt}
                   onChange={(e) => setAssignmentData({ ...assignmentData, dueAt: e.target.value })}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="mb-2 block text-sm font-medium">Late Window (hours)</label>
-                  <input
+                <div className="space-y-2">
+                  <Label htmlFor="lateWindowHours">Late Window (hours)</Label>
+                  <Input
+                    id="lateWindowHours"
                     type="number"
                     min="0"
                     value={assignmentData.lateWindowHours}
                     onChange={(e) => setAssignmentData({ ...assignmentData, lateWindowHours: Number(e.target.value) })}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                     placeholder="0 for no late submissions"
                   />
                 </div>
-                <div>
-                  <label className="mb-2 block text-sm font-medium">Late Penalty (%)</label>
-                  <input
+                <div className="space-y-2">
+                  <Label htmlFor="latePenaltyPercent">Late Penalty (%)</Label>
+                  <Input
+                    id="latePenaltyPercent"
                     type="number"
                     min="0"
                     max="100"
                     value={assignmentData.latePenaltyPercent}
                     onChange={(e) => setAssignmentData({ ...assignmentData, latePenaltyPercent: Number(e.target.value) })}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                     placeholder="Percentage to deduct"
                   />
                 </div>
@@ -244,87 +256,80 @@ export default function CreateAssignmentPage() {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Quiz Questions</h3>
-                <button
-                  onClick={addQuestion}
-                  className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-                >
-                  + Add Question
-                </button>
+                <Button onClick={addQuestion}>
+                  Add Question
+                </Button>
               </div>
 
               {questions.length === 0 ? (
-                <div className="rounded-md bg-muted p-8 text-center">
+                <div className="rounded-lg border border-dashed p-8 text-center">
                   <p className="text-muted-foreground">No questions added yet. Click "Add Question" to create your first question.</p>
                 </div>
               ) : (
                 <div className="space-y-6">
                   {questions.map((question, qIndex) => (
-                    <div key={qIndex} className="rounded-lg border bg-card p-6">
-                      <div className="mb-4 flex items-center justify-between">
-                        <h4 className="font-medium">Question {qIndex + 1}</h4>
-                        <button
-                          onClick={() => removeQuestion(qIndex)}
-                          className="rounded-md border border-input px-3 py-1 text-sm text-red-600 hover:bg-red-50"
-                        >
-                          Remove
-                        </button>
-                      </div>
-
-                      <div className="mb-4 space-y-4">
-                        <div>
-                          <label className="mb-2 block text-sm font-medium">Question Text</label>
-                          <textarea
+                    <Card key={qIndex}>
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-base">Question {qIndex + 1}</CardTitle>
+                          <Button variant="outline" size="sm" onClick={() => removeQuestion(qIndex)}>
+                            Remove
+                          </Button>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                          <Label>Question Text</Label>
+                          <Textarea
                             value={question.questionText}
                             onChange={(e) => updateQuestion(qIndex, 'questionText', e.target.value)}
                             rows={2}
-                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                             placeholder="Enter your question..."
                           />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="mb-2 block text-sm font-medium">Points</label>
-                            <input
-                              type="number"
-                              min="1"
-                              value={question.points}
-                              onChange={(e) => updateQuestion(qIndex, 'points', Number(e.target.value))}
-                              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                            />
-                          </div>
+                        <div className="space-y-2">
+                          <Label>Points</Label>
+                          <Input
+                            type="number"
+                            min="1"
+                            value={question.points}
+                            onChange={(e) => updateQuestion(qIndex, 'points', Number(e.target.value))}
+                          />
                         </div>
 
-                        <div>
-                          <label className="mb-2 block text-sm font-medium">Answer Options</label>
+                        <div className="space-y-2">
+                          <Label>Answer Options</Label>
                           <div className="space-y-2">
                             {question.options.map((option, oIndex) => (
                               <div key={oIndex} className="flex items-center gap-2">
-                                <input
-                                  type="radio"
-                                  name={`correct-${qIndex}`}
-                                  checked={question.correctOptionIndex === oIndex}
-                                  onChange={() => updateQuestion(qIndex, 'correctOptionIndex', oIndex)}
-                                  className="rounded"
-                                />
+                                <button
+                                  type="button"
+                                  onClick={() => updateQuestion(qIndex, 'correctOptionIndex', oIndex)}
+                                  className="flex-shrink-0"
+                                >
+                                  {question.correctOptionIndex === oIndex ? (
+                                    <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                                  ) : (
+                                    <Circle className="h-5 w-5 text-muted-foreground" />
+                                  )}
+                                </button>
                                 <span className="text-sm font-medium">{String.fromCharCode(65 + oIndex)}.</span>
-                                <input
-                                  type="text"
+                                <Input
                                   value={option}
                                   onChange={(e) => {
                                     const newOptions = [...question.options];
                                     newOptions[oIndex] = e.target.value;
                                     updateQuestion(qIndex, 'options', newOptions);
                                   }}
-                                  className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                   placeholder={`Option ${String.fromCharCode(65 + oIndex)}`}
                                 />
                               </div>
                             ))}
                           </div>
                         </div>
-                      </div>
-                    </div>
+                      </CardContent>
+                    </Card>
                   ))}
                 </div>
               )}
@@ -332,7 +337,7 @@ export default function CreateAssignmentPage() {
           )}
 
           {currentStep === 'questions' && assignmentData.type !== 'mcq' && (
-            <div className="rounded-md bg-muted p-8 text-center">
+            <div className="rounded-lg border border-dashed p-8 text-center">
               <p className="text-muted-foreground">
                 This assignment type doesn't require questions. Click "Next" to review and create your assignment.
               </p>
@@ -342,48 +347,48 @@ export default function CreateAssignmentPage() {
           {currentStep === 'review' && (
             <div className="space-y-6">
               <h3 className="text-lg font-semibold">Review Assignment</h3>
-              
+
               <div className="space-y-4">
-                <div className="rounded-md bg-muted p-4">
-                  <h4 className="mb-2 font-medium text-sm">Title</h4>
+                <div className="rounded-lg bg-muted p-4">
+                  <h4 className="mb-2 text-sm font-medium">Title</h4>
                   <p>{assignmentData.title}</p>
                 </div>
 
                 {assignmentData.description && (
-                  <div className="rounded-md bg-muted p-4">
-                    <h4 className="mb-2 font-medium text-sm">Description</h4>
+                  <div className="rounded-lg bg-muted p-4">
+                    <h4 className="mb-2 text-sm font-medium">Description</h4>
                     <p className="whitespace-pre-wrap">{assignmentData.description}</p>
                   </div>
                 )}
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="rounded-md bg-muted p-4">
-                    <h4 className="mb-2 font-medium text-sm">Type</h4>
+                  <div className="rounded-lg bg-muted p-4">
+                    <h4 className="mb-2 text-sm font-medium">Type</h4>
                     <p className="capitalize">{assignmentData.type}</p>
                   </div>
-                  <div className="rounded-md bg-muted p-4">
-                    <h4 className="mb-2 font-medium text-sm">Max Score</h4>
+                  <div className="rounded-lg bg-muted p-4">
+                    <h4 className="mb-2 text-sm font-medium">Max Score</h4>
                     <p>{assignmentData.maxScore}</p>
                   </div>
                 </div>
 
-                <div className="rounded-md bg-muted p-4">
-                  <h4 className="mb-2 font-medium text-sm">Due Date</h4>
+                <div className="rounded-lg bg-muted p-4">
+                  <h4 className="mb-2 text-sm font-medium">Due Date</h4>
                   <p>{new Date(assignmentData.dueAt).toLocaleString()}</p>
                 </div>
 
                 {assignmentData.lateWindowHours > 0 && (
-                  <div className="rounded-md bg-orange-50 p-4 border border-orange-200">
-                    <h4 className="mb-2 font-medium text-sm text-orange-900">Late Submission Policy</h4>
-                    <p className="text-sm text-orange-800">
+                  <div className="rounded-lg border bg-orange-50 dark:bg-orange-950 p-4">
+                    <h4 className="mb-2 text-sm font-medium text-orange-900 dark:text-orange-100">Late Submission Policy</h4>
+                    <p className="text-sm text-orange-800 dark:text-orange-200">
                       Late submissions accepted within {assignmentData.lateWindowHours} hours with {assignmentData.latePenaltyPercent}% penalty
                     </p>
                   </div>
                 )}
 
                 {assignmentData.type === 'mcq' && questions.length > 0 && (
-                  <div className="rounded-md bg-muted p-4">
-                    <h4 className="mb-2 font-medium text-sm">Questions ({questions.length})</h4>
+                  <div className="rounded-lg bg-muted p-4">
+                    <h4 className="mb-2 text-sm font-medium">Questions ({questions.length})</h4>
                     <div className="space-y-2">
                       {questions.map((q, i) => (
                         <div key={i} className="text-sm">
@@ -397,40 +402,37 @@ export default function CreateAssignmentPage() {
             </div>
           )}
 
-          {/* Navigation */}
           <div className="mt-8 flex justify-between">
-            <button
+            <Button
+              variant="outline"
               onClick={handleBack}
               disabled={currentStep === 'details' || createAssignment.isPending}
-              className="rounded-md border border-input bg-background px-6 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
             >
               Back
-            </button>
+            </Button>
 
             {currentStep !== 'review' ? (
-              <button
+              <Button
                 onClick={handleNext}
                 disabled={
                   (currentStep === 'details' && !isDetailsValid) ||
                   (currentStep === 'questions' && !isQuestionsValid) ||
                   createAssignment.isPending
                 }
-                className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Next
-              </button>
+              </Button>
             ) : (
-              <button
+              <Button
                 onClick={handleSubmit}
                 disabled={!canSubmit || createAssignment.isPending}
-                className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {createAssignment.isPending ? 'Creating...' : 'Create Assignment'}
-              </button>
+              </Button>
             )}
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
