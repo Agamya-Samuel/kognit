@@ -1,3 +1,4 @@
+import { Button } from '@edutech/ui';
 import { cn } from '@edutech/ui';
 
 interface PriceFilterProps {
@@ -14,18 +15,15 @@ export function PriceFilter({
   return (
     <div className={cn('flex gap-2', className)}>
       {(['all', 'free', 'paid'] as const).map((option) => (
-        <button
+        <Button
           key={option}
+          variant={selectedPricing === option ? 'default' : 'outline'}
+          size="sm"
           onClick={() => onPricingChange(option)}
-          className={cn(
-            'rounded-md px-4 py-2 text-sm font-medium transition-colors capitalize',
-            selectedPricing === option
-              ? 'bg-primary text-primary-foreground'
-              : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-          )}
+          className="capitalize"
         >
           {option === 'all' ? 'All Prices' : option}
-        </button>
+        </Button>
       ))}
     </div>
   );

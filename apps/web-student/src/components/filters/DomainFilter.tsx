@@ -1,3 +1,4 @@
+import { Button } from '@edutech/ui';
 import { cn } from '@edutech/ui';
 
 interface DomainFilterProps {
@@ -15,30 +16,23 @@ export function DomainFilter({
 }: DomainFilterProps) {
   return (
     <div className={cn('flex flex-wrap gap-2', className)}>
-      <button
+      <Button
+        variant={selectedDomain === null ? 'default' : 'outline'}
+        size="sm"
         onClick={() => onDomainChange(null)}
-        className={cn(
-          'rounded-full px-4 py-1.5 text-sm font-medium transition-colors',
-          selectedDomain === null
-            ? 'bg-primary text-primary-foreground'
-            : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-        )}
       >
         All Domains
-      </button>
+      </Button>
       {domains.map((domain) => (
-        <button
+        <Button
           key={domain}
+          variant={selectedDomain === domain ? 'default' : 'outline'}
+          size="sm"
           onClick={() => onDomainChange(domain)}
-          className={cn(
-            'rounded-full px-4 py-1.5 text-sm font-medium transition-colors capitalize',
-            selectedDomain === domain
-              ? 'bg-primary text-primary-foreground'
-              : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-          )}
+          className="capitalize"
         >
           {domain}
-        </button>
+        </Button>
       ))}
     </div>
   );

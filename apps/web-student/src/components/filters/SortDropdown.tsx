@@ -1,11 +1,14 @@
+import { Label, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@edutech/ui';
+import type { CourseSortOption } from '@/types/courses';
+
 interface SortOption {
   label: string;
-  value: 'newest' | 'oldest' | 'popular' | 'rating' | 'price-low' | 'price-high';
+  value: CourseSortOption;
 }
 
 interface SortDropdownProps {
-  value: SortOption['value'];
-  onChange: (value: SortOption['value']) => void;
+  value: CourseSortOption;
+  onChange: (value: CourseSortOption) => void;
   className?: string;
 }
 
@@ -14,28 +17,28 @@ const sortOptions: SortOption[] = [
   { label: 'Oldest', value: 'oldest' },
   { label: 'Most Popular', value: 'popular' },
   { label: 'Highest Rated', value: 'rating' },
-  { label: 'Price: Low to High', value: 'price-low' },
-  { label: 'Price: High to Low', value: 'price-high' },
+  { label: 'Price: Low to High', value: 'price_asc' },
+  { label: 'Price: High to Low', value: 'price_desc' },
 ];
 
 export function SortDropdown({ value, onChange, className }: SortDropdownProps) {
   return (
     <div className={className}>
-      <label htmlFor="sort" className="mb-1 block text-sm font-medium text-muted-foreground">
+      <Label htmlFor="sort" className="mb-1.5 block">
         Sort by
-      </label>
-      <select
-        id="sort"
-        value={value}
-        onChange={(e) => onChange(e.target.value as SortOption['value'])}
-        className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      >
-        {sortOptions.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
+      </Label>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger id="sort" className="w-full md:max-w-xs">
+          <SelectValue placeholder="Select sort option" />
+        </SelectTrigger>
+        <SelectContent>
+          {sortOptions.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }
