@@ -55,6 +55,7 @@ export interface PaginationMeta {
 export interface PaginationQuery {
   page?: number;
   limit?: number;
+  [key: string]: unknown;
 }
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
@@ -155,7 +156,7 @@ export interface Lecture {
   id: number;
   sectionId: number;
   title: string;
-  description?: string | null;
+  description: string | null;
   orderIndex: number;
   type: LectureType;
   muxAssetId?: string | null;
@@ -193,13 +194,28 @@ export interface Payment {
   id: number;
   studentId: number;
   courseId: number;
+  razorpayOrderId: string;
+  razorpayPaymentId: string;
   amount: number;
   currency: string;
   status: PaymentStatus;
-  provider: string;
-  providerPaymentId: string;
-  createdAt: Date | string;
-  updatedAt: Date | string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PaymentHistory {
+  payments: Payment[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface PaymentFilters {
+  page?: number;
+  limit?: number;
+  status?: string;
+  courseId?: number;
+  [key: string]: unknown;
 }
 
 // ─── Recording Status ──────────────────────────────────────────────────────────
@@ -339,4 +355,321 @@ export interface ChatServerEvents {
   'chat:joined': (data: { channelId: number }) => void;
   'chat:user_joined': (data: { channelId: number; userId: number; email: string; role: string }) => void;
   'chat:user_left': (data: { channelId: number; userId: number }) => void;
+}
+
+// ─── Assignments ───────────────────────────────────────────────────────────────
+
+export interface CreateAssignmentDto {
+  lectureId: number;
+  title: string;
+  description?: string;
+  type: AssignmentType;
+  maxScore: number;
+  dueAt: string;
+  lateWindowHours?: number;
+  latePenaltyPercent?: number;
+}
+
+export interface UpdateAssignmentDto {
+  title?: string;
+  description?: string;
+  type?: AssignmentType;
+  maxScore?: number;
+  dueAt?: string;
+  lateWindowHours?: number;
+  latePenaltyPercent?: number;
+}
+
+export interface QuizQuestionDto {
+  questionText: string;
+  options: string[];
+  correctOptionIndex: number;
+  points?: number;
+  orderIndex?: number;
+}
+
+export interface SubmitAssignmentDto {
+  content: string;
+}
+
+export interface GradeSubmissionDto {
+  score: number;
+  feedback?: string;
+}
+
+export interface BulkGradeItemDto {
+  submissionId: number;
+  score: number;
+  feedback?: string;
+}
+
+export interface BulkGradeDto {
+  grades: BulkGradeItemDto[];
+}
+
+export interface AssignmentFilters {
+  lectureId?: number;
+  type?: AssignmentType;
+  page?: number;
+  limit?: number;
+  [key: string]: unknown;
+}
+
+export interface SubmissionFilters {
+  assignmentId?: number;
+  page?: number;
+  limit?: number;
+  [key: string]: unknown;
+}
+
+export interface Assignment {
+  id: number;
+  lectureId: number;
+  title: string;
+  description: string | null;
+  type: AssignmentType;
+  maxScore: number;
+  dueAt: string;
+  lateWindowHours: number | null;
+  latePenaltyPercent: number;
+  createdAt: string;
+  lecture?: Lecture;
+}
+
+export interface QuizQuestion {
+  id: number;
+  assignmentId: number;
+  questionText: string;
+  options: string[];
+  correctOptionIndex: number;
+  points: number;
+  orderIndex: number;
+  createdAt: string;
+  correctOption?: string;
+}
+
+export interface Submission {
+  id: number;
+  assignmentId: number;
+  studentId: number;
+  content: string;
+  submittedAt: string;
+  gradedAt: string | null;
+  score: number | null;
+  feedback: string | null;
+  graderId: number | null;
+  createdAt: string;
+  assignment?: Assignment;
+}
+
+export interface LateSubmissionStatus {
+  isLate: boolean;
+  isAccepted: boolean;
+  hoursLate: number;
+  penaltyApplied: boolean;
+  penaltyPercent: number;
+  penaltyAmount: number;
+}
+
+export interface GradingResult {
+  submission: Submission;
+  originalScore: number;
+  penaltyPercent: number;
+  finalScore: number;
+}
+
+// ─── Payments ─────────────────────────────────────────────────────────────────
+
+export interface PaymentHistory {
+  payments: Payment[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface CreateOrderResponse {
+  orderId: string;
+  amount: number;
+  currency: string;
+  key: string;
+  receipt: string;
+  paymentRecordId: number;
+}
+
+export interface VerifyPaymentResponse {
+  success: boolean;
+  enrollmentId: number;
+}
+
+export interface PaymentFilters {
+  page?: number;
+  limit?: number;
+  status?: string;
+  courseId?: number;
+}
+
+// ─── Certificates ─────────────────────────────────────────────────────────────
+
+export interface Certificate {
+  id: number;
+  studentId: number;
+  courseId: number;
+  certificateUid: string;
+  issuedAt: string;
+  pdfUrl: string | null;
+  studentName: string;
+  courseTitle: string;
+  instructorName: string;
+}
+
+export interface CertificateListResponse {
+  success: boolean;
+  data: Certificate[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface VerifyCertificateResponse {
+  success: boolean;
+  data: {
+    valid: boolean;
+    certificate: Certificate | null;
+  };
+}
+
+// ─── Uploads ─────────────────────────────────────────────────────────────────
+
+export interface UploadRequest {
+  fileName: string;
+  fileSize: number;
+  contentType: string;
+}
+
+export interface UploadResponse {
+  uploadId: string;
+  uploadUrl: string;
+  parts: UploadPart[];
+}
+
+export interface UploadPart {
+  partNumber: number;
+  signedUrl: string;
+}
+
+export interface UploadData {
+  uploadId: string;
+  key: string;
+  parts: { partNumber: number; etag: string }[];
+}
+
+export interface UploadCompleteResponse {
+  videoUrl: string;
+  muxAssetId: string;
+  muxPlaybackId: string;
+}
+
+export interface UploadStatus {
+  uploadId: string;
+  status: 'uploading' | 'processing' | 'completed' | 'failed';
+  progress?: number;
+  videoUrl?: string;
+  muxPlaybackId?: string;
+  error?: string;
+}
+
+// ─── Progress ─────────────────────────────────────────────────────────────────
+
+export interface LectureProgress {
+  lectureId: number;
+  courseId: number;
+  watchedSeconds: number;
+  lectureDuration: number;
+  progressPercentage: number;
+  isCompleted: boolean;
+  lastWatchedAt: string;
+}
+
+export interface UpdateProgressResponse {
+  lectureId: number;
+  watchedSeconds: number;
+  progressPercentage: number;
+  isCompleted: boolean;
+}
+
+export interface WatchHistoryItem {
+  lectureId: number;
+  lectureTitle: string;
+  courseId: number;
+  courseTitle: string;
+  sectionId: number;
+  sectionTitle: string;
+  watchedSeconds: number;
+  lectureDuration: number;
+  progressPercentage: number;
+  isCompleted: boolean;
+  lastWatchedAt: string;
+}
+
+export interface WatchHistoryResponse {
+  items: WatchHistoryItem[];
+  total: number;
+  offset: number;
+  limit: number;
+}
+
+// ─── Live Classes ─────────────────────────────────────────────────────────────
+
+export interface CalendarEvent {
+  id: number;
+  lectureId: number;
+  lectureTitle: string;
+  sectionId: number;
+  courseId: number;
+  courseTitle: string;
+  instructorId: number;
+  scheduledAt: string;
+  durationMinutes: number;
+  status: LiveClassStatus;
+  livekitRoomName: string;
+  recordingStatus: RecordingStatus;
+  recordingUrl: string | null;
+}
+
+export interface CalendarDay {
+  date: string; // YYYY-MM-DD
+  events: CalendarEvent[];
+}
+
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+
+export interface RegisterPayload {
+  email: string;
+  password: string;
+  name: string;
+  role?: UserRole;
+}
+
+export interface ForgotPasswordPayload {
+  email: string;
+}
+
+export interface ResetPasswordPayload {
+  token: string;
+  password: string;
+}
+
+export interface AuthResponse {
+  success: boolean;
+  data?: {
+    user: User;
+    tokens: AuthTokens;
+  };
+  error?: string;
+}
+
+// ─── Course with Curriculum ─────────────────────────────────────────────────
+
+export interface CourseWithCurriculum extends CourseWithSections {
+  instructor?: InstructorProfile;
 }
