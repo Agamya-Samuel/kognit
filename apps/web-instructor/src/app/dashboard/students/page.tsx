@@ -4,13 +4,13 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@edutech/ui';
 import { Button } from '@edutech/ui';
 import { Input } from '@edutech/ui';
-import { Search, Mail } from 'lucide-react';
-import { Spinner } from '@edutech/ui';
+import { Progress } from '@edutech/ui';
+import { Search, Mail, Users, TrendingUp, CheckCircle } from 'lucide-react';
+import { StatCard, StatsRow } from '@/components/StatsRow';
 
 export default function StudentsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCourse, setSelectedCourse] = useState('all');
-  const [isLoading] = useState(false);
 
   const students = [
     { id: 1, name: 'John Doe', email: 'john.doe@example.com', course: 'TypeScript Basics', enrolledAt: '2024-01-15', progress: 75 },
@@ -27,27 +27,60 @@ export default function StudentsPage() {
         student.email.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
+  const totalStudents = students.length;
+  const averageProgress = Math.round(students.reduce((sum, s) => sum + s.progress, 0) / students.length);
+  const completedCount = students.filter(s => s.progress === 100).length;
+
+  const getProgressColor = (progress: number) => {
+    if (progress >= 90) return 'text-emerald-600 dark:text-emerald-400';
+    if (progress >= 60) return 'text-yellow-600 dark:text-yellow-400';
+    return 'text-rose-600 dark:text-rose-400';
+  };
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Students</h1>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Students</h1>
+        <p className="mt-2 text-muted-foreground">
           Manage your students and track their progress
         </p>
       </div>
 
+      <StatsRow>
+        <StatCard
+          title="Total Students"
+          value={totalStudents.toString()}
+          change={{ value: '+12%', trend: 'up' }}
+          icon={Users}
+          iconClassName="bg-blue-500/10 text-blue-600 dark:text-blue-400"
+        />
+        <StatCard
+          title="Average Progress"
+          value={`${averageProgress}%`}
+          change={{ value: '+5%', trend: 'up' }}
+          icon={TrendingUp}
+          iconClassName="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+        />
+        <StatCard
+          title="Completed Courses"
+          value={completedCount.toString()}
+          icon={CheckCircle}
+          iconClassName="bg-purple-500/10 text-purple-600 dark:text-purple-400"
+        />
+      </StatsRow>
+
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle>All Students</CardTitle>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search students..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 w-64"
+                  className="pl-10 w-full sm:w-64"
                 />
               </div>
               <select
@@ -64,65 +97,54 @@ export default function StudentsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Spinner className="h-8 w-8" />
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-200 dark:border-gray-800">
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">Student</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">Course</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">Enrolled</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">Progress</th>
-                    <th className="px-4 py-3 text-right text-sm font-medium text-gray-700 dark:text-gray-300">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredStudents.map((student) => (
-                    <tr key={student.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800">
-                      <td className="px-4 py-4">
-                        <div>
-                          <div className="font-medium text-gray-900 dark:text-white">{student.name}</div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">{student.email}</div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 text-sm text-gray-700 dark:text-gray-300">{student.course}</td>
-                      <td className="px-4 py-4 text-sm text-gray-700 dark:text-gray-300">
-                        {new Date(student.enrolledAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-4 py-4">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b">
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Student</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Course</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Enrolled</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Progress</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium uppercase text-muted-foreground">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredStudents.map((student) => (
+                  <tr key={student.id} className="border-b hover:bg-accent/50 transition-colors">
+                    <td className="px-4 py-4">
+                      <div>
+                        <div className="font-medium text-foreground">{student.name}</div>
+                        <div className="text-sm text-muted-foreground">{student.email}</div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 text-sm text-foreground">{student.course}</td>
+                    <td className="px-4 py-4 text-sm text-muted-foreground">
+                      {new Date(student.enrolledAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="space-y-2">
                         <div className="flex items-center gap-2">
-                          <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                            <div
-                              className={`h-full rounded-full ${
-                                student.progress >= 90 ? 'bg-green-500' : student.progress >= 60 ? 'bg-yellow-500' : 'bg-red-500'
-                              }`}
-                              style={{ width: `${student.progress}%` }}
-                            />
-                          </div>
-                          <span className="text-sm text-gray-700 dark:text-gray-300 w-12 text-right">
+                          <Progress value={student.progress} className="flex-1" />
+                          <span className={`text-sm font-medium w-12 text-right ${getProgressColor(student.progress)}`}>
                             {student.progress}%
                           </span>
                         </div>
-                      </td>
-                      <td className="px-4 py-4 text-right">
-                        <Button variant="outline" size="sm">
-                          <Mail className="h-4 w-4 mr-2" />
-                          Contact
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {filteredStudents.length === 0 && (
-                <div className="text-center py-12 text-gray-500 dark:text-gray-400">No students found</div>
-              )}
-            </div>
-          )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 text-right">
+                      <Button variant="outline" size="sm">
+                        <Mail className="h-4 w-4 mr-2" />
+                        Contact
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {filteredStudents.length === 0 && (
+              <div className="text-center py-12 text-muted-foreground">No students found</div>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>
