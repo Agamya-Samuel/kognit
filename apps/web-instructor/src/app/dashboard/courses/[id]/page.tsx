@@ -8,14 +8,14 @@ import { Input } from '@edutech/ui';
 import { Label } from '@edutech/ui';
 import { Textarea } from '@edutech/ui';
 import { Badge } from '@edutech/ui';
-import { ArrowLeft, Save, Eye } from 'lucide-react';
+import { ArrowLeft, Save, Eye, Users, DollarSign, TrendingUp, Clock, BookOpen } from 'lucide-react';
+import { StatCard, StatsRow } from '@/components/StatsRow';
 import Link from 'next/link';
 
 export default function EditCoursePage() {
   const params = useParams();
   const courseId = params.id;
 
-  // TODO: Fetch course data from API
   const [course, setCourse] = useState({
     id: parseInt(courseId as string),
     title: 'Introduction to TypeScript',
@@ -27,6 +27,34 @@ export default function EditCoursePage() {
   });
 
   const [isSaving, setIsSaving] = useState(false);
+
+  // Mock data for course analytics
+  const courseStats = [
+    {
+      title: 'Enrollments',
+      value: '245',
+      change: { value: '+12 this week', trend: 'up' as const },
+      icon: Users,
+    },
+    {
+      title: 'Revenue',
+      value: '₹12,450',
+      change: { value: '+2,340 this month', trend: 'up' as const },
+      icon: DollarSign,
+    },
+    {
+      title: 'Completion Rate',
+      value: '78%',
+      change: { value: '+5%', trend: 'up' as const },
+      icon: TrendingUp,
+    },
+    {
+      title: 'Avg. Watch Time',
+      value: '4h 32m',
+      change: { value: '+12m', trend: 'up' as const },
+      icon: Clock,
+    },
+  ];
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -40,20 +68,33 @@ export default function EditCoursePage() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="container mx-auto space-y-6">
+      {/* Stats Row */}
+      <StatsRow>
+        {courseStats.map((stat) => (
+          <StatCard
+            key={stat.title}
+            title={stat.title}
+            value={stat.value}
+            change={stat.change}
+            icon={stat.icon}
+          />
+        ))}
+      </StatsRow>
+
+      {/* Page Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link href="/dashboard/courses">
             <Button variant="outline" size="sm" className="gap-2">
               <ArrowLeft className="h-4 w-4" />
-              Back
+              Back to Courses
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Edit Course</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Course ID: {course.id}
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Edit Course</h1>
+            <p className="text-sm text-muted-foreground">
+              Course ID: {course.id} • {course.domain}
             </p>
           </div>
         </div>
@@ -75,7 +116,7 @@ export default function EditCoursePage() {
         </div>
       </div>
 
-      {/* Course Details */}
+      {/* Course Details Card */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -86,14 +127,26 @@ export default function EditCoursePage() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="title">Course Title</Label>
-            <Input
-              id="title"
-              value={course.title}
-              onChange={(e) => setCourse({ ...course, title: e.target.value })}
-              placeholder="Course title"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Course Title</Label>
+              <Input
+                id="title"
+                value={course.title}
+                onChange={(e) => setCourse({ ...course, title: e.target.value })}
+                placeholder="Course title"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="domain">Domain</Label>
+              <Input
+                id="domain"
+                value={course.domain}
+                onChange={(e) => setCourse({ ...course, domain: e.target.value })}
+                placeholder="e.g., Programming, Design"
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -103,26 +156,21 @@ export default function EditCoursePage() {
               value={course.description}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCourse({ ...course, description: e.target.value })}
               placeholder="Course description"
-              rows={6}
+              rows={4}
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="domain">Domain</Label>
-            <Input
-              id="domain"
-              value={course.domain}
-              onChange={(e) => setCourse({ ...course, domain: e.target.value })}
-              placeholder="e.g., Programming, Design"
-            />
-          </div>
-
-          <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-800 rounded-lg">
-            <div>
-              <h4 className="font-medium text-gray-900 dark:text-white">Publish Status</h4>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                Make your course visible to students
-              </p>
+          <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div className="flex items-center gap-3">
+              <div className="rounded-md bg-primary/10 p-2">
+                <BookOpen className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <h4 className="font-medium text-foreground">Publish Status</h4>
+                <p className="text-sm text-muted-foreground">
+                  Make your course visible to students
+                </p>
+              </div>
             </div>
             <Button
               variant={course.isPublished ? 'default' : 'outline'}
@@ -134,7 +182,7 @@ export default function EditCoursePage() {
         </CardContent>
       </Card>
 
-      {/* Pricing Section */}
+      {/* Pricing Card */}
       <Card>
         <CardHeader>
           <CardTitle>Pricing</CardTitle>
@@ -144,14 +192,19 @@ export default function EditCoursePage() {
             <button
               type="button"
               onClick={() => setCourse({ ...course, pricingType: 'free', priceInr: 0 })}
-              className={`p-4 border-2 rounded-lg transition-colors ${
+              className={`p-6 border-2 rounded-lg transition-colors text-left ${
                 course.pricingType === 'free'
                   ? 'border-primary bg-primary/5'
-                  : 'border-gray-200 dark:border-gray-800 hover:border-gray-300'
+                  : 'border-input hover:bg-accent'
               }`}
             >
-              <h3 className="font-semibold mb-1">Free</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="rounded-md bg-emerald-100 p-2">
+                  <Users className="h-5 w-5 text-emerald-600" />
+                </div>
+                <h3 className="font-semibold">Free</h3>
+              </div>
+              <p className="text-sm text-muted-foreground">
                 Students can access for free
               </p>
             </button>
@@ -159,14 +212,19 @@ export default function EditCoursePage() {
             <button
               type="button"
               onClick={() => setCourse({ ...course, pricingType: 'paid' })}
-              className={`p-4 border-2 rounded-lg transition-colors ${
+              className={`p-6 border-2 rounded-lg transition-colors text-left ${
                 course.pricingType === 'paid'
                   ? 'border-primary bg-primary/5'
-                  : 'border-gray-200 dark:border-gray-800 hover:border-gray-300'
+                  : 'border-input hover:bg-accent'
               }`}
             >
-              <h3 className="font-semibold mb-1">Paid</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="rounded-md bg-blue-100 p-2">
+                  <DollarSign className="h-5 w-5 text-blue-600" />
+                </div>
+                <h3 className="font-semibold">Paid</h3>
+              </div>
+              <p className="text-sm text-muted-foreground">
                 Set a price for your course
               </p>
             </button>
@@ -176,7 +234,7 @@ export default function EditCoursePage() {
             <div className="space-y-2">
               <Label htmlFor="price">Price (INR)</Label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
                   ₹
                 </span>
                 <Input
@@ -193,19 +251,24 @@ export default function EditCoursePage() {
         </CardContent>
       </Card>
 
-      {/* Sections and Lectures */}
+      {/* Course Content Card */}
       <Card>
         <CardHeader>
           <CardTitle>Course Content</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-12 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
-            <p className="text-gray-500 dark:text-gray-400 mb-2">
+          <div className="text-center py-12 border-2 border-dashed rounded-lg">
+            <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground mb-2">
               Section and lecture management coming soon
             </p>
-            <p className="text-sm text-gray-400 dark:text-gray-500">
+            <p className="text-sm text-muted-foreground/70 mb-4">
               You'll be able to add sections, lectures, and reorder content here
             </p>
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <Clock className="h-4 w-4" />
+              <span>Estimated setup time: 15-20 minutes</span>
+            </div>
           </div>
         </CardContent>
       </Card>
