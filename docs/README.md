@@ -25,6 +25,7 @@
 | [Media Pipeline](02-architecture/06-media-pipeline.md) | Recorded flow, live→recording flow, playback security |
 | [Realtime](02-architecture/07-realtime.md) | Socket.IO, Redis pub/sub, LiveKit, event architecture |
 | [API Conventions](02-architecture/08-api-conventions.md) | REST principles, endpoints, response envelope, pagination, rate limiting |
+| [API Client](02-architecture/09-api-client.md) | Centralized HTTP client, service modules, React Query integration, authentication |
 
 ### 03 — Features
 | File | Description |

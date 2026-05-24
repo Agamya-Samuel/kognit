@@ -9,18 +9,31 @@
 
 The backend **owns all auth logic**. Auth.js acts as an OAuth/provider orchestration layer only — not the core business auth system. This is critical for future mobile app compatibility.
 
-Each web app (`web-student`, `web-instructor`, `web-admin`, `web-institution`) communicates independently with the shared NestJS auth module. Cookie domains are scoped per app subdomain to prevent cross-app session leakage.
+Each web app (`web-student`, `web-instructor`, `web-admin`, `web-institution`) communicates independently with the shared NestJS auth module via the centralized `@edutech/api-client` package. Bearer tokens are stored in `localStorage` and automatically included in all API requests via the `ApiClient` class.
 
-**Single role per user.** Each user has exactly one role. Users requiring access to multiple portals must create separate accounts. Instructors automatically inherit all student permissions within their portal.
+**Single role per user.** Each user has exactly one role. Users requiring access to multiple portals must create separate accounts. Instructors automatically inherit all student permissions within their instructor portal.
 
 ## Token Architecture
 
 | Token | Storage (Web) | Storage (Mobile) | Expiry |
 |---|---|---|---|
-| Access Token (JWT) | HTTP-only cookie (scoped to app subdomain) | SecureStore | 15 minutes |
-| Refresh Token | HTTP-only cookie (scoped to app subdomain) | SecureStore | 30 days |
+| Access Token (JWT) | `localStorage.getItem('accessToken')` | SecureStore | 15 minutes |
+| Refresh Token | `localStorage.getItem('refreshToken')` | SecureStore | 30 days |
 
-> **Note:** A single refresh token is issued per user. Cookies are scoped per app subdomain, but logout revokes the token globally — all app sessions are terminated. There is no per-app session isolation.
+### Token Transmission
+
+- **Bearer Token:** All authenticated API calls include `Authorization: Bearer <token>` header
+- **Auto-injection:** `ApiClient` request interceptor automatically adds token from localStorage
+- **Token Source:** `ApiProvider` component reads from `localStorage` and configures client
+
+### Token Management
+
+- **Login:** Tokens stored in `localStorage` upon successful authentication
+- **401 Handling:** `ApiProvider` automatically clears both tokens and redirects to login path
+- **Cross-app Sessions:** Each app has its own token; no cross-app session sharing
+- **Single User, Single Role:** Each user account has exactly one role (student, instructor, admin, or institution_admin)
+
+> **Note:** Instructors automatically inherit all student permissions within the instructor portal.
 
 ## Auth Flows
 
@@ -30,7 +43,9 @@ Next.js app → POST api.eduplatform.com/api/v1/auth/login → NestJS Auth Modul
   → Validate credentials
   → Check account lockout status
   → Issue JWT + Refresh Token
-  → Set HTTP-only cookies (scoped to app subdomain)
+  → Frontend stores tokens in localStorage
+  → ApiProvider configures ApiClient with getToken callback
+  → All subsequent requests include Authorization: Bearer <token>
   → Return user profile
 ```
 
@@ -59,10 +74,12 @@ React Native → POST /api/v1/auth/login → NestJS Auth Module
 ### OAuth (Google, GitHub)
 ```
 Frontend → Auth.js OAuth flow
-  → Auth.js callback → NestJS /auth/oauth-callback
-  → NestJS creates/finds user
-  → Issues JWT + Refresh Token
-  → Redirects to appropriate app subdomain based on user role
+   → Auth.js callback → NestJS /auth/oauth-callback
+   → NestJS creates/finds user
+   → Issues JWT + Refresh Token
+   → Tokens returned to frontend
+   → ApiProvider stores tokens in localStorage
+   → User redirected to appropriate app based on role
 ```
 
 > **Email verification bypass:** OAuth providers (Google, GitHub) already verify the user's email. Users registering via OAuth skip the email verification step — their account is created immediately with `is_verified = true`.

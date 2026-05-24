@@ -1116,6 +1116,144 @@ DomainError (base)
 }
 ```
 
+## Frontend API Client Standards
+
+### Service Module Usage
+
+- **Never use raw fetch()** in components or hooks - always use service modules from `@edutech/api-client`
+- **All HTTP communication** flows through service modules: `coursesService`, `assignmentsService`, etc.
+- **No duplicate API files** - each app must use the shared `@edutech/api-client` package
+- **Service methods** are domain-specific: `coursesService.getById(id)`, not `api.get('/courses/:id')`
+
+### React Query Patterns
+
+#### Query Hooks
+
+```typescript
+// Correct - useQuery with service
+export function useCourses(filters?: CourseFilters) {
+  return useQuery({
+    queryKey: ['courses', filters],
+    queryFn: () => coursesService.list(filters),
+  });
+}
+
+// Incorrect - manual fetch
+export function useCourses() {
+  const [courses, setCourses] = useState([]);
+  useEffect(() => {
+    fetch('/api/courses').then(res => res.json()).then(setCourses);
+  }, []);
+  return courses;
+}
+```
+
+#### Mutation Hooks
+
+```typescript
+export function useCreateCourse() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (dto: CreateCourseDto) => coursesService.create(dto),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
+    },
+  });
+}
+```
+
+### Query Key Strategy
+
+- **Root keys** use resource names: `['courses']`, `['assignments']`, `['payments']`
+- **Specific items** include ID: `['course', courseId]`, `['assignment', assignmentId]`
+- **Nested resources** use dot notation: `['submissions', 'assignment', assignmentId]`
+- **Filters** included in key: `['courses', { domain: 'programming' }]`
+
+### Authentication Setup
+
+- **ApiProvider** wraps entire app in root layout
+- **Token storage**: `localStorage.getItem('accessToken')`
+- **Automatic injection**: `ApiClient` adds `Authorization: Bearer <token>` header
+- **401 handling**: Auto-clears tokens, redirects to login path (default: `/auth/login`)
+
+```tsx
+// apps/web-student/src/app/providers.tsx
+import { ApiProvider } from '@edutech/api-client';
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return <ApiProvider>{children}</ApiProvider>;
+}
+```
+
+### Server-Side API Access
+
+Use `createServerApiClient()` for Server Components:
+
+```typescript
+import { createServerApiClient } from '@edutech/api-client';
+
+export async function generateMetadata({ params }: { params: { id: string } }) {
+  const client = createServerApiClient(process.env.API_URL!);
+  const course = await client.get(`/courses/${params.id}`);
+  return { title: course.title };
+}
+```
+
+### Error Handling
+
+Always use `isApiError` type guard:
+
+```typescript
+import { isApiError, ApiClientError } from '@edutech/api-client';
+
+try {
+  await coursesService.create(dto);
+} catch (error) {
+  if (isApiError(error)) {
+    console.error('Code:', error.code);
+    console.error('Status:', error.status);
+    console.error('Details:', error.details);
+    // Show user-friendly message based on error code
+  } else {
+    console.error('Unknown error:', error);
+  }
+}
+```
+
+### Type Safety
+
+- Import types from `@edutech/types`, never duplicate locally
+- Service return types are auto-inferred from shared types
+- Filter types must extend `PaginationQuery` with index signature:
+
+```typescript
+// Correct
+interface CourseFilters extends PaginationQuery {
+  [key: string]: unknown;
+  domain?: string;
+  pricingType?: PricingType;
+}
+
+// Incorrect - missing index signature
+interface CourseFilters extends PaginationQuery {
+  domain?: string; // Type error: doesn't satisfy Record<string, unknown>
+}
+```
+
+### Code Quality Rules
+
+- [ ] No raw `fetch()` calls in components or hooks
+- [ ] All API imports from `@edutech/api-client`, not local files
+- [ ] All type imports from `@edutech/types`, not local type files
+- [ ] React Query used for all data fetching (no `useState` + `useEffect` patterns)
+- [ ] Queries invalidated after mutations for data consistency
+- [ ] Error handling uses `isApiError` type guard
+- [ ] Query keys follow established patterns
+- [ ] Server components use `createServerApiClient()` for data fetching
+
+---
+
 ### Frontend Error Boundaries
 
 - Each route has its own error boundary

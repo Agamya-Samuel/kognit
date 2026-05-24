@@ -9,9 +9,10 @@
 
 - REST-first (no GraphQL in Month 1)
 - Versioned routes: `/api/v1/...`
-- JWT bearer tokens for all authenticated endpoints
+- JWT bearer tokens for all authenticated endpoints (Authorization header)
 - Role-based access control (RBAC) enforced at route level: `student`, `instructor`, `admin`, `institution_admin`
 - Zod validation on all request bodies
+- Standardized error handling with `ApiClientError` across all frontend applications
 
 ---
 
@@ -98,12 +99,12 @@ Rate limiting is Redis-backed via Upstash. Rate limit headers (`X-RateLimit-Limi
   - `http://localhost:3000` (development only)
   - `http://localhost:3001` (development only)
   - `http://localhost:3002` (development only)
-- **Credentials:** `Access-Control-Allow-Credentials: true` (required for HTTP-only cookies)
 - **Methods:** `GET, POST, PATCH, DELETE, OPTIONS`
-- **Allowed headers:** `Content-Type, Authorization, X-CSRF-Token`
+- **Allowed headers:** `Content-Type, Authorization`
 - **Max age:** `86400` (preflight cache — 24 hours)
 - **No wildcard origins** — `Access-Control-Allow-Origin` is never set to `*`
 - **Origin validation:** The API server validates the `Origin` header against the allow-list on every request. Unknown origins receive a `403 Forbidden`
+- **Authentication:** All authenticated endpoints require `Authorization: Bearer <token>` header
 
 ---
 

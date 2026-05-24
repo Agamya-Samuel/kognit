@@ -15,7 +15,8 @@
 | **Institution Web** | Next.js (App Router), TypeScript, TailwindCSS — `apps/web-institution` (Phase 2) |
 | **UI Components** | ShadCN/UI (shared via `/packages/ui`) |
 | **State Management** | Jotai (per-app, isolated state) |
-| **Data Fetching** | TanStack Query (shared `/packages/api-client`) |
+| **API Client** | Axios-based client with service modules (`/packages/api-client`) |
+| **Data Fetching** | TanStack Query (React Query for all HTTP operations) |
 | **Forms** | React Hook Form + Zod |
 | **Mobile (Future)** | React Native + Expo |
 | **Backend API** | NestJS (modular monolith), REST-first |
@@ -37,6 +38,7 @@
 | **Deployment** | Dokploy |
 | **Hosting** | AWS |
 | **Validation** | Zod (shared across frontend + backend) |
+| **Type Definitions** | Shared TypeScript types (`/packages/types`) |
 
 ---
 
