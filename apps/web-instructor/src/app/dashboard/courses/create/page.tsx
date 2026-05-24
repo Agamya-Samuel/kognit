@@ -1,17 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { Spinner } from '@edutech/ui';
-import { Card, CardContent } from '@edutech/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@edutech/ui';
 import { Button } from '@edutech/ui';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { CheckCircle2, ChevronLeft, ChevronRight, BookOpen, Users, TrendingUp } from 'lucide-react';
+import { StatCard, StatsRow } from '@/components/StatsRow';
 import { CourseDetailsStep } from '@/components/course-creation/CourseDetailsStep';
 import { SectionsStep } from '@/components/course-creation/SectionsStep';
 import { LecturesStep } from '@/components/course-creation/LecturesStep';
 import { PricingStep } from '@/components/course-creation/PricingStep';
 import { ReviewStep } from '@/components/course-creation/ReviewStep';
 import { useCreateCourse } from '@/hooks/useCourses';
-import { toast } from 'sonner';
 
 type Step = 'details' | 'sections' | 'lectures' | 'pricing' | 'review';
 
@@ -40,6 +39,34 @@ export default function CreateCoursePage() {
   const createCourseMutation = useCreateCourse();
   const { mutate: createCourse, isPending: isCreating } = createCourseMutation;
 
+  // Mock data for course creation stats
+  const creationStats = [
+    {
+      title: 'Total Courses',
+      value: '12',
+      change: { value: '+2 this month', trend: 'up' as const },
+      icon: BookOpen,
+    },
+    {
+      title: 'Published',
+      value: '8',
+      change: { value: '+1 this week', trend: 'up' as const },
+      icon: CheckCircle2,
+    },
+    {
+      title: 'Total Students',
+      value: '245',
+      change: { value: '+18 this week', trend: 'up' as const },
+      icon: Users,
+    },
+    {
+      title: 'Avg. Completion',
+      value: '78%',
+      change: { value: '+5%', trend: 'up' as const },
+      icon: TrendingUp,
+    },
+  ];
+
   const currentStepIndex = steps.findIndex((step) => step.id === currentStep);
 
   const handleNext = () => {
@@ -56,7 +83,7 @@ export default function CreateCoursePage() {
 
   const handleSubmit = () => {
     if (!courseData.title || !courseData.domain) {
-      toast.error('Please fill in all required fields');
+      console.error('Please fill in all required fields');
       return;
     }
 
@@ -70,12 +97,11 @@ export default function CreateCoursePage() {
 
     createCourse(createData, {
       onSuccess: (data) => {
-        toast.success('Course created successfully!');
+        console.log('Course created successfully');
         window.location.href = `/dashboard/courses/${data.id}`;
       },
       onError: (error) => {
         console.error('Failed to create course:', error);
-        toast.error('Failed to create course. Please try again.');
       },
     });
   };
@@ -98,17 +124,40 @@ export default function CreateCoursePage() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Create Course</h1>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
-          Follow these steps to create a new course.
-        </p>
+    <div className="container mx-auto space-y-6">
+      {/* Stats Row */}
+      <StatsRow>
+        {creationStats.map((stat) => (
+          <StatCard
+            key={stat.title}
+            title={stat.title}
+            value={stat.value}
+            change={stat.change}
+            icon={stat.icon}
+          />
+        ))}
+      </StatsRow>
+
+      {/* Page Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Create Course</h1>
+          <p className="mt-2 text-muted-foreground">
+            Follow these steps to create a new course.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => window.history.back()}>
+            Cancel
+          </Button>
+        </div>
       </div>
 
       {/* Progress Steps */}
       <Card>
+        <CardHeader>
+          <CardTitle>Course Creation Steps</CardTitle>
+        </CardHeader>
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             {steps.map((step, index) => (
@@ -119,25 +168,25 @@ export default function CreateCoursePage() {
                       index === currentStepIndex
                         ? 'bg-primary text-primary-foreground'
                         : index < currentStepIndex
-                          ? 'bg-green-600 text-white'
-                          : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-muted text-muted-foreground'
                     }`}
                   >
-                    {index + 1}
+                    {index < currentStepIndex ? <CheckCircle2 className="h-5 w-5" /> : index + 1}
                   </div>
                   <div className="mt-2 text-center">
                     <div
                       className={`text-sm font-medium ${
                         index === currentStepIndex
-                          ? 'text-gray-900 dark:text-white'
+                          ? 'text-foreground'
                           : index < currentStepIndex
-                            ? 'text-green-600 dark:text-green-400'
-                            : 'text-gray-500 dark:text-gray-400'
+                            ? 'text-emerald-600 dark:text-emerald-400'
+                            : 'text-muted-foreground'
                       }`}
                     >
                       {step.label}
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                    <div className="text-xs text-muted-foreground">
                       {step.description}
                     </div>
                   </div>
@@ -145,7 +194,7 @@ export default function CreateCoursePage() {
                 {index < steps.length - 1 && (
                   <div
                     className={`mx-2 h-0.5 flex-1 ${
-                      index < currentStepIndex ? 'bg-green-600' : 'bg-gray-200 dark:bg-gray-700'
+                      index < currentStepIndex ? 'bg-emerald-600' : 'bg-muted'
                     }`}
                   />
                 )}
@@ -156,10 +205,14 @@ export default function CreateCoursePage() {
       </Card>
 
       {/* Current Step Content */}
-      <Card>{renderStep()}</Card>
+      <Card>
+        <CardContent className="p-6">
+          {renderStep()}
+        </CardContent>
+      </Card>
 
-      {/* Navigation */}
-      <div className="flex justify-between">
+      {/* Action Buttons */}
+      <div className="flex items-center justify-between">
         <Button
           variant="outline"
           onClick={handlePrevious}
@@ -169,23 +222,31 @@ export default function CreateCoursePage() {
           <ChevronLeft className="h-4 w-4" />
           Previous
         </Button>
-        {currentStepIndex === steps.length - 1 ? (
-          <Button onClick={handleSubmit} disabled={isCreating} className="gap-2">
-            {isCreating ? (
-              <>
-                <Spinner className="h-4 w-4" />
-                Creating...
-              </>
-            ) : (
-              'Create Course'
-            )}
+        <div className="flex items-center gap-2">
+          {currentStepIndex === steps.length - 1 ? (
+            <Button onClick={handleSubmit} disabled={isCreating} className="gap-2">
+              {isCreating ? (
+                <>
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-primary border-r-transparent" />
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="h-4 w-4" />
+                  Create Course
+                </>
+              )}
+            </Button>
+          ) : (
+            <Button onClick={handleNext} className="gap-2">
+              Next
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          )}
+          <Button variant="outline" onClick={() => window.history.back()}>
+            Cancel
           </Button>
-        ) : (
-          <Button onClick={handleNext} className="gap-2">
-            Next
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        )}
+        </div>
       </div>
     </div>
   );
