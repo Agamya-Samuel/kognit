@@ -16,7 +16,7 @@ This is a **monorepo** built with **Turborepo**, consisting of:
 - `packages/ui` - Shared ShadCN/TailwindCSS component library
 - `packages/types` - Shared TypeScript types and interfaces
 - `packages/validation` - Shared Zod schemas
-- `packages/api-client` - Auto-generated typed API client
+- `packages/api-client` - Centralized HTTP client with service modules and React Query integration
 - `packages/config` - Shared ESLint, Prettier, TSConfig
 - `packages/shared-components` - Cross-app UI components
 
