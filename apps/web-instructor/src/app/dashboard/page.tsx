@@ -1,9 +1,11 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle, Spinner } from '@edutech/ui';
+import { MetricCard, MetricCardGrid } from '@edutech/shared-components';
+import { ActivityList, QuickActions } from '@edutech/shared-components';
 import { Users, BookOpen, DollarSign, Calendar } from 'lucide-react';
 import { useDashboardMetrics, useRecentActivity, useUpcomingClasses } from '@/hooks/useCourses';
 import Link from 'next/link';
+import { Card, CardContent, CardHeader, CardTitle } from '@edutech/ui';
 
 export default function DashboardPage() {
   const { data: metrics, isLoading: metricsLoading, error: metricsError } = useDashboardMetrics();
@@ -20,16 +22,19 @@ export default function DashboardPage() {
   const safeNumber = (val: number | undefined | null): number => (typeof val === 'number' ? val : 0);
 
   const metricsList = [
-    { label: 'Total Students', value: safeNumber(metricsData.totalStudents).toLocaleString(), icon: Users, change: '+12%' },
-    { label: 'Active Courses', value: safeNumber(metricsData.activeCourses).toString(), icon: BookOpen, change: '+2' },
-    { label: 'Total Revenue', value: `₹${safeNumber(metricsData.totalRevenue).toLocaleString('en-IN')}`, icon: DollarSign, change: '+18%' },
-    { label: 'Upcoming Classes', value: safeNumber(metricsData.upcomingClasses).toString(), icon: Calendar, change: '' },
+    { label: 'Total Students', value: safeNumber(metricsData.totalStudents).toLocaleString(), icon: Users, change: '+12%', trend: 'up' as const },
+    { label: 'Active Courses', value: safeNumber(metricsData.activeCourses).toString(), icon: BookOpen, change: '+2', trend: 'up' as const },
+    { label: 'Total Revenue', value: `₹${safeNumber(metricsData.totalRevenue).toLocaleString('en-IN')}`, icon: DollarSign, change: '+18%', trend: 'up' as const },
+    { label: 'Upcoming Classes', value: safeNumber(metricsData.upcomingClasses).toString(), icon: Calendar, trend: 'neutral' as const },
   ];
 
   if (metricsLoading || activityLoading || classesLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <Spinner className="h-8 w-8" />
+        <div className="text-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent" />
+          <p className="mt-4 text-muted-foreground">Loading...</p>
+        </div>
       </div>
     );
   }
@@ -37,74 +42,29 @@ export default function DashboardPage() {
   if (metricsError) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <p className="text-red-600">Failed to load dashboard metrics. Please try again.</p>
+        <p className="text-destructive">Failed to load dashboard metrics. Please try again.</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Welcome Section */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
+        <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+        <p className="mt-2 text-muted-foreground">
           Welcome back! Here's an overview of your courses and student activity.
         </p>
       </div>
 
-      {/* Metrics Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {metricsList.map((metric) => {
-          const Icon = metric.icon;
-          return (
-            <Card key={metric.label}>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  {metric.label}
-                </CardTitle>
-                <Icon className="h-4 w-4 text-gray-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {metric.value}
-                </div>
-                {metric.change && (
-                  <p className="mt-1 text-xs text-green-600 dark:text-green-400">
-                    {metric.change} from last month
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+      <MetricCardGrid>
+        {metricsList.map((metric) => (
+          <MetricCard key={metric.label} {...metric} />
+        ))}
+      </MetricCardGrid>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentActivity && recentActivity.length > 0 ? (
-                recentActivity.map((activity: any) => (
-                  <div key={activity.id} className="flex items-start gap-3 border-b border-gray-100 dark:border-gray-800 pb-3 last:border-0 last:pb-0">
-                    <div className="mt-1 h-2 w-2 rounded-full bg-blue-500" />
-                    <div className="flex-1">
-                      <p className="text-sm text-gray-900 dark:text-white">{activity.message}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{activity.time}</p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-gray-500 dark:text-gray-400">No recent activity</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        <ActivityList activities={recentActivity || []} />
 
-        {/* Upcoming Classes */}
         <Card>
           <CardHeader>
             <CardTitle>Upcoming Live Classes</CardTitle>
@@ -115,16 +75,16 @@ export default function DashboardPage() {
                 upcomingClasses.map((classItem: any) => (
                   <div
                     key={classItem.id}
-                    className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-3 last:border-0 last:pb-0"
+                    className="flex items-center justify-between border-b border-border pb-3 last:border-0 last:pb-0"
                   >
                     <div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      <p className="text-sm font-medium text-foreground">
                         {classItem.title}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{classItem.time}</p>
+                      <p className="text-xs text-muted-foreground">{classItem.time}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                      <span className="text-sm text-muted-foreground">
                         {classItem.enrolledCount} enrolled
                       </span>
                       <Link href={`/live/${classItem.id}`} className="rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90">
@@ -134,32 +94,20 @@ export default function DashboardPage() {
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-gray-500 dark:text-gray-400">No upcoming classes</p>
+                <p className="text-sm text-muted-foreground">No upcoming classes</p>
               )}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-3">
-            <Link href="/dashboard/courses/create" className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
-              Create Course
-            </Link>
-            <Link href="/dashboard/schedule" className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
-              Schedule Class
-            </Link>
-            <Link href="/dashboard/analytics" className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
-              View Analytics
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
+      <QuickActions
+        actions={[
+          { label: "Create Course", href: "/dashboard/courses/create", variant: "default" },
+          { label: "Schedule Class", href: "/dashboard/schedule", variant: "outline" },
+          { label: "View Analytics", href: "/dashboard/analytics", variant: "outline" },
+        ]}
+      />
     </div>
   );
 }
