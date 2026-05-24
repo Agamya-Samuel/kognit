@@ -1,55 +1,19 @@
-import { useState, useEffect } from 'react';
-import { submissionsApi } from '@/lib/assignments-api';
-import type { Submission, SubmissionFilters, GradingResult, BulkGradeDto } from '@/types/assignments';
-
-interface UseAssignmentSubmissionsReturn {
-  data: Submission[];
-  isLoading: boolean;
-  error: string | null;
-  meta?: {
-    page: number;
-    limit: number;
-    total: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  };
-  refetch: () => void;
-}
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { submissionsService } from '@edutech/api-client';
+import type { SubmissionFilters, GradingResult, BulkGradeDto } from '@edutech/types';
 
 export function useAssignmentSubmissions(
   assignmentId: number,
   filters?: Omit<SubmissionFilters, 'assignmentId'>
-): UseAssignmentSubmissionsReturn {
-  const [data, setData] = useState<Submission[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [meta, setMeta] = useState<UseAssignmentSubmissionsReturn['meta']>();
-
-  const fetchData = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await submissionsApi.getByAssignment(assignmentId, filters);
-      if (response.success) {
-        setData(response.data);
-        setMeta(response.meta);
-      } else {
-        setError(response.error || 'Failed to fetch submissions');
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (assignmentId) {
-      fetchData();
-    }
-  }, [assignmentId, filters?.page, filters?.limit]);
-
-  return { data, isLoading, error, meta, refetch: fetchData };
+) {
+  return useQuery({
+    queryKey: ['submissions', 'assignment', assignmentId, filters],
+    queryFn: async () => {
+      return submissionsService.getByAssignment(assignmentId, filters);
+    },
+    enabled: !!assignmentId,
+  });
 }
 
 interface UseGradingReturn {
@@ -73,71 +37,112 @@ interface UseGradingReturn {
 }
 
 export function useGrading(): UseGradingReturn {
+  const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const grade = async (submissionId: number, score: number, feedback?: string) => {
+  const grade = async (submissionId: number, score: number, feedback?: string): Promise<{
+    success: boolean;
+    result: GradingResult | null;
+    error: string | null;
+  }> => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await submissionsApi.grade(submissionId, { score, feedback });
-      if (response.success) {
-        return { success: true, result: response.data, error: null };
-      } else {
-        const errorMsg = response.error || 'Failed to grade submission';
-        setError(errorMsg);
-        return { success: false, result: null, error: errorMsg };
-      }
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'An error occurred';
-      setError(errorMsg);
-      return { success: false, result: null, error: errorMsg };
+      const result = await submissionsService.grade(submissionId, { score, feedback });
+      queryClient.invalidateQueries({ queryKey: ['submissions'] });
+      return { success: true, result: result as unknown as GradingResult, error: null };
+    } catch (err: any) {
+      const msg = err.response?.data?.message || err.message || 'Failed to grade submission';
+      setError(msg);
+      return { success: false, result: null, error: msg };
     } finally {
       setIsLoading(false);
     }
   };
 
-  const autoGrade = async (submissionId: number) => {
+  const autoGrade = async (submissionId: number): Promise<{
+    success: boolean;
+    result: GradingResult | null;
+    error: string | null;
+  }> => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await submissionsApi.autoGrade(submissionId);
-      if (response.success) {
-        return { success: true, result: response.data, error: null };
-      } else {
-        const errorMsg = response.error || 'Failed to auto-grade submission';
-        setError(errorMsg);
-        return { success: false, result: null, error: errorMsg };
-      }
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'An error occurred';
-      setError(errorMsg);
-      return { success: false, result: null, error: errorMsg };
+      const result = await submissionsService.autoGrade(submissionId);
+      queryClient.invalidateQueries({ queryKey: ['submissions'] });
+      return { success: true, result: result as unknown as GradingResult, error: null };
+    } catch (err: any) {
+      const msg = err.response?.data?.message || err.message || 'Failed to auto-grade submission';
+      setError(msg);
+      return { success: false, result: null, error: msg };
     } finally {
       setIsLoading(false);
     }
   };
 
-  const bulkGrade = async (dto: BulkGradeDto) => {
+  const bulkGrade = async (dto: BulkGradeDto): Promise<{
+    success: boolean;
+    results: GradingResult[];
+    errors: string[];
+  }> => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await submissionsApi.bulkGrade(dto);
-      if (response.success) {
-        return { success: true, results: response.data.graded, errors: response.data.errors };
-      } else {
-        const errorMsg = response.error || 'Failed to bulk grade submissions';
-        setError(errorMsg);
-        return { success: false, results: [], errors: [errorMsg] };
-      }
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'An error occurred';
-      setError(errorMsg);
-      return { success: false, results: [], errors: [errorMsg] };
+      const response = await submissionsService.bulkGrade(dto);
+      queryClient.invalidateQueries({ queryKey: ['submissions'] });
+      return { success: true, results: response.graded || [], errors: response.errors || [] };
+    } catch (err: any) {
+      const msg = err.response?.data?.message || err.message || 'Failed to bulk grade submissions';
+      setError(msg);
+      return { success: false, results: [], errors: [msg] };
     } finally {
       setIsLoading(false);
     }
   };
 
-  return { grade, autoGrade, bulkGrade, isLoading, error };
+  return {
+    grade,
+    autoGrade,
+    bulkGrade,
+    isLoading,
+    error,
+  };
+}
+
+export function useGradingReactQuery() {
+  const queryClient = useQueryClient();
+
+  const grade = useMutation({
+    mutationFn: async ({ submissionId, score, feedback }: { submissionId: number; score: number; feedback?: string }) => {
+      return submissionsService.grade(submissionId, { score, feedback });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['submissions'] });
+    },
+  });
+
+  const autoGrade = useMutation({
+    mutationFn: async (submissionId: number) => {
+      return submissionsService.autoGrade(submissionId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['submissions'] });
+    },
+  });
+
+  const bulkGrade = useMutation({
+    mutationFn: async (dto: BulkGradeDto) => {
+      return submissionsService.bulkGrade(dto);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['submissions'] });
+    },
+  });
+
+  return {
+    grade,
+    autoGrade,
+    bulkGrade,
+  };
 }

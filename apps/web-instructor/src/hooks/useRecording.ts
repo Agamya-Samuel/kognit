@@ -1,80 +1,23 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import api from '@/lib/api';
+'use client';
 
-// ─── Types ──────────────────────────────────────────────────────────────────
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { recordingsService } from '@edutech/api-client';
 
-export interface RecordingInfo {
-  liveClassId: number;
-  status: 'none' | 'recording' | 'processing' | 'ready' | 'failed';
-  s3Key: string | null;
-  muxAssetId: string | null;
-  muxPlaybackId: string | null;
-  playbackUrl: string | null;
-  error: string | null;
-}
-
-export interface PostSessionResult {
-  liveClassId: number;
-  lectureId: number;
-  recordingStatus: 'none' | 'recording' | 'processing' | 'ready' | 'failed';
-  muxAssetId: string | null;
-  muxPlaybackId: string | null;
-  lectureUpdated: boolean;
-}
-
-// ─── Start Recording ─────────────────────────────────────────────────────────
-
-export function useStartRecording() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (liveClassId: number) => {
-      const { data } = await api.post<{ message: string; s3Key: string }>('/live/recording/start', {
-        liveClassId,
-      });
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['live', 'recording'] });
-    },
-  });
-}
-
-// ─── Get Recording Info ──────────────────────────────────────────────────────
-
-export function useRecordingInfo(liveClassId: number | null) {
+export function useRecordings(filters?: Record<string, unknown>) {
   return useQuery({
-    queryKey: ['live', 'recording', liveClassId],
+    queryKey: ['recordings', filters],
     queryFn: async () => {
-      const { data } = await api.get<RecordingInfo>(`/live/recording/${liveClassId}`);
-      return data;
-    },
-    enabled: !!liveClassId,
-    refetchInterval: (query) => {
-      const status = query.state.data?.status;
-      // Poll while recording or processing
-      if (status === 'recording' || status === 'processing') {
-        return 5000; // 5 seconds
-      }
-      return false;
+      return recordingsService.getRecordings(filters);
     },
   });
 }
 
-// ─── Retry Failed Recording ──────────────────────────────────────────────────
-
-export function useRetryRecording() {
+export function useUpdateRecording() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async (liveClassId: number) => {
-      const { data } = await api.post<PostSessionResult>('/live/recording/retry', {
-        liveClassId,
-      });
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['live', 'recording'] });
-    },
-  });
+  return async (id: number, data: any) => {
+    const result = await recordingsService.updateRecording(id, data);
+    queryClient.invalidateQueries({ queryKey: ['recordings'] });
+    return result;
+  };
 }
