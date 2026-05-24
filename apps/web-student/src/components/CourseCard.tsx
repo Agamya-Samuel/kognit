@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import { CourseCard as SharedCourseCard } from '@edutech/shared-components';
 import type { Course } from '@/types/courses';
+import { CourseCard as SharedCourseCard } from '@edutech/shared-components';
 
 interface CourseCardProps {
   course: Course;
@@ -8,7 +8,7 @@ interface CourseCardProps {
 
 export function CourseCard({ course }: CourseCardProps) {
   return (
-    <Link href={`/courses/${course.id}`}>
+    <Link href={`/(authenticated)/courses/${course.id}`}>
       <SharedCourseCard
         title={course.title}
         description={course.description ?? undefined}
