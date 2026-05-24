@@ -6,14 +6,14 @@ import { Button } from '@edutech/ui';
 import { Input } from '@edutech/ui';
 import { Label } from '@edutech/ui';
 import { Spinner } from '@edutech/ui';
-import { Plus, Calendar as CalendarIcon, Clock, Users, Video } from 'lucide-react';
+import { Plus, Calendar as CalendarIcon, Clock, Users, Video, Eye, Edit } from 'lucide-react';
 import { useUpcomingClasses } from '@/hooks/useCourses';
-import { useInstructorCalendar } from '@/hooks/useSchedule';
+import { useInstructorSchedule } from '@/hooks/useSchedule';
 
 export default function SchedulePage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const { data: upcomingClasses, isLoading } = useUpcomingClasses();
-  const { data: calendarEvents } = useInstructorCalendar();
+  const { data: calendarEvents } = useInstructorSchedule();
 
   const scheduledClasses = upcomingClasses || [];
   const calendarData = calendarEvents || [];
@@ -92,7 +92,7 @@ export default function SchedulePage() {
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Total Enrolled</p>
                     <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                      {scheduledClasses.reduce((acc, cls) => acc + (cls.enrolledCount || 0), 0)}
+                      {scheduledClasses.reduce((acc, cls: any) => acc + (cls.enrolledCount || 0), 0)}
                     </p>
                   </div>
                 </div>
@@ -122,7 +122,7 @@ export default function SchedulePage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {scheduledClasses.map((cls) => (
+                  {scheduledClasses.map((cls: any) => (
                     <div
                       key={cls.id}
                       className="flex items-start justify-between p-4 border border-gray-200 dark:border-gray-800 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800"
@@ -140,15 +140,17 @@ export default function SchedulePage() {
                           </div>
                           <div className="flex items-center gap-1">
                             <Users className="h-4 w-4" />
-                            <span>{cls.enrolledCount} enrolled</span>
+                            <span>{cls.enrolledCount || 0} enrolled</span>
                           </div>
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
-                          Edit
-                        </Button>
-                        <Button size="sm">Start</Button>
+                        <button className="p-2 text-blue-600 hover:text-blue-700">
+                          <Eye className="h-4 w-4" />
+                        </button>
+                        <button className="p-2 text-gray-600 hover:text-gray-700">
+                          <Edit className="h-4 w-4" />
+                        </button>
                       </div>
                     </div>
                   ))}

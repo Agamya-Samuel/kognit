@@ -4,8 +4,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@edutech/ui';
 import { Button } from '@edutech/ui';
 import { Input } from '@edutech/ui';
-import { Search, ArrowLeft, Mail } from 'lucide-react';
-import Link from 'next/link';
+import { Search, Mail } from 'lucide-react';
 import { Spinner } from '@edutech/ui';
 
 export default function StudentsPage() {

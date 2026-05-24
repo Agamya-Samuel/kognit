@@ -6,43 +6,31 @@ import { Card, CardContent, CardHeader, CardTitle } from '@edutech/ui';
 import { Button } from '@edutech/ui';
 import { Badge } from '@edutech/ui';
 import { Plus, Edit, Eye } from 'lucide-react';
-import { useInstructorCourses } from '@/hooks/useCourses';
+import type { Course } from '@edutech/types';
+import { useMyCourses } from '@/hooks/useCourses';
 
-interface Course {
-  id: number;
-  title: string;
-  description: string;
-  domain: string;
-  pricingType: 'free' | 'paid';
-  priceInr: number;
-  isPublished: boolean;
-  enrollmentCount?: number;
-  revenue?: number;
-  createdAt: string;
-  updatedAt: string;
+interface CourseWithMetrics extends Course {
+  enrollmentCount: number;
+  revenue: number;
 }
 
 export default function CoursesPage() {
-  const { data: courses, isLoading, error } = useInstructorCourses();
+  const { data: courses, isLoading, error } = useMyCourses();
 
   if (error) {
     return (
       <div className="flex h-96 items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <div className="text-lg font-medium text-gray-900 dark:text-white">
-              Failed to load courses
-            </div>
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-              Please try again later
-            </p>
-          </CardContent>
-        </Card>
+        <div className="text-center">
+          <p className="text-gray-500 dark:text-gray-400">Failed to load courses</p>
+          <button onClick={() => window.location.reload()} className="mt-4 text-blue-600 hover:text-blue-700">
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
 
-  const courseList = courses || [];
+  const courseList = courses?.map(c => ({ ...c, enrollmentCount: 0, revenue: 0 })) || [];
 
   return (
     <div className="space-y-6">
@@ -92,7 +80,7 @@ export default function CoursesPage() {
               <Skeleton className="h-8 w-16" />
             ) : (
               <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                {courseList.filter((c: Course) => c.isPublished).length}
+                {courseList.filter((c: CourseWithMetrics) => c.isPublished).length}
               </div>
             )}
           </CardContent>
@@ -109,7 +97,7 @@ export default function CoursesPage() {
               <Skeleton className="h-8 w-16" />
             ) : (
               <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                {courseList.reduce((sum: number, c: Course) => sum + (c.enrollmentCount || 0), 0)}
+                {courseList.reduce((sum: number, c: CourseWithMetrics) => sum + (c.enrollmentCount || 0), 0)}
               </div>
             )}
           </CardContent>
@@ -181,7 +169,7 @@ export default function CoursesPage() {
                     </tr>
                   ))
                 ) : (
-                  courseList.map((course: Course) => (
+                  courseList.map((course: CourseWithMetrics) => (
                   <tr
                     key={course.id}
                     className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50"

@@ -75,10 +75,7 @@ export default function SettingsPage() {
             <form onSubmit={handleSaveProfile} className="space-y-4">
               <div className="flex items-center gap-4">
                 <div className="relative">
-                  <Avatar className="h-20 w-20">
-                    <div className="flex items-center justify-center h-full w-full bg-primary text-primary-foreground text-2xl font-medium">
-                      {user?.name?.[0] || 'I'}
-                    </div>
+                  <Avatar className="h-20 w-20" fallback={user?.name || 'Instructor'}>
                   </Avatar>
                   <Button
                     type="button"

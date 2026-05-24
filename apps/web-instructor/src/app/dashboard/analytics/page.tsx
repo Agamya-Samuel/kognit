@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@edutech/ui';
 import { Spinner } from '@edutech/ui';
-import { TrendingUp, Users, DollarSign, BookOpen, Clock } from 'lucide-react';
+import { Users, DollarSign, BookOpen, Clock } from 'lucide-react';
 import { useDashboardMetrics } from '@/hooks/useCourses';
 
 export default function AnalyticsPage() {

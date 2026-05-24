@@ -87,8 +87,8 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentActivity?.length ? (
-                recentActivity.map((activity) => (
+              {recentActivity && recentActivity.length > 0 ? (
+                recentActivity.map((activity: any) => (
                   <div key={activity.id} className="flex items-start gap-3 border-b border-gray-100 dark:border-gray-800 pb-3 last:border-0 last:pb-0">
                     <div className="mt-1 h-2 w-2 rounded-full bg-blue-500" />
                     <div className="flex-1">
@@ -111,8 +111,8 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {upcomingClasses?.length ? (
-                upcomingClasses.map((classItem) => (
+              {upcomingClasses && upcomingClasses.length > 0 ? (
+                upcomingClasses.map((classItem: any) => (
                   <div
                     key={classItem.id}
                     className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-3 last:border-0 last:pb-0"
