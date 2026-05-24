@@ -6,6 +6,8 @@ import type { ApiResponse, ApiErrorResponse } from '@edutech/types';
 export interface ApiClientConfig {
   baseURL: string;
   getToken?: () => string | null;
+  getRefreshToken?: () => string | null;
+  onTokenRefreshed?: (accessToken: string, refreshToken: string) => void;
   onUnauthorized?: () => void;
 }
 
@@ -30,10 +32,15 @@ export class ApiClientError extends Error {
 export class ApiClient {
   private client: AxiosInstance;
   private getToken?: () => string | null;
+  private getRefreshToken?: () => string | null;
+  private onTokenRefreshed?: (accessToken: string, refreshToken: string) => void;
   private onUnauthorized?: () => void;
+  private refreshPromise: Promise<{ accessToken: string; refreshToken: string }> | null = null;
 
   constructor(config: ApiClientConfig) {
     this.getToken = config.getToken;
+    this.getRefreshToken = config.getRefreshToken;
+    this.onTokenRefreshed = config.onTokenRefreshed;
     this.onUnauthorized = config.onUnauthorized;
 
     this.client = axios.create({
@@ -47,7 +54,6 @@ export class ApiClient {
   }
 
   private setupInterceptors() {
-    // Request interceptor: attach JWT token
     this.client.interceptors.request.use((config) => {
       const token = this.getToken?.();
       if (token) {
@@ -56,12 +62,60 @@ export class ApiClient {
       return config;
     });
 
-    // Response interceptor: unwrap envelope, handle errors
     this.client.interceptors.response.use(
       (response) => response,
-      (error: AxiosError<ApiErrorResponse>) => {
+      async (error: AxiosError<ApiErrorResponse>) => {
+        const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
+
         if (error.response?.status === 401) {
-          this.onUnauthorized?.();
+          const isRefreshEndpoint = originalRequest.url?.includes('/auth/refresh');
+
+          if (!isRefreshEndpoint && this.getRefreshToken && this.onTokenRefreshed && !originalRequest._retry) {
+            const refreshToken = this.getRefreshToken();
+
+            if (refreshToken && !this.refreshPromise) {
+              this.refreshPromise = this.performRefreshToken(refreshToken);
+
+              try {
+                const { accessToken: newAccessToken, refreshToken: newRefreshToken } = await this.refreshPromise;
+
+                this.onTokenRefreshed(newAccessToken, newRefreshToken);
+                this.refreshPromise = null;
+
+                originalRequest.headers = {
+                  ...originalRequest.headers,
+                  Authorization: `Bearer ${newAccessToken}`,
+                };
+                originalRequest._retry = true;
+
+                return this.client.request(originalRequest);
+              } catch (refreshError) {
+                this.refreshPromise = null;
+                this.onUnauthorized?.();
+                throw error;
+              }
+            } else if (!refreshToken || !this.getRefreshToken) {
+              this.onUnauthorized?.();
+            }
+          } else {
+            this.onUnauthorized?.();
+          }
+
+          if (error.response?.data) {
+            throw new ApiClientError(error.response.data, error.response.status);
+          }
+
+          throw new ApiClientError(
+            {
+              success: false,
+              data: null,
+              error: {
+                code: 'NETWORK_ERROR',
+                message: error.message || 'An unexpected error occurred',
+              },
+            },
+            error.response?.status || 0,
+          );
         }
 
         if (error.response?.data) {
@@ -81,6 +135,19 @@ export class ApiClient {
         );
       },
     );
+  }
+
+  private async performRefreshToken(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> {
+    const response = await axios.post<{ success: boolean; data: { accessToken: string; refreshToken: string } }>(
+      `${this.client.defaults.baseURL}/auth/refresh`,
+      { refreshToken },
+    );
+
+    if (response.data.success && response.data.data) {
+      return response.data.data;
+    }
+
+    throw new Error('Failed to refresh token');
   }
 
   // ─── HTTP Methods ───────────────────────────────────────────────────────
