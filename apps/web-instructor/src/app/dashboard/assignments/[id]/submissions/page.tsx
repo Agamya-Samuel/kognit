@@ -6,9 +6,12 @@ import { useAssignment } from '@/hooks/useAssignments';
 import { useAssignmentSubmissions } from '@/hooks/useGrading';
 import { useGrading } from '@/hooks/useGrading';
 import { GradingForm } from '@/components/GradingForm';
-import { EmptyState } from '@/components/EmptyState';
-import { ErrorState } from '@/components/ErrorState';
 import { toast } from 'sonner';
+import { Card, CardContent, CardHeader, CardTitle } from '@edutech/ui';
+import { Button } from '@edutech/ui';
+import { Badge } from '@edutech/ui';
+import { ArrowLeft, CheckCircle, Clock } from 'lucide-react';
+import Link from 'next/link';
 
 export default function AssignmentGradingPage({ params }: { params: { id: string } }) {
   const { data: assignment, isLoading: assignmentLoading, error: assignmentError } = useAssignment(params.id);
@@ -60,11 +63,8 @@ export default function AssignmentGradingPage({ params }: { params: { id: string
 
   if (assignmentLoading || submissionsLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="mx-auto max-w-6xl space-y-4">
-          <div className="h-8 animate-pulse rounded bg-muted" />
-          <div className="h-40 animate-pulse rounded bg-muted" />
-        </div>
+      <div className="flex items-center justify-center h-screen">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent" />
       </div>
     );
   }
@@ -72,24 +72,22 @@ export default function AssignmentGradingPage({ params }: { params: { id: string
   if (assignmentError || submissionsError) {
     const errorMsg = (assignmentError?.message || submissionsError?.message || 'Failed to load data') as string;
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="mx-auto max-w-6xl">
-          <ErrorState message={errorMsg} />
-        </div>
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-destructive">{errorMsg}</p>
       </div>
     );
   }
 
   if (!assignment) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="mx-auto max-w-6xl">
-          <EmptyState
-            title="Assignment not found"
-            description="The assignment you're looking for doesn't exist."
-            icon={<span className="text-6xl">😕</span>}
-          />
+      <div className="flex flex-col items-center justify-center h-screen text-center">
+        <div className="rounded-full bg-muted p-4 mb-4">
+          <Clock className="h-8 w-8 text-muted-foreground" />
         </div>
+        <h3 className="text-lg font-medium text-foreground">Assignment not found</h3>
+        <p className="mt-2 text-sm text-muted-foreground">
+          The assignment you're looking for doesn't exist.
+        </p>
       </div>
     );
   }
@@ -102,142 +100,141 @@ export default function AssignmentGradingPage({ params }: { params: { id: string
       : 0;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-6">
-          <button
-            onClick={() => window.history.back()}
-            className="mb-4 text-sm text-muted-foreground hover:text-foreground"
-          >
-            ← Back to Assignments
-          </button>
-          <h1 className="mb-2 text-3xl font-bold">{assignment.title}</h1>
-          <div className="flex items-center gap-6 text-sm">
-            <span className="text-muted-foreground">Max Score: {assignment.maxScore}</span>
-              <span className="text-muted-foreground">Total Submissions: {submissions?.length || 0}</span>
-            <span className="text-green-600">Graded: {gradedCount}</span>
-            <span className="text-orange-600">Ungraded: {ungradedCount}</span>
-            <span className="text-blue-600">Average Score: {averageScore}</span>
-          </div>
+    <div className="space-y-6">
+      <div>
+        <Link href="/dashboard/assignments" className="mb-4 inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Assignments
+        </Link>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">{assignment.title}</h1>
+        <div className="mt-4 flex flex-wrap items-center gap-6 text-sm">
+          <span className="text-muted-foreground">Max Score: {assignment.maxScore}</span>
+          <span className="text-muted-foreground">Total Submissions: {submissions?.length || 0}</span>
+          <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+            <CheckCircle className="h-4 w-4" />
+            Graded: {gradedCount}
+          </span>
+          <span className="text-amber-600 dark:text-amber-400">Ungraded: {ungradedCount}</span>
+          <span className="text-blue-600 dark:text-blue-400">Average Score: {averageScore}</span>
         </div>
-
-        <div className="mb-6 flex items-center gap-4">
-          <label className="text-sm font-medium">Filter by status:</label>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setStatusFilter('all')}
-              className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                statusFilter === 'all'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'border border-border bg-background hover:bg-accent'
-              }`}
-            >
-              All
-            </button>
-            <button
-              onClick={() => setStatusFilter('ungraded')}
-              className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                statusFilter === 'ungraded'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'border border-border bg-background hover:bg-accent'
-              }`}
-            >
-              Ungraded ({ungradedCount})
-            </button>
-            <button
-              onClick={() => setStatusFilter('graded')}
-              className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                statusFilter === 'graded'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'border border-border bg-background hover:bg-accent'
-              }`}
-            >
-              Graded ({gradedCount})
-            </button>
-          </div>
-        </div>
-
-        {selectedSubmission !== null ? (
-          <div className="mb-6">
-            <button
-              onClick={() => setSelectedSubmission(null)}
-              className="mb-4 text-sm text-primary hover:underline"
-            >
-              ← Back to submissions list
-            </button>
-            <GradingForm
-              submission={submissions?.find((s: Submission) => s.id === selectedSubmission)!}
-              maxScore={assignment.maxScore}
-              onSubmit={handleGrade}
-              onCancel={() => setSelectedSubmission(null)}
-              isLoading={isGrading}
-            />
-          </div>
-        ) : filteredSubmissions.length === 0 ? (
-          <EmptyState
-            title="No submissions found"
-            description="No submissions match the current filter."
-            icon={<span className="text-6xl">📋</span>}
-          />
-        ) : (
-          <div className="rounded-lg border bg-card overflow-hidden">
-            <table className="w-full">
-              <thead className="border-b bg-muted/50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-sm font-medium">Student</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium">Submitted</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium">Status</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium">Score</th>
-                  <th className="px-6 py-3 text-right text-sm font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredSubmissions.map((submission: Submission) => (
-                  <tr key={submission.id} className="border-b hover:bg-accent/50">
-                    <td className="px-6 py-4">
-                      <div className="font-medium">Student #{submission.studentId}</div>
-                    </td>
-                    <td className="px-6 py-4 text-sm">{formatDate(submission.submittedAt)}</td>
-                    <td className="px-6 py-4">
-                      {submission.score !== null ? (
-                        <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
-                          Graded
-                        </span>
-                      ) : (
-                        <span className="rounded-full bg-orange-100 px-2 py-1 text-xs font-medium text-orange-800">
-                          Pending
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-sm font-medium">
-                      {submission.score !== null ? `${submission.score}/${assignment.maxScore}` : '-'}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex justify-end gap-2">
-                        {assignment.type === 'mcq' && submission.score === null && (
-                          <button
-                            onClick={() => handleAutoGrade(submission.id)}
-                            disabled={isGrading}
-                            className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-                          >
-                            Auto-Grade
-                          </button>
-                        )}
-                        <button
-                          onClick={() => setSelectedSubmission(submission.id)}
-                          className="rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium hover:bg-accent"
-                        >
-                          {submission.score !== null ? 'Update Grade' : 'Grade'}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
       </div>
+
+      <div className="flex items-center gap-2">
+        <Button
+          variant={statusFilter === 'all' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setStatusFilter('all')}
+        >
+          All
+        </Button>
+        <Button
+          variant={statusFilter === 'ungraded' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setStatusFilter('ungraded')}
+        >
+          Ungraded ({ungradedCount})
+        </Button>
+        <Button
+          variant={statusFilter === 'graded' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setStatusFilter('graded')}
+        >
+          Graded ({gradedCount})
+        </Button>
+      </div>
+
+      {selectedSubmission !== null ? (
+        <div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSelectedSubmission(null)}
+            className="mb-4"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to submissions list
+          </Button>
+          <GradingForm
+            submission={submissions?.find((s: Submission) => s.id === selectedSubmission)!}
+            maxScore={assignment.maxScore}
+            onSubmit={handleGrade}
+            onCancel={() => setSelectedSubmission(null)}
+            isLoading={isGrading}
+          />
+        </div>
+      ) : filteredSubmissions.length === 0 ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <div className="rounded-full bg-muted p-4 mb-4">
+              <CheckCircle className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-medium text-foreground">No submissions found</h3>
+            <p className="mt-2 text-sm text-muted-foreground">No submissions match the current filter.</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle>Submissions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="rounded-lg border">
+              <table className="w-full">
+                <thead className="border-b bg-muted/50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Student</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Submitted</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">Score</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium uppercase text-muted-foreground">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredSubmissions.map((submission: Submission) => (
+                    <tr key={submission.id} className="border-b hover:bg-accent/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="font-medium text-foreground">Student #{submission.studentId}</div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-muted-foreground">{formatDate(submission.submittedAt)}</td>
+                      <td className="px-6 py-4">
+                        {submission.score !== null ? (
+                          <Badge variant="default" className="bg-emerald-600 hover:bg-emerald-600">Graded</Badge>
+                        ) : (
+                          <Badge variant="secondary">Pending</Badge>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-sm font-medium text-foreground">
+                        {submission.score !== null ? `${submission.score}/${assignment.maxScore}` : '-'}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex justify-end gap-2">
+                          {assignment.type === 'mcq' && submission.score === null && (
+                            <Button
+                              variant="default"
+                              size="sm"
+                              onClick={() => handleAutoGrade(submission.id)}
+                              disabled={isGrading}
+                            >
+                              Auto-Grade
+                            </Button>
+                          )}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedSubmission(submission.id)}
+                          >
+                            {submission.score !== null ? 'Update' : 'Grade'}
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
