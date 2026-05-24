@@ -1,5 +1,3 @@
-import * as React from "react"
-
 const VISUAL_HIDE = {
   position: "absolute" as const,
   width: "1px" as const,
