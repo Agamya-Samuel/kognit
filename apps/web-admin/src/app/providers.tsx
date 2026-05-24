@@ -2,6 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ApiProvider } from '@edutech/api-client';
+import { AuthProvider } from '@edutech/shared-components';
 import { useState } from 'react';
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -24,7 +25,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ApiProvider loginPath="/auth/login">{children}</ApiProvider>
+      <ApiProvider loginPath="/auth/login">
+        <AuthProvider>{children}</AuthProvider>
+      </ApiProvider>
     </QueryClientProvider>
   );
 }
