@@ -1,11 +1,16 @@
 "use client"
 
-import * as React from "react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 import type { LucideIcon } from "lucide-react"
-import { Badge } from "@edutech/ui"
-import { cn } from "../../lib/utils"
+import {
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupContent,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+} from "@edutech/ui"
 
 export interface NavItem {
   href: string
@@ -15,39 +20,68 @@ export interface NavItem {
   children?: NavItem[]
 }
 
-interface NavSectionProps {
+export interface NavGroup {
+  label: string
   items: NavItem[]
 }
 
-export function NavSection({ items }: NavSectionProps) {
+export interface FooterLink {
+  label: string
+  href: string
+  external?: boolean
+}
+
+interface NavSectionProps {
+  items: NavItem[]
+  groups?: NavGroup[]
+}
+
+export function NavSection({ items, groups }: NavSectionProps) {
   const pathname = usePathname()
 
-  return (
-    <nav className="space-y-1 px-3">
-      {items.map((item) => {
-        const Icon = item.icon
-        const isActive =
-          item.href === "/dashboard"
-            ? pathname === "/dashboard"
-            : pathname.startsWith(item.href)
+  const renderNavItem = (item: NavItem) => {
+    const Icon = item.icon
+    const isActive =
+      item.href === "/dashboard"
+        ? pathname === "/dashboard"
+        : pathname.startsWith(item.href)
 
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-              isActive
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-            )}
-          >
-            <Icon className="h-5 w-5" />
-            <span className="flex-1">{item.label}</span>
-            {item.badge && <Badge variant="secondary">{item.badge}</Badge>}
+    return (
+      <SidebarMenuItem key={item.href}>
+        <SidebarMenuButton asChild isActive={isActive} tooltip={item.label}>
+          <Link href={item.href}>
+            <Icon />
+            <span>{item.label}</span>
           </Link>
-        )
-      })}
-    </nav>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    )
+  }
+
+  if (groups) {
+    return (
+      <>
+        {groups.map((group) => (
+          <SidebarGroup key={group.label}>
+            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {group.items.map(renderNavItem)}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
+      </>
+    )
+  }
+
+  return (
+    <SidebarGroup>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          {items.map(renderNavItem)}
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
   )
 }

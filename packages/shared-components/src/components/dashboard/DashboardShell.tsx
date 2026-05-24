@@ -1,25 +1,28 @@
 "use client"
 
-import * as React from "react"
-import type { ReactNode } from "lucide-react"
-import { DashboardSidebar } from "./DashboardSidebar"
-import { DashboardHeader } from "./DashboardHeader"
-import { MobileSidebar } from "./MobileSidebar"
-import type { NavItem } from "./NavSection"
-import { cn } from "../../lib/utils"
+import type { ReactNode } from "react"
+import { SidebarProvider, SidebarInset } from "@edutech/ui"
+import { AppSidebar } from "./AppSidebar"
+import { DashboardSiteHeader } from "./DashboardSiteHeader"
+import type { NavItem, NavGroup, FooterLink } from "./NavSection"
 
 export interface DashboardShellProps {
   brand: {
     name: string
     logo?: ReactNode
   }
-  navItems: NavItem[]
+  navItems?: NavItem[]
+  navGroups?: NavGroup[]
+  footerLinks?: FooterLink[]
   user: {
     name: string
     email?: string
     avatarUrl?: string
   }
   headerTitle: string
+  breadcrumb?: {
+    items: Array<{ label: string; href?: string }>
+  }
   onLogout: () => void
   onProfile?: () => void
   onSettings?: () => void
@@ -30,45 +33,45 @@ export interface DashboardShellProps {
 export function DashboardShell({
   brand,
   navItems,
+  navGroups,
+  footerLinks,
   user,
-  headerTitle,
+  headerTitle: _headerTitle,
+  breadcrumb,
   onLogout,
   onProfile,
   onSettings,
   headerActions,
   children,
 }: DashboardShellProps) {
-  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
-
   return (
-    <div className="min-h-screen bg-background">
-      <DashboardSidebar
+    <SidebarProvider>
+      <AppSidebar
         brand={brand}
         navItems={navItems}
+        navGroups={navGroups}
+        footerLinks={footerLinks}
+        user={user}
         onLogout={onLogout}
       />
-
-      <main className="lg:ml-[--sidebar-width]">
-        <DashboardHeader
-          title={headerTitle}
+      <SidebarInset>
+        <DashboardSiteHeader
+          breadcrumb={breadcrumb}
           user={user}
           onLogout={onLogout}
-          onMobileMenuToggle={() => setMobileMenuOpen(true)}
           onProfile={onProfile}
           onSettings={onSettings}
         >
           {headerActions}
-        </DashboardHeader>
-        <div className="p-6">{children}</div>
-      </main>
-
-      <MobileSidebar
-        open={mobileMenuOpen}
-        onClose={() => setMobileMenuOpen(false)}
-        brand={brand}
-        navItems={navItems}
-        onLogout={onLogout}
-      />
-    </div>
+        </DashboardSiteHeader>
+        <div className="flex flex-1 flex-col">
+          <div className="@container/main flex flex-1 flex-col gap-2">
+            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+              {children}
+            </div>
+          </div>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }
