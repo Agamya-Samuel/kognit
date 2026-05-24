@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { createServerApiClient } from '@edutech/api-client';
 import { generateCourseMetadata } from '@/lib/metadata';
 
 interface CourseDetailLayoutProps {
@@ -8,18 +9,16 @@ interface CourseDetailLayoutProps {
 
 export async function generateMetadata({ params }: CourseDetailLayoutProps): Promise<Metadata> {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses/${params.id}`, {
-      cache: 'no-store',
-    });
-    const data = await response.json();
+    const client = createServerApiClient(process.env.NEXT_PUBLIC_API_URL!);
+    const course = await client.get(params.id);
 
-    if (!data.success || !data.data) {
+    if (!course) {
       return {
         title: 'Course Not Found - EduTech',
       };
     }
 
-    return generateCourseMetadata(data.data);
+    return generateCourseMetadata(course);
   } catch {
     return {
       title: 'Course - EduTech',

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import api from '@/lib/api';
-import type { CourseFilters, CoursesListResponse, Course } from '@/types/courses';
+import { coursesService } from '@edutech/api-client';
+import type { CourseFilters, CoursesListResponse } from '@/types/courses';
 
 export function useCourses(filters: CourseFilters = {}) {
   const { domain, search, pricingType, minPrice, maxPrice, page = 1, limit = 20, sort } = filters;
@@ -18,10 +18,9 @@ export function useCourses(filters: CourseFilters = {}) {
       if (search) params.search = search;
       if (pricingType && pricingType !== 'all') params.pricingType = pricingType;
 
-      const { data } = await api.get<CoursesListResponse>('/courses', { params });
-      return data;
+      return coursesService.list(params) as unknown as CoursesListResponse;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -29,10 +28,9 @@ export function useDomains() {
   return useQuery({
     queryKey: ['domains'],
     queryFn: async () => {
-      const { data } = await api.get('/courses/domains');
-      return data.data || [];
+      return coursesService.getDomains();
     },
-    staleTime: 30 * 60 * 1000, // 30 minutes
+    staleTime: 30 * 60 * 1000,
   });
 }
 
@@ -40,8 +38,7 @@ export function useCourse(id: number | string) {
   return useQuery({
     queryKey: ['course', id],
     queryFn: async () => {
-      const { data } = await api.get<{ success: boolean; data: Course; error: null }>(`/courses/${id}`);
-      return data.data;
+      return coursesService.getById(id);
     },
     enabled: !!id,
     staleTime: 5 * 60 * 1000,

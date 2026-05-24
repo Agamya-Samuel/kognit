@@ -1,28 +1,21 @@
-'use client';
-
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { io, Socket } from 'socket.io-client';
-import api from '@/lib/api';
+import { chatService } from '@edutech/api-client';
+import type { ChatMessage, ChatChannel, ChatChannelMember, TypingUser } from '@edutech/types';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL;
+let socketInstance: Socket | null = null;
 
-export interface ChatMessage {
-  id: number;
-  channelId: number;
-  senderId: number;
-  content: string;
-  replyToId: number | null;
-  isEdited: boolean;
-  isDeleted: boolean;
-  moderationStatus: 'visible' | 'flagged' | 'hidden';
-  createdAt: Date | string;
-  updatedAt: Date | string;
-  replies?: ChatMessage[];
-  senderName?: string;
-  senderAvatarUrl?: string | null;
-  senderEmail?: string;
-  senderRole?: string;
+function getSocket(): Socket {
+  if (!socketInstance) {
+    socketInstance = io(`${SOCKET_URL}/chat`, {
+      transports: ['websocket', 'polling'],
+      autoConnect: false,
+      withCredentials: true,
+    });
+  }
+  return socketInstance;
 }
 
 export interface ChatChannel {
@@ -49,8 +42,6 @@ export interface TypingUser {
   startedAt: number;
 }
 
-// ─── Socket singleton ────────────────────────────────────────────────────────
-
 const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL;
 let socketInstance: Socket | null = null;
 
@@ -65,8 +56,6 @@ function getSocket(): Socket {
   return socketInstance;
 }
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 interface PaginatedMessages {
   data: ChatMessage[];
   total: number;
@@ -74,102 +63,69 @@ interface PaginatedMessages {
   offset: number;
 }
 
-// ─── useChannelMessages (REST) ────────────────────────────────────────────────
-
 export function useChannelMessages(channelId: number | null, limit = 50, offset = 0) {
   return useQuery({
     queryKey: ['chat', 'messages', channelId, limit, offset],
     queryFn: async () => {
-      const { data } = await api.get<PaginatedMessages>(
-        `/chat/channels/${channelId}/messages`,
-        { params: { limit, offset } },
-      );
-      return data;
+      return chatService.getMessages(channelId!, limit, offset);
     },
     enabled: !!channelId,
   });
 }
-
-// ─── useMessageReplies (REST) ─────────────────────────────────────────────────
 
 export function useMessageReplies(messageId: number | null, limit = 50, offset = 0) {
   return useQuery({
     queryKey: ['chat', 'replies', messageId, limit, offset],
     queryFn: async () => {
-      const { data } = await api.get<PaginatedMessages>(
-        `/chat/messages/${messageId}/replies`,
-        { params: { limit, offset } },
-      );
-      return data;
+      return chatService.getMessageReplies(messageId!, limit, offset);
     },
     enabled: !!messageId,
   });
 }
 
-// ─── useChannels (REST) ──────────────────────────────────────────────────────
-
 export function useChannels(options?: { courseId?: number; type?: string }) {
   return useQuery({
     queryKey: ['chat', 'channels', options],
     queryFn: async () => {
-      const { data } = await api.get<ChatChannel[]>('/chat/channels', {
-        params: options,
-      });
-      return data;
+      return chatService.listChannels(options);
     },
   });
 }
-
-// ─── useMyChannels (REST) ────────────────────────────────────────────────────
 
 export function useMyChannels() {
   return useQuery({
     queryKey: ['chat', 'my-channels'],
     queryFn: async () => {
-      const { data } = await api.get<ChatChannel[]>('/chat/my-channels');
-      return data;
+      return chatService.getMyChannels();
     },
   });
 }
-
-// ─── useChannelMembers (REST) ────────────────────────────────────────────────
 
 export function useChannelMembers(channelId: number | null) {
   return useQuery({
     queryKey: ['chat', 'members', channelId],
     queryFn: async () => {
-      const { data } = await api.get<ChatChannelMember[]>(
-        `/chat/channels/${channelId}/members`,
-      );
-      return data;
+      return chatService.getChannelMembers(channelId!);
     },
     enabled: !!channelId,
   });
 }
 
-// ─── useCourseChannels (REST) ────────────────────────────────────────────────
-
 export function useCourseChannels(courseId: number | null) {
   return useQuery({
     queryKey: ['chat', 'course-channels', courseId],
     queryFn: async () => {
-      const { data } = await api.get<ChatChannel[]>(
-        `/chat/courses/${courseId}/channels`,
-      );
-      return data;
+      return chatService.getCourseChannels(courseId!);
     },
     enabled: !!courseId,
   });
 }
 
-// ─── Mutations ───────────────────────────────────────────────────────────────
-
 export function useSendMessage() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: { channelId: number; content: string; replyToId?: number }) => {
-      const { data } = await api.post<ChatMessage>('/chat/messages', payload);
-      return data;
+      return chatService.sendMessage(payload);
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['chat', 'messages', variables.channelId] });
@@ -181,11 +137,7 @@ export function useEditMessage() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: { messageId: number; content: string }) => {
-      const { data } = await api.put<ChatMessage>(
-        `/chat/messages/${payload.messageId}`,
-        { content: payload.content },
-      );
-      return data;
+      return chatService.editMessage(payload.messageId, payload.content);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chat', 'messages'] });
@@ -197,7 +149,7 @@ export function useDeleteMessage() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (messageId: number) => {
-      await api.delete(`/chat/messages/${messageId}`);
+      await chatService.deleteMessage(messageId);
       return messageId;
     },
     onSuccess: () => {
@@ -209,11 +161,7 @@ export function useDeleteMessage() {
 export function useFlagMessage() {
   return useMutation({
     mutationFn: async (messageId: number) => {
-      const { data } = await api.post<ChatMessage>(
-        `/chat/messages/${messageId}/flag`,
-        {},
-      );
-      return data;
+      return chatService.flagMessage(messageId);
     },
   });
 }
@@ -222,11 +170,7 @@ export function useModerateMessage() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: { messageId: number; action: 'flag' | 'unflag' | 'hide' | 'delete' }) => {
-      const { data } = await api.post<ChatMessage>(
-        `/chat/messages/${payload.messageId}/moderate`,
-        { action: payload.action },
-      );
-      return data;
+      return chatService.moderateMessage(payload.messageId, payload.action);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chat', 'messages'] });
@@ -238,8 +182,8 @@ export function useJoinChannel() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (channelId: number) => {
-      const { data } = await api.post(`/chat/channels/${channelId}/join`);
-      return data;
+      await chatService.joinChannel(channelId);
+      return channelId;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chat', 'channels'] });
@@ -252,7 +196,7 @@ export function useLeaveChannel() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (channelId: number) => {
-      await api.post(`/chat/channels/${channelId}/leave`);
+      await chatService.leaveChannel(channelId);
       return channelId;
     },
     onSuccess: () => {
@@ -265,13 +209,11 @@ export function useLeaveChannel() {
 export function useMarkAsRead() {
   return useMutation({
     mutationFn: async (channelId: number) => {
-      await api.post(`/chat/channels/${channelId}/read`);
+      await chatService.markAsRead(channelId);
       return channelId;
     },
   });
 }
-
-// ─── useChatSocket (real-time WebSocket) ──────────────────────────────────────
 
 export function useChatSocket(channelId: number | null) {
   const [connected, setConnected] = useState(false);
@@ -303,7 +245,6 @@ export function useChatSocket(channelId: number | null) {
     setConnected(false);
   }, []);
 
-  // Join/leave channel room
   useEffect(() => {
     if (!channelId || !socketRef.current) return;
 
@@ -315,7 +256,6 @@ export function useChatSocket(channelId: number | null) {
     };
   }, [channelId]);
 
-  // Listen for real-time events
   useEffect(() => {
     const socket = socketRef.current;
     if (!socket) return;
@@ -352,7 +292,6 @@ export function useChatSocket(channelId: number | null) {
     };
   }, [channelId, queryClient]);
 
-  // Emit typing
   const emitTyping = useCallback(
     (isTyping: boolean) => {
       if (channelId && socketRef.current) {
@@ -362,7 +301,6 @@ export function useChatSocket(channelId: number | null) {
     [channelId],
   );
 
-  // Emit send (via socket for real-time; also has REST mutation above)
   const emitSend = useCallback(
     (content: string, replyToId?: number) => {
       if (channelId && socketRef.current) {
@@ -372,7 +310,6 @@ export function useChatSocket(channelId: number | null) {
     [channelId],
   );
 
-  // Emit edit
   const emitEdit = useCallback(
     (messageId: number, content: string) => {
       if (socketRef.current) {
@@ -382,7 +319,6 @@ export function useChatSocket(channelId: number | null) {
     [],
   );
 
-  // Emit delete
   const emitDelete = useCallback(
     (messageId: number) => {
       if (socketRef.current) {
@@ -392,7 +328,6 @@ export function useChatSocket(channelId: number | null) {
     [],
   );
 
-  // Clear new messages buffer
   const clearNewMessages = useCallback(() => setNewMessages([]), []);
 
   return {

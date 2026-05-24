@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { Clock, CheckCircle, Play, BookOpen, ArrowRight } from 'lucide-react';
-import api from '@/lib/api';
+import { progressService } from '@edutech/api-client';
 import type { WatchHistoryResponse } from '@/types/courses';
 
 export default function WatchHistoryPage() {
@@ -15,10 +15,7 @@ export default function WatchHistoryPage() {
   const { data, isLoading, error, refetch } = useQuery<WatchHistoryResponse>({
     queryKey: ['watch-history', page, limit],
     queryFn: async () => {
-      const { data } = await api.get<{ success: boolean; data: WatchHistoryResponse }>(
-        `/progress/history?offset=${page * limit}&limit=${limit}`,
-      );
-      return data.data;
+      return progressService.getWatchHistory(page * limit, limit);
     },
   });
 
@@ -49,13 +46,11 @@ export default function WatchHistoryPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">Watch History</h1>
           <p className="text-gray-500 mt-1">Track your learning progress across all courses</p>
         </div>
 
-        {/* Loading State */}
         {isLoading && (
           <div className="space-y-4">
             {Array.from({ length: 5 }).map((_, i) => (
@@ -72,7 +67,6 @@ export default function WatchHistoryPage() {
           </div>
         )}
 
-        {/* Error State */}
         {error && (
           <div className="bg-white rounded-lg border p-8 text-center">
             <p className="text-red-500 mb-4">Failed to load watch history</p>
@@ -85,7 +79,6 @@ export default function WatchHistoryPage() {
           </div>
         )}
 
-        {/* Empty State */}
         {data && data.items.length === 0 && (
           <div className="bg-white rounded-lg border p-12 text-center">
             <BookOpen size={48} className="mx-auto text-gray-300 mb-4" />
@@ -103,7 +96,6 @@ export default function WatchHistoryPage() {
           </div>
         )}
 
-        {/* History List */}
         {data && data.items.length > 0 && (
           <>
             <div className="space-y-3">
@@ -116,7 +108,6 @@ export default function WatchHistoryPage() {
                   className="w-full text-left bg-white rounded-lg border hover:border-blue-300 hover:shadow-sm transition-all p-4"
                 >
                   <div className="flex items-start gap-4">
-                    {/* Icon */}
                     <div
                       className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
                         item.isCompleted
@@ -131,7 +122,6 @@ export default function WatchHistoryPage() {
                       )}
                     </div>
 
-                    {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-medium text-gray-900 truncate">
@@ -144,7 +134,6 @@ export default function WatchHistoryPage() {
                         <span>{item.sectionTitle}</span>
                       </div>
 
-                      {/* Progress Bar */}
                       <div className="mt-2 flex items-center gap-3">
                         <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                           <div
@@ -159,7 +148,6 @@ export default function WatchHistoryPage() {
                         </span>
                       </div>
 
-                      {/* Meta */}
                       <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
                         <span className="flex items-center gap-1">
                           <Clock size={12} />
@@ -176,7 +164,6 @@ export default function WatchHistoryPage() {
               ))}
             </div>
 
-            {/* Pagination */}
             {data.total > limit && (
               <div className="flex items-center justify-center gap-4 mt-8">
                 <button

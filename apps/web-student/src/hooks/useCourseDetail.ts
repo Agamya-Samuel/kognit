@@ -1,15 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
-import api from '@/lib/api';
-import type { CourseWithCurriculum } from '@/types/courses';
+import { coursesService } from '@edutech/api-client';
+import type { CourseWithCurriculum, InstructorProfile } from '@/types/courses';
 
 export function useCourseWithCurriculum(id: number | string) {
   return useQuery({
     queryKey: ['course', id, 'curriculum'],
     queryFn: async () => {
-      const { data } = await api.get<{ success: boolean; data: CourseWithCurriculum; error: null }>(
-        `/courses/${id}/curriculum`
-      );
-      return data.data;
+      return coursesService.getCurriculum(id) as unknown as CourseWithCurriculum;
     },
     enabled: !!id,
     staleTime: 5 * 60 * 1000,
@@ -20,10 +17,9 @@ export function useInstructorProfile(instructorId: number) {
   return useQuery({
     queryKey: ['instructor', instructorId],
     queryFn: async () => {
-      const { data } = await api.get(`/instructors/${instructorId}`);
-      return data.data;
+      return coursesService.getInstructorProfile(instructorId);
     },
     enabled: !!instructorId,
-    staleTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 10 * 60 * 1000,
   });
 }

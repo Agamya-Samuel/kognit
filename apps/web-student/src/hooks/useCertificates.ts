@@ -1,17 +1,17 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchMyCertificates, verifyCertificate } from '@/lib/certificates-api';
+import { certificatesService } from '@edutech/api-client';
 
 export function useMyCertificates(page = 1, limit = 10) {
   return useQuery({
     queryKey: ['certificates', page, limit],
-    queryFn: () => fetchMyCertificates(page, limit),
+    queryFn: () => certificatesService.getMyCertificates(page, limit),
   });
 }
 
 export function useVerifyCertificate(uid: string) {
   return useQuery({
     queryKey: ['certificate-verify', uid],
-    queryFn: () => verifyCertificate(uid),
+    queryFn: () => certificatesService.verify(uid),
     enabled: !!uid,
   });
 }
