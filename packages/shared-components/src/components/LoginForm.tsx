@@ -115,13 +115,13 @@ export const LoginForm = React.forwardRef<HTMLDivElement, LoginFormProps>(
             </form>
           </CardContent>
         </Card>
-        <FieldDescription className="px-6 text-center">
+        <FieldDescription className="px-6 text-center text-muted-foreground">
           By clicking continue, you agree to our{' '}
-          <a href="#" className="underline-offset-4 hover:underline">
+          <a href="#" className="underline-offset-4 hover:underline text-foreground">
             Terms of Service
           </a>{' '}
           and{' '}
-          <a href="#" className="underline-offset-4 hover:underline">
+          <a href="#" className="underline-offset-4 hover:underline text-foreground">
             Privacy Policy
           </a>
           .
