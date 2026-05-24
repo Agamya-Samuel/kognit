@@ -1,11 +1,12 @@
 'use client';
 
-import { MetricCard, MetricCardGrid } from '@edutech/shared-components';
-import { ActivityList, QuickActions } from '@edutech/shared-components';
-import { Users, BookOpen, DollarSign, Calendar } from 'lucide-react';
-import { useDashboardMetrics, useRecentActivity, useUpcomingClasses } from '@/hooks/useCourses';
-import Link from 'next/link';
+import { Users, BookOpen, DollarSign, Calendar, Clock, CheckCircle } from 'lucide-react';
+import { StatCard, StatsRow } from '@/components/StatsRow';
+import { RevenueChart, EngagementChart } from '@/components/charts/Charts';
 import { Card, CardContent, CardHeader, CardTitle } from '@edutech/ui';
+import { Button } from '@edutech/ui';
+import Link from 'next/link';
+import { useDashboardMetrics, useRecentActivity, useUpcomingClasses } from '@/hooks/useCourses';
 
 export default function DashboardPage() {
   const { data: metrics, isLoading: metricsLoading, error: metricsError } = useDashboardMetrics();
@@ -21,11 +22,23 @@ export default function DashboardPage() {
 
   const safeNumber = (val: number | undefined | null): number => (typeof val === 'number' ? val : 0);
 
-  const metricsList = [
-    { label: 'Total Students', value: safeNumber(metricsData.totalStudents).toLocaleString(), icon: Users, change: '+12%', trend: 'up' as const },
-    { label: 'Active Courses', value: safeNumber(metricsData.activeCourses).toString(), icon: BookOpen, change: '+2', trend: 'up' as const },
-    { label: 'Total Revenue', value: `₹${safeNumber(metricsData.totalRevenue).toLocaleString('en-IN')}`, icon: DollarSign, change: '+18%', trend: 'up' as const },
-    { label: 'Upcoming Classes', value: safeNumber(metricsData.upcomingClasses).toString(), icon: Calendar, trend: 'neutral' as const },
+  const revenueData = [
+    { month: 'Jan', revenue: 45000, costs: 32000 },
+    { month: 'Feb', revenue: 52000, costs: 35000 },
+    { month: 'Mar', revenue: 61000, costs: 38000 },
+    { month: 'Apr', revenue: 58000, costs: 36000 },
+    { month: 'May', revenue: 72000, costs: 42000 },
+    { month: 'Jun', revenue: 85000, costs: 48000 },
+  ];
+
+  const engagementData = [
+    { date: 'Mon', views: 2400, interactions: 1800 },
+    { date: 'Tue', views: 2100, interactions: 1600 },
+    { date: 'Wed', views: 3200, interactions: 2400 },
+    { date: 'Thu', views: 2800, interactions: 2200 },
+    { date: 'Fri', views: 3600, interactions: 2800 },
+    { date: 'Sat', views: 1900, interactions: 1200 },
+    { date: 'Sun', views: 1600, interactions: 1100 },
   ];
 
   if (metricsLoading || activityLoading || classesLoading) {
@@ -48,47 +61,116 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-        <p className="mt-2 text-muted-foreground">
-          Welcome back! Here's an overview of your courses and student activity.
-        </p>
-      </div>
-
-      <MetricCardGrid>
-        {metricsList.map((metric) => (
-          <MetricCard key={metric.label} {...metric} />
-        ))}
-      </MetricCardGrid>
+    <div className="space-y-8">
+      <StatsRow>
+        <StatCard
+          title="Total Revenue"
+          value={`₹${safeNumber(metricsData.totalRevenue).toLocaleString('en-IN')}`}
+          change={{ value: '+18%', trend: 'up' }}
+          icon={DollarSign}
+          iconClassName="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+        />
+        <StatCard
+          title="Active Students"
+          value={safeNumber(metricsData.totalStudents).toLocaleString()}
+          change={{ value: '+12%', trend: 'up' }}
+          icon={Users}
+          iconClassName="bg-blue-500/10 text-blue-600 dark:text-blue-400"
+        />
+        <StatCard
+          title="Active Courses"
+          value={safeNumber(metricsData.activeCourses).toString()}
+          change={{ value: '+2', trend: 'up' }}
+          icon={BookOpen}
+          iconClassName="bg-purple-500/10 text-purple-600 dark:text-purple-400"
+        />
+        <StatCard
+          title="Upcoming Classes"
+          value={safeNumber(metricsData.upcomingClasses).toString()}
+          icon={Calendar}
+          iconClassName="bg-orange-500/10 text-orange-600 dark:text-orange-400"
+        />
+      </StatsRow>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <ActivityList activities={recentActivity || []} />
+        <Card>
+          <CardHeader>
+            <CardTitle>Revenue Overview</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <RevenueChart data={revenueData} />
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Upcoming Live Classes</CardTitle>
+            <CardTitle>Student Engagement</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <EngagementChart data={engagementData} />
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Recent Activity</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {recentActivity && recentActivity.length > 0 ? (
+                recentActivity.slice(0, 5).map((activity: any) => (
+                  <div
+                    key={activity.id}
+                    className="flex items-start gap-3 border-b border-border pb-3 last:border-0 last:pb-0"
+                  >
+                    <div className="rounded-full bg-primary/10 p-1.5">
+                      {activity.type === 'enrollment' ? (
+                        <Users className="h-3.5 w-3.5 text-primary" />
+                      ) : activity.type === 'completion' ? (
+                        <CheckCircle className="h-3.5 w-3.5 text-emerald-600" />
+                      ) : (
+                        <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">{activity.title}</p>
+                      <p className="text-xs text-muted-foreground">{activity.time}</p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">No recent activity</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Upcoming Classes</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {upcomingClasses && upcomingClasses.length > 0 ? (
-                upcomingClasses.map((classItem: any) => (
+                upcomingClasses.slice(0, 4).map((classItem: any) => (
                   <div
                     key={classItem.id}
-                    className="flex items-center justify-between border-b border-border pb-3 last:border-0 last:pb-0"
+                    className="rounded-lg border bg-card p-3"
                   >
-                    <div>
-                      <p className="text-sm font-medium text-foreground">
-                        {classItem.title}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{classItem.time}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">
+                    <p className="text-sm font-medium text-foreground line-clamp-1">
+                      {classItem.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">{classItem.time}</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-xs text-muted-foreground">
                         {classItem.enrolledCount} enrolled
                       </span>
-                      <Link href={`/live/${classItem.id}`} className="rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90">
-                        Start
+                      <Link href={`/live/${classItem.id}`}>
+                        <Button size="sm" variant="default" className="h-7 text-xs">
+                          Start
+                        </Button>
                       </Link>
                     </div>
                   </div>
@@ -101,13 +183,27 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <QuickActions
-        actions={[
-          { label: "Create Course", href: "/dashboard/courses/create", variant: "default" },
-          { label: "Schedule Class", href: "/dashboard/schedule", variant: "outline" },
-          { label: "View Analytics", href: "/dashboard/analytics", variant: "outline" },
-        ]}
-      />
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick Actions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-3">
+            <Button variant="default" asChild>
+              <Link href="/dashboard/courses/create">Create Course</Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/dashboard/schedule">Schedule Class</Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/dashboard/analytics">View Analytics</Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/dashboard/students">Manage Students</Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
