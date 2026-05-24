@@ -22,6 +22,18 @@ export const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(255, 'Name must be at most 255 characters'),
 });
 
+export const signupSchema = z
+  .object({
+    email: z.email('Please enter a valid email address'),
+    password: passwordPolicy,
+    confirmPassword: z.string().min(1, 'Please confirm your password'),
+    name: z.string().min(2, 'Name must be at least 2 characters').max(255, 'Name must be at most 255 characters'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
+
 // Email-first registration: step 1 — request verification code
 export const requestEmailVerificationSchema = z.object({
   email: z.email('Please enter a valid email address'),
@@ -167,6 +179,7 @@ export const courseQuerySchema = z.object({
 
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
+export type SignupInput = z.infer<typeof signupSchema>;
 export type RequestEmailVerificationInput = z.infer<typeof requestEmailVerificationSchema>;
 export type VerifyEmailCodeInput = z.infer<typeof verifyEmailCodeSchema>;
 export type CompleteRegistrationInput = z.infer<typeof completeRegistrationSchema>;
