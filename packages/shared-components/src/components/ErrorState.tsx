@@ -1,3 +1,5 @@
+import { cn } from "../lib/utils"
+
 interface ErrorStateProps {
   title?: string
   message: string
