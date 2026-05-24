@@ -69,7 +69,7 @@ function Avatar({
   size = 'md',
   ...props
 }: AvatarProps) {
-  const initials = fallback
+  const initials = (fallback ?? '')
     .split(' ')
     .map((n) => n[0])
     .join('')
