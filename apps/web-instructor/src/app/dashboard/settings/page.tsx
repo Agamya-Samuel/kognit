@@ -7,9 +7,9 @@ import { Input } from '@edutech/ui';
 import { Label } from '@edutech/ui';
 import { Textarea } from '@edutech/ui';
 import { Avatar } from '@edutech/ui';
-import { User, Lock, Mail, Camera, Save } from 'lucide-react';
+import { Switch } from '@edutech/ui';
+import { User, Lock, Mail, Camera, Save, Bell } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
-import { toast } from 'sonner';
 
 export default function SettingsPage() {
   const { user } = useAuth();
@@ -25,15 +25,21 @@ export default function SettingsPage() {
     newPassword: '',
     confirmPassword: '',
   });
+  const [notifications, setNotifications] = useState({
+    enrollments: true,
+    submissions: true,
+    reminders: true,
+    marketing: false,
+  });
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success('Profile updated successfully!');
+      console.log('Profile saved:', profileData);
     } catch (error) {
-      toast.error('Failed to update profile');
+      console.error('Failed to update profile:', error);
     } finally {
       setIsLoading(false);
     }
@@ -42,16 +48,16 @@ export default function SettingsPage() {
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error('Passwords do not match');
+      alert('Passwords do not match');
       return;
     }
     setIsLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success('Password changed successfully!');
+      console.log('Password changed');
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (error) {
-      toast.error('Failed to change password');
+      console.error('Failed to change password:', error);
     } finally {
       setIsLoading(false);
     }
@@ -60,8 +66,8 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Settings</h1>
+        <p className="mt-2 text-muted-foreground">
           Manage your account settings and preferences
         </p>
       </div>
@@ -75,27 +81,30 @@ export default function SettingsPage() {
             <form onSubmit={handleSaveProfile} className="space-y-4">
               <div className="flex items-center gap-4">
                 <div className="relative">
-                  <Avatar className="h-20 w-20" fallback={user?.name || 'Instructor'}>
+                  <Avatar className="h-20 w-20" fallback={profileData.name.charAt(0).toUpperCase()}>
+                    <div className="flex h-full w-full items-center justify-center bg-primary text-primary-foreground text-xl font-medium">
+                      {profileData.name.charAt(0).toUpperCase()}
+                    </div>
                   </Avatar>
                   <Button
                     type="button"
                     variant="outline"
-                    size="sm"
-                    className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full p-0"
+                    size="icon"
+                    className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full"
                   >
                     <Camera className="h-4 w-4" />
                   </Button>
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900 dark:text-white">Profile Photo</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Upload a new avatar</p>
+                  <p className="font-medium text-foreground">Profile Photo</p>
+                  <p className="text-sm text-muted-foreground">Upload a new avatar</p>
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="name"
                     value={profileData.name}
@@ -108,7 +117,7 @@ export default function SettingsPage() {
               <div className="space-y-2">
                 <Label htmlFor="email">Email Address</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="email"
                     type="email"
@@ -118,7 +127,7 @@ export default function SettingsPage() {
                     disabled
                   />
                 </div>
-                <p className="text-xs text-gray-500">Email cannot be changed</p>
+                <p className="text-xs text-muted-foreground">Email cannot be changed</p>
               </div>
 
               <div className="space-y-2">
@@ -142,8 +151,8 @@ export default function SettingsPage() {
                 />
               </div>
 
-              <Button type="submit" disabled={isLoading} className="gap-2">
-                <Save className="h-4 w-4" />
+              <Button type="submit" disabled={isLoading} className="w-full">
+                <Save className="h-4 w-4 mr-2" />
                 {isLoading ? 'Saving...' : 'Save Profile'}
               </Button>
             </form>
@@ -159,7 +168,7 @@ export default function SettingsPage() {
               <div className="space-y-2">
                 <Label htmlFor="currentPassword">Current Password</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="currentPassword"
                     type="password"
@@ -174,7 +183,7 @@ export default function SettingsPage() {
               <div className="space-y-2">
                 <Label htmlFor="newPassword">New Password</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="newPassword"
                     type="password"
@@ -184,7 +193,7 @@ export default function SettingsPage() {
                     required
                   />
                 </div>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   Must be at least 8 characters with uppercase, lowercase, and number
                 </p>
               </div>
@@ -192,7 +201,7 @@ export default function SettingsPage() {
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirm New Password</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="confirmPassword"
                     type="password"
@@ -204,7 +213,7 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <Button type="submit" disabled={isLoading} variant="outline">
+              <Button type="submit" disabled={isLoading} variant="outline" className="w-full">
                 {isLoading ? 'Changing...' : 'Change Password'}
               </Button>
             </form>
@@ -214,22 +223,53 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Notification Preferences</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Bell className="h-5 w-5" />
+            Notification Preferences
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <label className="flex items-center justify-between cursor-pointer">
-              <span className="text-sm font-medium">Email notifications for new enrollments</span>
-              <input type="checkbox" defaultChecked className="h-4 w-4 rounded border-input" />
-            </label>
-            <label className="flex items-center justify-between cursor-pointer">
-              <span className="text-sm font-medium">Email notifications for assignment submissions</span>
-              <input type="checkbox" defaultChecked className="h-4 w-4 rounded border-input" />
-            </label>
-            <label className="flex items-center justify-between cursor-pointer">
-              <span className="text-sm font-medium">Email reminders for upcoming classes</span>
-              <input type="checkbox" defaultChecked className="h-4 w-4 rounded border-input" />
-            </label>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-foreground">Email notifications for new enrollments</p>
+                <p className="text-sm text-muted-foreground">Get notified when students enroll in your courses</p>
+              </div>
+              <Switch
+                checked={notifications.enrollments}
+                onCheckedChange={(checked) => setNotifications({ ...notifications, enrollments: checked })}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-foreground">Email notifications for assignment submissions</p>
+                <p className="text-sm text-muted-foreground">Get notified when students submit assignments</p>
+              </div>
+              <Switch
+                checked={notifications.submissions}
+                onCheckedChange={(checked) => setNotifications({ ...notifications, submissions: checked })}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-foreground">Email reminders for upcoming classes</p>
+                <p className="text-sm text-muted-foreground">Get reminded before your scheduled live classes</p>
+              </div>
+              <Switch
+                checked={notifications.reminders}
+                onCheckedChange={(checked) => setNotifications({ ...notifications, reminders: checked })}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-foreground">Marketing emails</p>
+                <p className="text-sm text-muted-foreground">Receive updates about new features and promotions</p>
+              </div>
+              <Switch
+                checked={notifications.marketing}
+                onCheckedChange={(checked) => setNotifications({ ...notifications, marketing: checked })}
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
