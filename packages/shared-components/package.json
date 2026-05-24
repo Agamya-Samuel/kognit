@@ -24,13 +24,15 @@
     "@edutech/types": "*",
     "@edutech/ui": "*",
     "@edutech/validation": "*",
+    "@hookform/resolvers": "^5.4.0",
     "@livekit/components-react": "^2.9.21",
     "@tanstack/react-query": "^5.100.9",
     "axios": "^1.16.0",
     "jotai": "^2.20.0",
     "livekit-client": "^2.18.10",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-hook-form": "^7.76.1"
   },
   "devDependencies": {
     "@types/node": "^25.7.0",
