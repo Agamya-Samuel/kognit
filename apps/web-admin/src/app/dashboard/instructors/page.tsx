@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle, Button, Spinner } from '@edut
 import { CheckCircle2, XCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { adminService } from '@edutech/api-client';
 
+const STATUS_FILTERS = ['pending', 'approved', 'rejected'];
+
 export default function InstructorsPage() {
   const [instructors, setInstructors] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
