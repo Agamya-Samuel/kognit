@@ -17,9 +17,8 @@ export type { ConnectionQualityIndicatorProps } from './components/ConnectionQua
 // Dashboard Components
 export {
   DashboardShell,
-  DashboardSidebar,
-  DashboardHeader,
-  MobileSidebar,
+  AppSidebar,
+  DashboardSiteHeader,
   NavSection,
   UserMenu,
   MetricCard,
@@ -33,6 +32,8 @@ export {
 export type {
   DashboardShellProps,
   NavItem,
+  NavGroup,
+  FooterLink,
   ActivityItem,
   QuickAction,
   StatusVariant,
