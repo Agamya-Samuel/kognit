@@ -18,44 +18,6 @@ function getSocket(): Socket {
   return socketInstance;
 }
 
-export interface ChatChannel {
-  id: number;
-  courseId: number | null;
-  type: 'course' | 'general' | 'dm';
-  name: string;
-  createdAt: Date | string;
-  memberCount?: number;
-}
-
-export interface ChatChannelMember {
-  id: number;
-  channelId: number;
-  userId: number;
-  joinedAt: Date | string;
-  lastReadAt: Date | string | null;
-}
-
-export interface TypingUser {
-  userId: number;
-  email: string;
-  channelId: number;
-  startedAt: number;
-}
-
-const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL;
-let socketInstance: Socket | null = null;
-
-function getSocket(): Socket {
-  if (!socketInstance) {
-    socketInstance = io(`${SOCKET_URL}/chat`, {
-      transports: ['websocket', 'polling'],
-      autoConnect: false,
-      withCredentials: true,
-    });
-  }
-  return socketInstance;
-}
-
 interface PaginatedMessages {
   data: ChatMessage[];
   total: number;
