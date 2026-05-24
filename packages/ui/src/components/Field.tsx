@@ -44,7 +44,7 @@ export const FieldGroup = React.forwardRef<HTMLDivElement, FieldGroupProps>(
   ({ className, ...props }, ref) => (
     <div
       data-slot="field-group"
-      className={cn('cn-field-group group/field-group @container/field-group flex w-full flex-col', className)}
+      className={cn('cn-field-group group/field-group @container/field-group flex w-full flex-col gap-2 sm:gap-3', className)}
       ref={ref}
       {...props}
     />
@@ -58,7 +58,7 @@ export const FieldLabel = React.forwardRef<HTMLLabelElement, FieldLabelProps>(
   ({ className, ...props }, ref) => (
     <Label
       data-slot="field-label"
-      className={cn('cn-field-label group/field-label peer/field-label flex w-fit', 'has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col', className)}
+      className={cn('cn-field-label group/field-label peer/field-label flex w-fit mb-1.5 sm:mb-2', 'has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col', className)}
       ref={ref}
       {...props}
     />
