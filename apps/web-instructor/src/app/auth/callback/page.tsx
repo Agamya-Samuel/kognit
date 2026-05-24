@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuth } from '../../../lib/auth-context';
+import { useAuth } from '@edutech/shared-components';
 
 export default function AuthCallbackPage() {
   const router = useRouter();
@@ -26,10 +26,10 @@ export default function AuthCallbackPage() {
   }, [searchParams, router, setTokens]);
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-950">
       <div className="text-center">
-        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
-        <p className="mt-4 text-gray-600 dark:text-gray-400">Completing sign in...</p>
+        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent align-[-0.125em]" />
+        <p className="mt-4 text-sm text-muted-foreground">Completing sign in...</p>
       </div>
     </div>
   );
