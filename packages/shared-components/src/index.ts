@@ -14,6 +14,12 @@ export type { LiveClassRoomProps } from './components/LiveClassRoom';
 export { ConnectionQualityIndicator } from './components/ConnectionQualityIndicator';
 export type { ConnectionQualityIndicatorProps } from './components/ConnectionQualityIndicator';
 
+export { LoginForm } from './components/LoginForm';
+export type { LoginFormProps } from './components/LoginForm';
+
+export { SignupForm } from './components/SignupForm';
+export type { SignupFormProps } from './components/SignupForm';
+
 // Dashboard Components
 export {
   DashboardShell,
