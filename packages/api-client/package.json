@@ -23,7 +23,12 @@
     "@edutech/types": "*",
     "axios": "^1.16.0"
   },
+  "peerDependencies": {
+    "react": ">=18.0.0"
+  },
   "devDependencies": {
+    "@types/node": ">=18.0.0",
+    "@types/react": ">=18.0.0",
     "typescript": "^6.0.3",
     "tsup": "^8.5.1",
     "eslint": "^10.3.0"

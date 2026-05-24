@@ -1,5 +1,5 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosError } from 'axios';
-import type { ApiResponse, ApiErrorResponse, PaginationQuery } from '@edutech/types';
+import type { ApiResponse, ApiErrorResponse } from '@edutech/types';
 
 // ─── API Client Configuration ─────────────────────────────────────────────────
 
@@ -85,7 +85,7 @@ export class ApiClient {
 
   // ─── HTTP Methods ───────────────────────────────────────────────────────
 
-  async get<T>(url: string, params?: Record<string, unknown> & PaginationQuery, config?: AxiosRequestConfig): Promise<T> {
+  async get<T>(url: string, params?: Record<string, unknown>, config?: AxiosRequestConfig): Promise<T> {
     const response = await this.client.get<ApiResponse<T>>(url, { params, ...config });
     return response.data.data;
   }
@@ -132,3 +132,37 @@ export function getApiClient(): ApiClient {
   }
   return apiClient;
 }
+
+// ─── Server-side Factory ───────────────────────────────────────────────────────
+
+export function createServerApiClient(baseURL: string, token?: string): ApiClient {
+  return new ApiClient({
+    baseURL,
+    getToken: token ? () => token : undefined,
+  });
+}
+
+// ─── Type Guards ──────────────────────────────────────────────────────────────
+
+export function isApiError(error: unknown): error is ApiClientError {
+  return error instanceof ApiClientError;
+}
+
+// ─── Service Modules ───────────────────────────────────────────────────────────
+
+export * from './services/courses';
+export * from './services/assignments';
+export * from './services/payments';
+export * from './services/chat';
+export * from './services/certificates';
+export * from './services/uploads';
+export * from './services/live-classes';
+export * from './services/progress';
+export * from './services/admin';
+export * from './services/auth';
+export * from './services/schedule';
+export * from './services/recordings';
+
+// ─── Provider ───────────────────────────────────────────────────────────────
+
+export { ApiProvider } from './provider';
