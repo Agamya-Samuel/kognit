@@ -25,6 +25,16 @@ export type { SpinnerProps } from './components/Spinner';
 
 export { Label } from './components/Label';
 
+export {
+  Field,
+  FieldGroup,
+  FieldLabel,
+  FieldDescription,
+  FieldSeparator,
+  FieldError,
+} from './components/Field';
+export type { FieldProps, FieldGroupProps, FieldLabelProps, FieldDescriptionProps, FieldSeparatorProps, FieldErrorProps } from './components/Field';
+
 export { Textarea } from './components/Textarea';
 
 export { Skeleton } from './components/Skeleton';
