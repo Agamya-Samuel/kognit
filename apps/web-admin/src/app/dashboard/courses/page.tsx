@@ -1,9 +1,12 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, Button, Input, Spinner } from '@edutech/ui';
+import { Card, CardContent, CardHeader, CardTitle, Button, Input, Spinner, Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@edutech/ui';
 import { CheckCircle2, XCircle, PauseCircle, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { adminService } from '@edutech/api-client';
+import { PageHeader } from '@/components/PageHeader';
+import { EmptyState } from '@/components/EmptyState';
+import { cn } from '@/lib/utils';
 
 interface Course {
   id: number;
@@ -49,7 +52,7 @@ export default function CoursesPage() {
       if (publishFilter === 'draft') params.isPublished = false;
       if (search) params.search = search;
 
-      const result = await adminService.getCourses(params) as CoursesResponse;
+      const result = await adminService.getCourses(params) as unknown as CoursesResponse;
       setCourses(result.courses ?? []);
       setTotal(result.total ?? 0);
     } catch {
@@ -108,21 +111,17 @@ export default function CoursesPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Course Moderation
-        </h1>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Review and moderate platform courses
-        </p>
-      </div>
+      <PageHeader
+        title="Course Moderation"
+        description="Review and moderate platform courses"
+      />
 
       {/* Filters */}
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <Search className={cn("absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground")} />
               <Input
                 placeholder="Search courses..."
                 value={search}
@@ -135,11 +134,12 @@ export default function CoursesPage() {
                 <button
                   key={filter}
                   onClick={() => { setPublishFilter(filter); setPage(1); }}
-                  className={`rounded-full px-3 py-1.5 text-xs font-medium capitalize transition-colors ${
+                  className={cn(
+                    "rounded-full px-3 py-1.5 text-xs font-medium capitalize transition-colors",
                     publishFilter === filter
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-                  }`}
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  )}
                 >
                   {filter}
                 </button>
@@ -160,46 +160,50 @@ export default function CoursesPage() {
               <Spinner />
             </div>
           ) : courses.length === 0 ? (
-            <p className="py-12 text-center text-gray-500">No courses found.</p>
+            <EmptyState
+              title="No courses found"
+              description="There are no courses matching your filters."
+              action={{ label: 'Clear Filters', onClick: () => { setSearch(''); setPublishFilter('all'); } }}
+            />
           ) : (
             <>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-gray-200 dark:border-gray-700">
-                      <th className="pb-3 text-left font-medium text-gray-600 dark:text-gray-400">Title</th>
-                      <th className="pb-3 text-left font-medium text-gray-600 dark:text-gray-400">Instructor</th>
-                      <th className="pb-3 text-left font-medium text-gray-600 dark:text-gray-400">Domain</th>
-                      <th className="pb-3 text-left font-medium text-gray-600 dark:text-gray-400">Price</th>
-                      <th className="pb-3 text-left font-medium text-gray-600 dark:text-gray-400">Status</th>
-                      <th className="pb-3 text-right font-medium text-gray-600 dark:text-gray-400">Actions</th>
+                    <tr className="border-b border-border">
+                      <th className="pb-3 text-left text-xs font-medium uppercase text-muted-foreground">Title</th>
+                      <th className="pb-3 text-left text-xs font-medium uppercase text-muted-foreground">Instructor</th>
+                      <th className="pb-3 text-left text-xs font-medium uppercase text-muted-foreground">Domain</th>
+                      <th className="pb-3 text-left text-xs font-medium uppercase text-muted-foreground">Price</th>
+                      <th className="pb-3 text-left text-xs font-medium uppercase text-muted-foreground">Status</th>
+                      <th className="pb-3 text-right text-xs font-medium uppercase text-muted-foreground">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                  <tbody className="divide-y divide-border">
                     {courses.map((course) => (
-                      <tr key={course.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                        <td className="py-3 font-medium text-gray-900 dark:text-white">
+                      <tr key={course.id} className="hover:bg-accent/50 transition-colors">
+                        <td className="py-3 font-medium text-foreground">
                           {course.title}
                         </td>
-                        <td className="py-3 text-gray-600 dark:text-gray-400">
+                        <td className="py-3 text-muted-foreground">
                           {course.instructorName}
                         </td>
-                        <td className="py-3 text-gray-600 dark:text-gray-400">
+                        <td className="py-3 text-muted-foreground">
                           {course.domain}
                         </td>
                         <td className="py-3">
                           {course.pricingType === 'free' ? (
-                            <span className="text-green-600 dark:text-green-400">Free</span>
+                            <span className="text-emerald-600 dark:text-emerald-400">Free</span>
                           ) : (
-                            <span className="text-gray-900 dark:text-white">&#8377;{course.priceInr.toLocaleString()}</span>
+                            <span className="text-foreground">₹{course.priceInr.toLocaleString()}</span>
                           )}
                         </td>
                         <td className="py-3">
-                          <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
+                          <span className={cn("inline-flex rounded-full px-2 py-0.5 text-xs font-medium",
                             course.isPublished
-                              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                              : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
-                          }`}>
+                              ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200"
+                              : "bg-muted text-muted-foreground"
+                          )}>
                             {course.isPublished ? 'Published' : 'Draft'}
                           </span>
                         </td>
@@ -208,7 +212,7 @@ export default function CoursesPage() {
                             {!course.isPublished && (
                               <button
                                 onClick={() => handleApprove(course.id)}
-                                className="rounded p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                                className="rounded p-1.5 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
                                 title="Approve (publish)"
                               >
                                 <CheckCircle2 className="h-4 w-4" />
@@ -225,7 +229,7 @@ export default function CoursesPage() {
                             )}
                             <button
                               onClick={() => openAction(course.id, 'reject')}
-                              className="rounded p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                              className="rounded p-1.5 text-destructive hover:bg-destructive/10"
                               title="Reject"
                             >
                               <XCircle className="h-4 w-4" />
@@ -239,8 +243,8 @@ export default function CoursesPage() {
               </div>
 
               {totalPages > 1 && (
-                <div className="mt-4 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 pt-4">
-                  <p className="text-sm text-gray-500">Page {page} of {totalPages}</p>
+                <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
+                  <p className="text-sm text-muted-foreground">Page {page} of {totalPages}</p>
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
                       <ChevronLeft className="h-4 w-4" />
@@ -256,33 +260,33 @@ export default function CoursesPage() {
         </CardContent>
       </Card>
 
-      {/* Action dialog (reject/suspend) */}
       {actionId !== null && actionType !== null && (
-        <>
-          <div className="fixed inset-0 z-50 bg-black/40" onClick={() => { setActionId(null); setActionType(null); }} />
-          <div className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-800 dark:bg-gray-950">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              {actionType === 'reject' ? 'Reject Course' : 'Suspend Course'}
-            </h3>
+        <Dialog open onOpenChange={(open) => { if (!open) { setActionId(null); setActionType(null); } }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                {actionType === 'reject' ? 'Reject Course' : 'Suspend Course'}
+              </DialogTitle>
+            </DialogHeader>
             {actionType === 'reject' ? (
               <>
-                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm text-muted-foreground">
                   This will remove the course from the platform. Please provide a reason.
                 </p>
                 <textarea
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   placeholder="Enter rejection reason..."
-                  className="mt-4 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                  className="mt-4 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   rows={3}
                 />
               </>
             ) : (
-              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-muted-foreground">
                 This will unpublish the course, hiding it from students.
               </p>
             )}
-            <div className="mt-4 flex justify-end gap-2">
+            <DialogFooter>
               <Button variant="outline" onClick={() => { setActionId(null); setActionType(null); }}>Cancel</Button>
               {actionType === 'reject' ? (
                 <Button variant="destructive" onClick={handleReject} disabled={!reason.trim()}>
@@ -293,9 +297,9 @@ export default function CoursesPage() {
                   Suspend
                 </Button>
               )}
-            </div>
-          </div>
-        </>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
