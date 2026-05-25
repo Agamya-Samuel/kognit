@@ -32,4 +32,20 @@ export const adminService = {
   async getUsers(filters?: Record<string, unknown>) {
     return getApiClient().get<any[]>('/admin/users', filters);
   },
+
+  async getAssignments(filters?: Record<string, unknown>) {
+    return getApiClient().get<any[]>('/admin/assignments', filters);
+  },
+
+  async deleteAssignment(id: number) {
+    return getApiClient().delete<void>(`/admin/assignments/${id}`);
+  },
+
+  async getDashboardMetrics() {
+    return getApiClient().get<any>('/admin/dashboard/metrics');
+  },
+
+  async getChartData(days?: number) {
+    return getApiClient().get<any[]>('/admin/dashboard/chart', { days: days || 30 });
+  },
 };

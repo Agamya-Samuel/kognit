@@ -11,7 +11,8 @@ interface ApiProviderProps {
 }
 
 export function ApiProvider({ children, loginPath = '/auth/login' }: ApiProviderProps) {
-  useEffect(() => {
+  // Initialize API client on client side to avoid useEffect timing issues
+  if (typeof window !== 'undefined') {
     initApiClient({
       baseURL: process.env.NEXT_PUBLIC_API_URL!,
       getToken: () => typeof window !== 'undefined' ? localStorage.getItem(TOKEN_KEY) : null,
@@ -30,6 +31,30 @@ export function ApiProvider({ children, loginPath = '/auth/login' }: ApiProvider
         }
       },
     });
+  }
+
+  useEffect(() => {
+    // Re-initialize if loginPath changes (though this is uncommon)
+    if (typeof window !== 'undefined') {
+      initApiClient({
+        baseURL: process.env.NEXT_PUBLIC_API_URL!,
+        getToken: () => typeof window !== 'undefined' ? localStorage.getItem(TOKEN_KEY) : null,
+        getRefreshToken: () => typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null,
+        onTokenRefreshed: (accessToken, refreshToken) => {
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(TOKEN_KEY, accessToken);
+            localStorage.setItem('refreshToken', refreshToken);
+          }
+        },
+        onUnauthorized: () => {
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem(TOKEN_KEY);
+            localStorage.removeItem('refreshToken');
+            window.location.href = loginPath;
+          }
+        },
+      });
+    }
   }, [loginPath]);
 
   return <>{children}</>;
