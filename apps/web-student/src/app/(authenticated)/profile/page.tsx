@@ -1,16 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Input, Label, Avatar, AvatarFallback, AvatarImage, Switch, Separator, Badge } from '@edutech/ui';
-import { User, Mail, MapPin, GraduationCap, Settings, Shield, LogOut, Save, AlertTriangle, Trash2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Input, Label, Avatar, Switch, Separator, Badge } from '@edutech/ui';
+import { Mail, Settings, Shield, LogOut, Save, AlertTriangle, Trash2 } from 'lucide-react';
 import { useAuth } from '@edutech/shared-components';
 
 export default function ProfilePage() {
+  const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const [formData, setFormData] = useState({
-    name: 'Student Name',
-    email: 'student@example.com',
+    name: user?.name || 'Student Name',
+    email: user?.email || 'student@example.com',
     grade: '12th',
     institution: 'Example High School',
   });
@@ -36,22 +38,26 @@ export default function ProfilePage() {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-4">
-              <Avatar className="h-20 w-20">
-                <AvatarImage src="" alt={formData.name} />
-                <AvatarFallback className="text-xl">
-                  {formData.name
-                    .split(' ')
-                    .map((n) => n[0])
-                    .join('')}
-                </AvatarFallback>
-              </Avatar>
+              <Avatar className="h-20 w-20" src={user?.avatarUrl} fallback={formData.name} />
               <div className="flex-1">
                 <CardTitle>{formData.name}</CardTitle>
-                <CardDescription>Student • Member since 2024</CardDescription>
+                <CardDescription>
+                  Student
+                  {!user?.isVerified && (
+                    <Badge variant="destructive" className="ml-2">Email not verified</Badge>
+                  )}
+                </CardDescription>
               </div>
-              <Button onClick={() => setIsEditing(!isEditing)} variant="outline">
-                {isEditing ? 'Cancel' : 'Edit Profile'}
-              </Button>
+              <div className="flex items-center gap-2">
+                {!user?.isVerified && (
+                  <Button variant="outline" size="sm" onClick={() => router.push('/verify-email')}>
+                    Verify Email
+                  </Button>
+                )}
+                <Button onClick={() => setIsEditing(!isEditing)} variant="outline">
+                  {isEditing ? 'Cancel' : 'Edit Profile'}
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
