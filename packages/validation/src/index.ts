@@ -54,12 +54,18 @@ export const existingUserEmailVerificationVerifySchema = z.object({
 });
 
 // Email-first registration: step 3 — complete registration
-export const completeRegistrationSchema = z.object({
-  email: z.email('Please enter a valid email address'),
-  code: z.string().length(6, 'Verification code must be 6 digits'),
-  name: z.string().min(2, 'Name must be at least 2 characters').max(255, 'Name must be at most 255 characters'),
-  password: passwordPolicy,
-});
+export const completeRegistrationSchema = z
+  .object({
+    email: z.email('Please enter a valid email address'),
+    code: z.string().length(6, 'Verification code must be 6 digits'),
+    name: z.string().min(2, 'Name must be at least 2 characters').max(255, 'Name must be at most 255 characters'),
+    password: passwordPolicy,
+    confirmPassword: z.string().min(1, 'Please confirm your password'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
 
 export const forgotPasswordSchema = z.object({
   email: z.email('Please enter a valid email address'),
