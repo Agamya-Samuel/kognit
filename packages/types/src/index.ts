@@ -85,6 +85,44 @@ export interface JwtPayload {
   exp?: number;
 }
 
+// ─── Email Verification Types ──────────────────────────────────────────────────
+
+export interface EmailVerificationRequest {
+  email: string;
+}
+
+export interface EmailVerificationResponse {
+  message: string;
+  code?: string; // Only in dev/development environments
+}
+
+export interface EmailVerificationCodeVerify {
+  email: string;
+  code: string;
+}
+
+export interface EmailVerificationCodeVerifyResponse {
+  verified: boolean;
+  email: string;
+}
+
+export interface ExistingUserEmailVerificationRequest {
+  // Requires authentication
+}
+
+export interface ExistingUserEmailVerificationResponse {
+  message: string;
+  code?: string; // Only in dev environments
+}
+
+export interface ExistingUserEmailVerificationVerify {
+  code: string;
+}
+
+export interface ExistingUserEmailVerificationVerifyResponse {
+  verified: boolean;
+}
+
 // ─── User ─────────────────────────────────────────────────────────────────────
 
 export interface User {
