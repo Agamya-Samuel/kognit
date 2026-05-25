@@ -68,9 +68,10 @@ export default function RegisterPage() {
     }
   };
 
-  const handleCompleteRegistration = async (data: { name: string; password: string; confirmPassword: string }) => {
+  const handleCompleteRegistration = async (data: { name: string; password: string }) => {
     setIsLoading(true);
     setError('');
+    // Note: confirmPassword field is validated on frontend but NOT sent to API
 
     try {
       await authService.completeRegistration(email, code, data.name, data.password);
