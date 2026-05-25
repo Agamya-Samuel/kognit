@@ -230,6 +230,10 @@ export * from './services/auth';
 export * from './services/schedule';
 export * from './services/recordings';
 
+// ─── Hooks ───────────────────────────────────────────────────────────────
+
+export * from './hooks/useEmailVerification';
+
 // ─── Provider ───────────────────────────────────────────────────────────────
 
 export { ApiProvider } from './provider';
