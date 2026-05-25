@@ -5,6 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle, Button, Input, Spinner } from
 import { Search, ChevronLeft, ChevronRight, UserCog, Trash2, Shield } from 'lucide-react';
 import api from '@/lib/api';
 import { UserDetailDrawer } from '@/components/UserDetailDrawer';
+import { PageHeader } from '@/components/PageHeader';
+import { EmptyState } from '@/components/EmptyState';
+import { cn } from '@/lib/utils';
 
 interface User {
   id: number;
@@ -49,9 +52,9 @@ export default function UsersPage() {
         '/admin/users',
         { params },
       );
-      const result = data.data ?? data;
-      setUsers(result.users ?? []);
-      setTotal(result.total ?? 0);
+      const result = (data as any)?.data ?? data;
+      setUsers(result?.users ?? []);
+      setTotal(result?.total ?? 0);
     } catch {
       // Use empty state on error
       setUsers([]);
@@ -112,29 +115,24 @@ export default function UsersPage() {
       case 'admin': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
       case 'instructor': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
       case 'institution_admin': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+      default: return 'bg-muted text-muted-foreground';
     }
   };
 
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            User Management
-          </h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            {total} total users
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="User Management"
+        description={`${total} total users`}
+      />
 
       {/* Filters */}
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <Search className={cn("absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground")} />
               <Input
                 placeholder="Search by email or name..."
                 value={search}
@@ -147,11 +145,12 @@ export default function UsersPage() {
                 <button
                   key={role}
                   onClick={() => { setRoleFilter(role); setPage(1); }}
-                  className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                  className={cn(
+                    "rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
                     roleFilter === role
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-                  }`}
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  )}
                 >
                   {role === 'all' ? 'All' : role.replace('_', ' ')}
                 </button>
@@ -172,65 +171,69 @@ export default function UsersPage() {
               <Spinner />
             </div>
           ) : users.length === 0 ? (
-            <p className="py-12 text-center text-gray-500">No users found.</p>
+            <EmptyState
+              title="No users found"
+              description="There are no users matching your filters."
+              action={{ label: 'Clear Filters', onClick: () => { setSearch(''); setRoleFilter('all'); } }}
+            />
           ) : (
             <>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-gray-200 dark:border-gray-700">
-                      <th className="pb-3 text-left font-medium text-gray-600 dark:text-gray-400">Name</th>
-                      <th className="pb-3 text-left font-medium text-gray-600 dark:text-gray-400">Email</th>
-                      <th className="pb-3 text-left font-medium text-gray-600 dark:text-gray-400">Role</th>
-                      <th className="pb-3 text-left font-medium text-gray-600 dark:text-gray-400">Status</th>
-                      <th className="pb-3 text-left font-medium text-gray-600 dark:text-gray-400">Joined</th>
-                      <th className="pb-3 text-right font-medium text-gray-600 dark:text-gray-400">Actions</th>
+                    <tr className="border-b border-border">
+                      <th className="pb-3 text-left text-xs font-medium uppercase text-muted-foreground">Name</th>
+                      <th className="pb-3 text-left text-xs font-medium uppercase text-muted-foreground">Email</th>
+                      <th className="pb-3 text-left text-xs font-medium uppercase text-muted-foreground">Role</th>
+                      <th className="pb-3 text-left text-xs font-medium uppercase text-muted-foreground">Status</th>
+                      <th className="pb-3 text-left text-xs font-medium uppercase text-muted-foreground">Joined</th>
+                      <th className="pb-3 text-right text-xs font-medium uppercase text-muted-foreground">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                  <tbody className="divide-y divide-border">
                     {users.map((user) => (
-                      <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                        <td className="py-3 font-medium text-gray-900 dark:text-white">
+                      <tr key={user.id} className="hover:bg-accent/50 transition-colors">
+                        <td className="py-3 font-medium text-foreground">
                           {user.name}
                         </td>
-                        <td className="py-3 text-gray-600 dark:text-gray-400">
+                        <td className="py-3 text-muted-foreground">
                           {user.email}
                         </td>
                         <td className="py-3">
-                          <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${roleColor(user.role)}`}>
+                          <span className={cn("inline-flex rounded-full px-2 py-0.5 text-xs font-medium capitalize", roleColor(user.role))}>
                             {user.role.replace('_', ' ')}
                           </span>
                         </td>
                         <td className="py-3">
-                          <span className={`inline-flex items-center gap-1.5 text-xs ${
-                            user.isActive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                          }`}>
-                            <span className={`h-1.5 w-1.5 rounded-full ${user.isActive ? 'bg-green-500' : 'bg-red-500'}`} />
+                          <span className={cn("inline-flex items-center gap-1.5 text-xs",
+                            user.isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-destructive'
+                          )}>
+                            <span className={cn("h-1.5 w-1.5 rounded-full", user.isActive ? 'bg-emerald-500' : 'bg-destructive')} />
                             {user.isActive ? 'Active' : 'Inactive'}
                           </span>
                         </td>
-                        <td className="py-3 text-gray-500 dark:text-gray-400">
+                        <td className="py-3 text-muted-foreground">
                           {new Date(user.createdAt).toLocaleDateString()}
                         </td>
                         <td className="py-3 text-right">
                           <div className="flex items-center justify-end gap-1">
                             <button
                               onClick={() => handleToggleActive(user)}
-                              className="rounded p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+                              className="rounded p-1.5 text-muted-foreground hover:bg-accent"
                               title={user.isActive ? 'Deactivate' : 'Activate'}
                             >
                               <Shield className="h-4 w-4" />
                             </button>
                             <button
                               onClick={() => openDrawer(user)}
-                              className="rounded p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+                              className="rounded p-1.5 text-muted-foreground hover:bg-accent"
                               title="Edit user"
                             >
                               <UserCog className="h-4 w-4" />
                             </button>
                             <button
                               onClick={() => handleDelete(user.id)}
-                              className="rounded p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
+                              className="rounded p-1.5 text-destructive hover:bg-destructive/10"
                               title="Delete user"
                             >
                               <Trash2 className="h-4 w-4" />
@@ -245,8 +248,8 @@ export default function UsersPage() {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="mt-4 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 pt-4">
-                  <p className="text-sm text-gray-500">
+                <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
+                  <p className="text-sm text-muted-foreground">
                     Page {page} of {totalPages}
                   </p>
                   <div className="flex gap-2">
