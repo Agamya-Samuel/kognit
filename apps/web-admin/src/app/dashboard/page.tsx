@@ -178,7 +178,7 @@ export default function AdminDashboardPage() {
               <Link href="/dashboard/courses">Moderate Courses</Link>
             </Button>
             <Button variant="outline" asChild>
-              <Link href="/dashboard/analytics">View Analytics</Link>
+              <Link href="/dashboard/reports">View Reports</Link>
             </Button>
             <Button variant="outline" asChild>
               <Link href="/dashboard/settings">Settings</Link>

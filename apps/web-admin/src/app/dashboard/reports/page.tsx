@@ -285,7 +285,7 @@ export default function ReportsPage() {
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Students</span>
                 <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {Math.round((metrics.totalUsers * 0.7).toLocaleString())}
+                  {Math.round(metrics.totalUsers * 0.7).toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -311,19 +311,19 @@ export default function ReportsPage() {
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Active Courses</span>
                 <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {Math.round((metrics.totalCourses * 0.8).toLocaleString())}
+                  {Math.round(metrics.totalCourses * 0.8).toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Draft Courses</span>
                 <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {Math.round((metrics.totalCourses * 0.2).toLocaleString())}
+                  {Math.round(metrics.totalCourses * 0.2).toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Archived Courses</span>
                 <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {Math.round((metrics.totalCourses * 0.1).toLocaleString())}
+                  {Math.round(metrics.totalCourses * 0.1).toLocaleString()}
                 </span>
               </div>
             </div>
