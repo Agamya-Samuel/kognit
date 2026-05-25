@@ -45,6 +45,14 @@ export const verifyEmailCodeSchema = z.object({
   code: z.string().length(6, 'Verification code must be 6 digits'),
 });
 
+// Existing user email verification: step 1 — request verification code (authenticated)
+export const existingUserEmailVerificationRequestSchema = z.object({});
+
+// Existing user email verification: step 2 — verify code (authenticated)
+export const existingUserEmailVerificationVerifySchema = z.object({
+  code: z.string().length(6, 'Verification code must be 6 digits'),
+});
+
 // Email-first registration: step 3 — complete registration
 export const completeRegistrationSchema = z.object({
   email: z.email('Please enter a valid email address'),
@@ -182,6 +190,8 @@ export type RegisterInput = z.infer<typeof registerSchema>;
 export type SignupInput = z.infer<typeof signupSchema>;
 export type RequestEmailVerificationInput = z.infer<typeof requestEmailVerificationSchema>;
 export type VerifyEmailCodeInput = z.infer<typeof verifyEmailCodeSchema>;
+export type ExistingUserEmailVerificationRequestInput = z.infer<typeof existingUserEmailVerificationRequestSchema>;
+export type ExistingUserEmailVerificationVerifyInput = z.infer<typeof existingUserEmailVerificationVerifySchema>;
 export type CompleteRegistrationInput = z.infer<typeof completeRegistrationSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
