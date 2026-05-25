@@ -25,9 +25,6 @@ export default function RegisterPage() {
 
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
-  const [name, setName] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
 
   const emailForm = useForm({
     resolver: zodResolver(requestEmailVerificationSchema),
@@ -47,7 +44,7 @@ export default function RegisterPage() {
     setEmail(data.email);
 
     try {
-      await authService.requestVerificationCode(data.email);
+      await authService.requestRegistrationVerification(data.email);
       setStep('verify');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to send verification code. Please try again.');
@@ -62,7 +59,7 @@ export default function RegisterPage() {
     setCode(data.code);
 
     try {
-      await authService.verifyCode(email, data.code);
+      await authService.verifyRegistrationCode(email, data.code);
       setStep('complete');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Invalid verification code. Please try again.');
@@ -71,7 +68,7 @@ export default function RegisterPage() {
     }
   };
 
-  const handleCompleteRegistration = async (data: { name: string; password: string }) => {
+  const handleCompleteRegistration = async (data: { name: string; password: string; confirmPassword: string }) => {
     setIsLoading(true);
     setError('');
 

@@ -44,7 +44,7 @@ export default function RegisterPage() {
     setEmail(data.email);
 
     try {
-      await authService.requestVerificationCode(data.email);
+      await authService.requestRegistrationVerification(data.email);
       setStep('verify');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to send verification code. Please try again.');
@@ -59,7 +59,7 @@ export default function RegisterPage() {
     setCode(data.code);
 
     try {
-      await authService.verifyCode(email, data.code);
+      await authService.verifyRegistrationCode(email, data.code);
       setStep('complete');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Invalid verification code. Please try again.');
