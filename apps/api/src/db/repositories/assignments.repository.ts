@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository, PaginatedResult } from './base.repository';
 import { assignments, lectures, sections, courses } from '../schema';
-import { eq, and, desc, like, or, sql } from 'drizzle-orm';
+import { eq, and, desc } from 'drizzle-orm';
 import type { Assignment } from '../schema';
 
 @Injectable()
@@ -89,25 +89,33 @@ export class AssignmentsRepository extends BaseRepository<Assignment> {
       const offset = options.offset ?? defaultOffset;
       const limit = options.limit ?? defaultLimit;
 
-      const [data, totalResult] = await this.db
-        .select({
-          id: assignments.id,
-          title: assignments.title,
-          description: assignments.description,
-          type: assignments.type,
-          maxScore: assignments.maxScore,
-          dueAt: assignments.dueAt,
-          createdAt: assignments.createdAt,
-          courseId: sections.courseId,
-          courseName: courses.title,
-        })
-        .from(assignments)
-        .innerJoin(lectures, eq(assignments.lectureId, lectures.id))
-        .innerJoin(sections, eq(lectures.sectionId, sections.id))
-        .innerJoin(courses, eq(sections.courseId, courses.id))
-        .orderBy(desc(assignments.createdAt))
-        .limit(limit)
-        .offset(offset);
+      const [data, totalResult] = await Promise.all([
+        this.db
+          .select({
+            id: assignments.id,
+            title: assignments.title,
+            description: assignments.description,
+            type: assignments.type,
+            maxScore: assignments.maxScore,
+            dueAt: assignments.dueAt,
+            createdAt: assignments.createdAt,
+            courseId: sections.courseId,
+            courseName: courses.title,
+          })
+          .from(assignments)
+          .innerJoin(lectures, eq(assignments.lectureId, lectures.id))
+          .innerJoin(sections, eq(lectures.sectionId, sections.id))
+          .innerJoin(courses, eq(sections.courseId, courses.id))
+          .orderBy(desc(assignments.createdAt))
+          .limit(limit)
+          .offset(offset),
+        this.db
+          .select({ count: assignments.id })
+          .from(assignments)
+          .innerJoin(lectures, eq(assignments.lectureId, lectures.id))
+          .innerJoin(sections, eq(lectures.sectionId, sections.id))
+          .innerJoin(courses, eq(sections.courseId, courses.id)),
+      ]);
 
       return { data, total: totalResult.length, limit, offset };
     } catch (error) {
