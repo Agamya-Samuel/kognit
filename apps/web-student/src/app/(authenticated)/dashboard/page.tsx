@@ -1,25 +1,124 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { StudentDashboard } from '@edutech/shared-components';
+import { useAuth } from '@edutech/shared-components';
+import { useMyEnrollments } from '@/hooks/useEnrollments';
+import { useCourseProgress } from '@/hooks/useEnrollments';
+import { useProgressTracking } from '@/hooks/useProgressTracking';
+import { useNotifications } from '@/hooks/useNotifications';
 
 export default function DashboardPage() {
+  const { user } = useAuth();
+  const { data: enrollments, isLoading: enrollmentsLoading } = useMyEnrollments();
+  const { data: notifications, isLoading: notificationsLoading } = useNotifications({ isRead: false });
+  
+  // Calculate metrics from enrollments and other data
+  const [metrics, setMetrics] = useState({
+    enrolledCourses: 0,
+    completedCourses: 0,
+    watchTime: 0,
+    certificates: 0,
+  });
+  
+  const [recentActivity, setRecentActivity] = useState([]);
+  const [inProgressCourses, setInProgressCourses] = useState([]);
+  
+  useEffect(() => {
+    if (enrollments) {
+      const enrolledCourses = enrollments.length;
+      const completedCourses = enrollments.filter(e => e.progress === 100).length;
+      
+      // Calculate total watch time (this would come from progress tracking)
+      let totalWatchTime = 0;
+      const inProgress = [];
+      const activity = [];
+      
+      enrollments.forEach(enrollment => {
+        // Add to in progress if not completed
+        if (enrollment.progress > 0 && enrollment.progress < 100) {
+          inProgress.push({
+            id: enrollment.courseId.toString(),
+            title: enrollment.courseTitle,
+            instructor: enrollment.instructorName,
+            progress: enrollment.progress,
+            lastWatched: 'Recently', // This would come from progress tracking
+          });
+        }
+        
+        // Add to recent activity based on enrollment date
+        activity.push({
+          id: enrollment.id.toString(),
+          message: `Enrolled in "${enrollment.courseTitle}"`,
+          time: new Date(enrollment.enrolledAt).toLocaleDateString(undefined, { 
+            year: 'numeric', month: 'short', day: 'numeric' 
+          }),
+          status: 'info'
+        });
+        
+        // If completed, add completion activity
+        if (enrollment.progress === 100) {
+          activity.push({
+            id: `${enrollment.id}-completed`,
+            message: `Completed "${enrollment.courseTitle}"`,
+            time: new Date(enrollment.enrolledAt).toLocaleDateString(undefined, { 
+              year: 'numeric', month: 'short', day: 'numeric' 
+            }),
+            status: 'success'
+          });
+        }
+      });
+      
+      // Sort activity by date (newest first) and take top 3
+      const sortedActivity = activity
+        .sort((a, b) => new Date(b.time) - new Date(a.time))
+        .slice(0, 3);
+      
+      // Get unread notifications for activity
+      const notificationActivity = (notifications || [])
+        .map(notif => ({
+          id: notif.id.toString(),
+          message: notif.title,
+          time: new Date(notif.createdAt).toLocaleDateString(undefined, { 
+            year: 'numeric', month: 'short', day: 'numeric' 
+          }),
+          status: notif.isRead ? 'info' : 'success'
+        }))
+        .slice(0, 2);
+      
+      setMetrics({
+        enrolledCourses,
+        completedCourses,
+        watchTime: totalWatchTime, // Would come from progress tracking
+        certificates: 0 // Would come from certificates service
+      });
+      
+      setRecentActivity([...sortedActivity, ...notificationActivity].slice(0, 3));
+      setInProgressCourses(inProgress.slice(0, 2)); // Show top 2 in progress
+    }
+  }, [enrollments, notifications]);
+  
+  if (enrollmentsLoading) {
+    return (
+      <StudentDashboard
+        metrics={{
+          enrolledCourses: 0,
+          completedCourses: 0,
+          watchTime: 0,
+          certificates: 0,
+        }}
+        metricsLoading={true}
+        recentActivity={[]}
+        inProgressCourses={[]}
+      />
+    );
+  }
+  
   return (
     <StudentDashboard
-      metrics={{
-        enrolledCourses: 3,
-        completedCourses: 1,
-        watchTime: 7200,
-        certificates: 1,
-      }}
-      recentActivity={[
-        { id: '1', message: 'Completed "Introduction to React"', time: '2 hours ago', status: 'success' },
-        { id: '2', message: 'Started "Advanced TypeScript"', time: '1 day ago', status: 'info' },
-        { id: '3', message: 'Submitted assignment for "UI Design"', time: '2 days ago', status: 'success' },
-      ]}
-      inProgressCourses={[
-        { id: '1', title: 'Advanced TypeScript', instructor: 'John Doe', progress: 45, lastWatched: '1 hour ago' },
-        { id: '2', title: 'UI Design Principles', instructor: 'Jane Smith', progress: 72, lastWatched: '3 hours ago' },
-      ]}
+      metrics={metrics}
+      recentActivity={recentActivity}
+      inProgressCourses={inProgressCourses}
     />
   );
 }

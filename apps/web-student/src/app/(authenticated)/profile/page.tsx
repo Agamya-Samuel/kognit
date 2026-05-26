@@ -1,32 +1,103 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Input, Label, Avatar, Switch, Separator, Badge } from '@edutech/ui';
 import { Mail, Settings, Shield, LogOut, Save, AlertTriangle, Trash2 } from 'lucide-react';
 import { useAuth } from '@edutech/shared-components';
+import { usersService } from '@edutech/api-client';
+import { useNotifications } from '@/hooks/useNotifications';
 
 export default function ProfilePage() {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const { user, logout } = useAuth();
   const [formData, setFormData] = useState({
-    name: user?.name || 'Student Name',
-    email: user?.email || 'student@example.com',
-    grade: '12th',
-    institution: 'Example High School',
+    name: '',
+    email: '',
+    grade: '',
+    institution: '',
   });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsEditing(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { data: notifications, isLoading: notificationsLoading } = useNotifications({ isRead: false });
+  
+  // Load user profile on mount
+  useEffect(() => {
+    if (user?.id) {
+      loadUserProfile();
+    }
+  }, [user?.id]);
+  
+  const loadUserProfile = async () => {
+    try {
+      setIsLoading(true);
+      const profile = await usersService.getProfile();
+      setFormData({
+        name: profile.name,
+        email: profile.email,
+        grade: profile.grade || '',
+        institution: profile.institution || '',
+      });
+    } catch (err) {
+      setError('Failed to load profile');
+      console.error('Profile load error:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
-
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setIsLoading(true);
+      await usersService.updateProfile(formData);
+      setIsEditing(false);
+      // Optionally show success message
+    } catch (err) {
+      setError('Failed to save profile');
+      console.error('Profile save error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
   const handleLogout = () => {
     logout();
     window.location.href = '/auth/login';
   };
-
+  
+  if (isLoading || !user) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center py-12">
+            <div className="inline-block animate-pulse rounded-full bg-muted h-12 w-12"></div>
+            <p className="mt-4 text-muted-foreground">Loading profile...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-destructive/50 border border-destructive text-destructive rounded-lg px-6 py-4">
+            {error}
+            <button
+              onClick={() => setError(null)}
+              className="ml-4 text-destructive hover:text-destructive/80 underline"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto space-y-6">
@@ -38,18 +109,18 @@ export default function ProfilePage() {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-4">
-              <Avatar className="h-20 w-20" src={user?.avatarUrl} fallback={formData.name} />
+              <Avatar className="h-20 w-20" src={user.avatarUrl} fallback={formData.name} />
               <div className="flex-1">
                 <CardTitle>{formData.name}</CardTitle>
                 <CardDescription>
                   Student
-                  {!user?.isVerified && (
+                  {!user.isVerified && (
                     <Badge variant="destructive" className="ml-2">Email not verified</Badge>
                   )}
                 </CardDescription>
               </div>
               <div className="flex items-center gap-2">
-                {!user?.isVerified && (
+                {!user.isVerified && (
                   <Button variant="outline" size="sm" onClick={() => router.push('/verify-email')}>
                     Verify Email
                   </Button>
@@ -129,7 +200,13 @@ export default function ProfilePage() {
                 <div className="font-medium">Email Notifications</div>
                 <div className="text-sm text-muted-foreground">Receive updates via email</div>
               </div>
-              <Switch defaultChecked />
+              <Switch 
+                defaultChecked 
+                onChange={(checked) => {
+                  // TODO: Implement notification preferences update
+                  console.log('Email notifications:', checked);
+                }}
+              />
             </div>
             <Separator />
             <div className="flex items-center justify-between">
@@ -137,7 +214,13 @@ export default function ProfilePage() {
                 <div className="font-medium">Assignment Reminders</div>
                 <div className="text-sm text-muted-foreground">Get notified before due dates</div>
               </div>
-              <Switch defaultChecked />
+              <Switch 
+                defaultChecked 
+                onChange={(checked) => {
+                  // TODO: Implement notification preferences update
+                  console.log('Assignment reminders:', checked);
+                }}
+              />
             </div>
             <Separator />
             <div className="flex items-center justify-between">
@@ -145,7 +228,13 @@ export default function ProfilePage() {
                 <div className="font-medium">Live Class Alerts</div>
                 <div className="text-sm text-muted-foreground">Be notified when classes start</div>
               </div>
-              <Switch defaultChecked />
+              <Switch 
+                defaultChecked 
+                onChange={(checked) => {
+                  // TODO: Implement notification preferences update
+                  console.log('Live class alerts:', checked);
+                }}
+              />
             </div>
             <Separator />
             <div className="flex items-center justify-between">
@@ -153,7 +242,13 @@ export default function ProfilePage() {
                 <div className="font-medium">Marketing Emails</div>
                 <div className="text-sm text-muted-foreground">Receive course recommendations</div>
               </div>
-              <Switch />
+              <Switch 
+                defaultChecked 
+                onChange={(checked) => {
+                  // TODO: Implement notification preferences update
+                  console.log('Marketing emails:', checked);
+                }}
+              />
             </div>
           </CardContent>
         </Card>
@@ -170,11 +265,15 @@ export default function ProfilePage() {
             <Button variant="outline" className="w-full justify-start gap-2">
               <Mail className="h-4 w-4" />
               Change Password
+              {/* TODO: Connect to actual change password functionality */}
             </Button>
             <Button variant="outline" className="w-full justify-start gap-2">
               <Shield className="h-4 w-4" />
               Two-Factor Authentication
-              <Badge variant="secondary" className="ml-auto">Disabled</Badge>
+              <Badge variant="secondary" className="ml-auto">
+                {/* TODO: Check actual 2FA status */}
+                Disabled
+              </Badge>
             </Button>
           </CardContent>
         </Card>

@@ -4,23 +4,29 @@ import { getApiClient } from '@edutech/api-client';
 export interface Notification {
   id: number;
   userId: number;
-  type: 'assignment_due' | 'assignment graded' | 'live_class_soon' | 'live_class_started' | 'certificate_issued' | 'payment_success' | 'course_enrolled';
+  type: string;
   title: string;
   message: string;
   read: boolean;
   createdAt: string;
-  metadata?: Record<string, unknown>;
+  deliveredVia?: string;
+  emailSentAt?: string | null;
 }
 
-export function useNotifications(unreadOnly = false) {
+export interface NotificationFilters {
+  limit?: number;
+  offset?: number;
+  isRead?: boolean;
+  type?: string;
+}
+
+export function useNotifications(filters: NotificationFilters = {}) {
   return useQuery({
-    queryKey: ['notifications', 'list', { unreadOnly }],
+    queryKey: ['notifications', 'list', filters],
     queryFn: async (): Promise<Notification[]> => {
       const apiClient = getApiClient();
-      const response = await apiClient.get<{ data: Notification[] }>('/notifications', {
-        params: { unreadOnly },
-      });
-      return response.data;
+      const response = await apiClient.get<Notification[]>('/notifications', filters);
+      return response;
     },
     staleTime: 1 * 60 * 1000,
     refetchInterval: 5 * 60 * 1000,
@@ -30,10 +36,10 @@ export function useNotifications(unreadOnly = false) {
 export function useUnreadCount() {
   return useQuery({
     queryKey: ['notifications', 'unread-count'],
-    queryFn: async (): Promise<number> => {
+    queryFn: async (): Promise<{ count: number }> => {
       const apiClient = getApiClient();
-      const response = await apiClient.get<{ data: { count: number } }>('/notifications/unread-count');
-      return response.data.count;
+      const response = await apiClient.get<{ count: number }>('/notifications/unread-count');
+      return response;
     },
     staleTime: 1 * 60 * 1000,
     refetchInterval: 2 * 60 * 1000,
@@ -60,7 +66,7 @@ export function useMarkAllAsRead() {
   return useMutation({
     mutationFn: async () => {
       const apiClient = getApiClient();
-      await apiClient.post('/notifications/mark-all-read');
+      await apiClient.patch('/notifications/read-all');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
