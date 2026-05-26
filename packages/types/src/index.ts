@@ -518,13 +518,6 @@ export interface GradingResult {
 
 // ─── Payments ─────────────────────────────────────────────────────────────────
 
-export interface PaymentHistory {
-  payments: Payment[];
-  total: number;
-  page: number;
-  limit: number;
-}
-
 export interface CreateOrderResponse {
   orderId: string;
   amount: number;
@@ -537,13 +530,6 @@ export interface CreateOrderResponse {
 export interface VerifyPaymentResponse {
   success: boolean;
   enrollmentId: number;
-}
-
-export interface PaymentFilters {
-  page?: number;
-  limit?: number;
-  status?: string;
-  courseId?: number;
 }
 
 // ─── Certificates ─────────────────────────────────────────────────────────────
@@ -710,4 +696,36 @@ export interface AuthResponse {
 
 export interface CourseWithCurriculum extends CourseWithSections {
   instructor?: InstructorProfile;
+}
+
+// ─── Analytics Types ──────────────────────────────────────────────────────
+
+export interface DashboardMetrics {
+  totalStudents: number;
+  activeCourses: number;
+  totalRevenue: number;
+  upcomingClasses: number;
+  recentActivity: RecentActivityItem[];
+}
+
+export interface RecentActivityItem {
+  id: number;
+  type: 'enrollment' | 'completion' | 'review' | 'assignment_submission' | 'live_class';
+  title: string;
+  time: string;
+}
+
+export interface InstructorStudentsResponse {
+  students: InstructorStudent[];
+  total: number;
+}
+
+export interface InstructorStudent {
+  id: number;
+  name: string;
+  email: string;
+  courseId: number;
+  courseTitle: string;
+  enrolledAt: string;
+  progressPercentage: number;
 }
