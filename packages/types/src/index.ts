@@ -708,6 +708,21 @@ export interface DashboardMetrics {
   recentActivity: RecentActivityItem[];
 }
 
+export interface CreationStats {
+  totalCourses: number;
+  publishedCourses: number;
+  totalStudents: number;
+  averageCompletionRate: number;
+  monthlyChange: {
+    totalCourses: number;
+    averageCompletionRate: number;
+  };
+  weeklyChange: {
+    publishedCourses: number;
+    totalStudents: number;
+  };
+}
+
 export interface RecentActivityItem {
   id: number;
   type: 'enrollment' | 'completion' | 'review' | 'assignment_submission' | 'live_class';

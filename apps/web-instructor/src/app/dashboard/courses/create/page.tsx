@@ -10,7 +10,7 @@ import { SectionsStep } from '@/components/course-creation/SectionsStep';
 import { LecturesStep } from '@/components/course-creation/LecturesStep';
 import { PricingStep } from '@/components/course-creation/PricingStep';
 import { ReviewStep } from '@/components/course-creation/ReviewStep';
-import { useCreateCourse } from '@/hooks/useCourses';
+import { useCreateCourse, useCreationStats } from '@/hooks/useCourses';
 
 type Step = 'details' | 'sections' | 'lectures' | 'pricing' | 'review';
 
@@ -38,34 +38,7 @@ export default function CreateCoursePage() {
 
   const createCourseMutation = useCreateCourse();
   const { mutate: createCourse, isPending: isCreating } = createCourseMutation;
-
-  // Mock data for course creation stats
-  const creationStats = [
-    {
-      title: 'Total Courses',
-      value: '12',
-      change: { value: '+2 this month', trend: 'up' as const },
-      icon: BookOpen,
-    },
-    {
-      title: 'Published',
-      value: '8',
-      change: { value: '+1 this week', trend: 'up' as const },
-      icon: CheckCircle2,
-    },
-    {
-      title: 'Total Students',
-      value: '245',
-      change: { value: '+18 this week', trend: 'up' as const },
-      icon: Users,
-    },
-    {
-      title: 'Avg. Completion',
-      value: '78%',
-      change: { value: '+5%', trend: 'up' as const },
-      icon: TrendingUp,
-    },
-  ];
+  const { data: creationStats, isLoading: statsLoading, error: statsError } = useCreationStats();
 
   const currentStepIndex = steps.findIndex((step) => step.id === currentStep);
 
@@ -127,15 +100,56 @@ export default function CreateCoursePage() {
     <div className="container mx-auto space-y-6">
       {/* Stats Row */}
       <StatsRow>
-        {creationStats.map((stat) => (
-          <StatCard
-            key={stat.title}
-            title={stat.title}
-            value={stat.value}
-            change={stat.change}
-            icon={stat.icon}
-          />
-        ))}
+        {statsLoading ? (
+          <>
+            <StatCard title="Total Courses" value="--" change={{ value: '--', trend: 'up' }} icon={BookOpen} />
+            <StatCard title="Published" value="--" change={{ value: '--', trend: 'up' }} icon={CheckCircle2} />
+            <StatCard title="Total Students" value="--" change={{ value: '--', trend: 'up' }} icon={Users} />
+            <StatCard title="Avg. Completion" value="--" change={{ value: '--', trend: 'up' }} icon={TrendingUp} />
+          </>
+        ) : statsError ? (
+          <>
+            <StatCard title="Total Courses" value="--" change={{ value: '--', trend: 'up' }} icon={BookOpen} />
+            <StatCard title="Published" value="--" change={{ value: '--', trend: 'up' }} icon={CheckCircle2} />
+            <StatCard title="Total Students" value="--" change={{ value: '--', trend: 'up' }} icon={Users} />
+            <StatCard title="Avg. Completion" value="--" change={{ value: '--', trend: 'up' }} icon={TrendingUp} />
+          </>
+        ) : (
+          <>
+            {creationStats && creationStats.totalCourses !== undefined && (
+              <StatCard
+                title="Total Courses"
+                value={creationStats.totalCourses.toString()}
+                change={{ value: `${creationStats.monthlyChange.totalCourses >= 0 ? '+' : ''}${creationStats.monthlyChange.totalCourses} this month`, trend: creationStats.monthlyChange.totalCourses >= 0 ? 'up' : 'down' as const }}
+                icon={BookOpen}
+              />
+            )}
+            {creationStats && creationStats.publishedCourses !== undefined && (
+              <StatCard
+                title="Published"
+                value={creationStats.publishedCourses.toString()}
+                change={{ value: `${creationStats.weeklyChange.publishedCourses >= 0 ? '+' : ''}${creationStats.weeklyChange.publishedCourses} this week`, trend: creationStats.weeklyChange.publishedCourses >= 0 ? 'up' : 'down' as const }}
+                icon={CheckCircle2}
+              />
+            )}
+            {creationStats && creationStats.totalStudents !== undefined && (
+              <StatCard
+                title="Total Students"
+                value={creationStats.totalStudents.toString()}
+                change={{ value: `${creationStats.weeklyChange.totalStudents >= 0 ? '+' : ''}${creationStats.weeklyChange.totalStudents} this week`, trend: creationStats.weeklyChange.totalStudents >= 0 ? 'up' : 'down' as const }}
+                icon={Users}
+              />
+            )}
+            {creationStats && creationStats.averageCompletionRate !== undefined && (
+              <StatCard
+                title="Avg. Completion"
+                value={`${creationStats.averageCompletionRate}%`}
+                change={{ value: `${creationStats.monthlyChange.averageCompletionRate >= 0 ? '+' : ''}${creationStats.monthlyChange.averageCompletionRate}%`, trend: creationStats.monthlyChange.averageCompletionRate >= 0 ? 'up' : 'down' as const }}
+                icon={TrendingUp}
+              />
+            )}
+          </>
+        )}
       </StatsRow>
 
       {/* Page Header */}

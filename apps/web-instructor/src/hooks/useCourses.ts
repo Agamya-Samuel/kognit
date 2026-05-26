@@ -54,16 +54,25 @@ export function useRecentActivity() {
 }
 
 export function useUpcomingClasses() {
-   return useQuery({
-     queryKey: ['live', 'upcoming'],
-     queryFn: async () => {
-       const classes = await liveClassesService.getUpcomingClasses();
-       return classes.map(c => ({
-         id: c.id,
-         title: c.lectureTitle || c.courseTitle,
-         time: c.scheduledAt,
-         enrolledCount: 0,
-       }));
-     },
-   });
+    return useQuery({
+      queryKey: ['live', 'upcoming'],
+      queryFn: async () => {
+        const classes = await liveClassesService.getUpcomingClasses();
+        return classes.map(c => ({
+          id: c.id,
+          title: c.lectureTitle || c.courseTitle,
+          time: c.scheduledAt,
+          enrolledCount: 0,
+        }));
+      },
+    });
+}
+
+export function useCreationStats() {
+  return useQuery({
+    queryKey: ['dashboard', 'creationStats'],
+    queryFn: async () => {
+      return analyticsService.getCreationStats();
+    },
+  });
 }
