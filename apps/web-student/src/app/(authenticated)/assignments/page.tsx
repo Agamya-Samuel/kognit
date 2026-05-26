@@ -12,9 +12,9 @@ export default function AssignmentsPage() {
     type: typeFilter === 'all' ? undefined : (typeFilter as 'mcq' | 'short' | 'code'),
   });
 
-  const sortedAssignments = [...assignments].sort((a, b) => {
-    return new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime();
-  });
+   const sortedAssignments = (Array.isArray(assignments) ? assignments : []).sort((a, b) => {
+     return new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime();
+   });
 
   const getStatus = (_assignment: any): 'not_submitted' | 'submitted' | 'graded' => {
     // This will be enhanced when we fetch submissions
@@ -81,9 +81,9 @@ export default function AssignmentsPage() {
               <div key={i} className="h-40 animate-pulse rounded-lg bg-muted" />
             ))}
           </div>
-        ) : error ? (
-          <ErrorState message={error} onRetry={refetch} />
-        ) : sortedAssignments.length === 0 ? (
+         ) : error ? (
+           <ErrorState message={error.message} onRetry={refetch} />
+         ) : sortedAssignments.length === 0 ? (
           <EmptyState
             title="No assignments found"
             description="There are no assignments available right now."

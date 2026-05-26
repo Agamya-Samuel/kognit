@@ -53,8 +53,8 @@ export default function SubmissionsPage() {
 
         {isLoading ? (
           <div className="space-y-4">
-            {Array.from({ length: 3 }).map((i) => (
-              <Card key={i}>
+            {Array.from({ length: 3 }).map((_, index) => (
+              <Card key={index}>
                 <CardContent className="p-6 space-y-4">
                   <Skeleton className="h-6 w-1/2" />
                   <Skeleton className="h-4 w-1/3" />
