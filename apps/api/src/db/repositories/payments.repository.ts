@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository, PaginatedResult } from './base.repository';
 import { payments } from '../schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, gte, sql } from 'drizzle-orm';
 import type { Payment } from '../schema';
 
 @Injectable()
@@ -146,6 +146,46 @@ export class PaymentsRepository extends BaseRepository<Payment> {
     } catch (error) {
       this.handleError(error, 'count');
       return 0;
+    }
+  }
+
+  async sumPaidAmount(): Promise<number> {
+    try {
+      const result = await this.db
+        .select({ total: sql`COALESCE(SUM(${payments.amount}), 0)` })
+        .from(payments)
+        .where(eq(payments.status, 'paid'));
+      return Number(result[0]?.total) || 0;
+    } catch (error) {
+      this.handleError(error, 'sumPaidAmount');
+      return 0;
+    }
+  }
+
+  async getDailyStats(startDate: Date): Promise<{ name: string; users: number; revenue: number }[]> {
+    try {
+      const result = await this.db
+        .select({
+          date: sql`DATE(${payments.createdAt})`,
+          total: sql`COALESCE(SUM(${payments.amount}), 0)`,
+          count: sql`COUNT(DISTINCT ${payments.studentId})`,
+        })
+        .from(payments)
+        .where(and(
+          gte(payments.createdAt, startDate),
+          eq(payments.status, 'paid')
+        ))
+        .groupBy(sql`DATE(${payments.createdAt})`)
+        .orderBy(sql`DATE(${payments.createdAt})`);
+
+      return result.map(row => ({
+        name: String(row.date),
+        users: Number(row.count) || 0,
+        revenue: Number(row.total) || 0,
+      }));
+    } catch (error) {
+      this.handleError(error, 'getDailyStats');
+      return [];
     }
   }
 }
