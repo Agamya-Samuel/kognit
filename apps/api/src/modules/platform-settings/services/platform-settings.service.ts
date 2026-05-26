@@ -1,6 +1,6 @@
 import { Injectable, InternalServerErrorException, BadRequestException } from '@nestjs/common';
-import { PlatformSettingsRepository } from './repositories/platform-settings.repository';
-import type { PlatformSetting } from '../../db/schema/platform-settings';
+import { PlatformSettingsRepository } from './../repositories/platform-settings.repository';
+import type { PlatformSetting } from '../../../db/schema/platform-settings';
 
 @Injectable()
 export class PlatformSettingsService {

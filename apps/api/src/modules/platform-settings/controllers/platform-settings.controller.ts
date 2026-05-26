@@ -8,13 +8,13 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../../modules/auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../../modules/auth/guards/roles.guard';
-import { Roles } from '../../modules/auth/decorators/roles.decorator';
-import { UserRole } from '../../db/schema/enums';
-import { CurrentUser } from '../../modules/auth/decorators/current-user.decorator';
-import { PlatformSettingsService } from './services/platform-settings.service';
-import { UpdatePlatformSettingsDto } from './dto/update-platform-settings.dto';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../../auth/guards/roles.guard';
+import { Roles } from '../../auth/decorators/auth.decorators';
+import { UserRole } from '../../../db/schema/enums';
+import { CurrentUser } from '../../auth/decorators/current-user.decorator';
+import { PlatformSettingsService } from '../services/platform-settings.service';
+import { UpdatePlatformSettingsDto } from '../dto/update-platform-settings.dto';
 
 @ApiTags('Platform Settings')
 @Controller('platform-settings')

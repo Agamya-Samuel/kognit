@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { BaseRepository } from '../../db/repositories/base.repository';
-import { platformSettings } from '../../db/schema/platform-settings';
+import { BaseRepository } from '../../../db/repositories/base.repository';
+import { platformSettings } from '../../../db/schema/platform-settings';
 import { eq, inArray, and } from 'drizzle-orm';
-import type { PlatformSetting } from '../../db/schema/platform-settings';
+import type { PlatformSetting } from '../../../db/schema/platform-settings';
 
 @Injectable()
 export class PlatformSettingsRepository extends BaseRepository<PlatformSetting> {
@@ -66,7 +66,7 @@ export class PlatformSettingsRepository extends BaseRepository<PlatformSetting> 
     }
   }
 
-  async create(data: Omit<PlatformSetting, 'id' | 'updatedAt'>): Promise<PlatformSetting> {
+  async create(data: Omit<PlatformSetting, 'updatedAt'>): Promise<PlatformSetting> {
     try {
       const result = await this.db
         .insert(platformSettings)
