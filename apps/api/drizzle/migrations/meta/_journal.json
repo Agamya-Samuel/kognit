@@ -57,6 +57,13 @@
       "when": 1779772090690,
       "tag": "0007_eager_wolfpack",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1779809532716,
+      "tag": "0008_hard_wind_dancer",
+      "breakpoints": true
     }
   ]
 }
