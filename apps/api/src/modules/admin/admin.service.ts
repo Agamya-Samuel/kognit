@@ -4,7 +4,8 @@ import { InstructorProfilesRepository } from '../../db/repositories/instructor-p
 import { CoursesRepository } from '../../db/repositories/courses.repository';
 import { AssignmentsRepository } from '../../db/repositories/assignments.repository';
 import { PaymentsRepository } from '../../db/repositories/payments.repository';
-import { TestProgressRepository } from '../../db/repositories/progress.repository';
+import { ProgressRepository } from '../../db/repositories/progress.repository';
+import { SettingsRepository } from '../../db/repositories/settings.repository';
 import type { User } from '../../db/schema';
 
 export interface AdminListUsersQuery {
@@ -52,15 +53,16 @@ export interface ChartData {
 }
 
 @Injectable()
-export class AdminService {
-  constructor(
-    private readonly usersRepo: UsersRepository,
-    private readonly instructorProfilesRepo: InstructorProfilesRepository,
-    private readonly coursesRepo: CoursesRepository,
-    private readonly assignmentsRepo: AssignmentsRepository,
-    private readonly paymentsRepo: PaymentsRepository,
-    private readonly progressRepo: TestProgressRepository,
-  ) {}
+ export class AdminService {
+   constructor(
+     private readonly usersRepo: UsersRepository,
+     private readonly instructorProfilesRepo: InstructorProfilesRepository,
+     private readonly coursesRepo: CoursesRepository,
+     private readonly assignmentsRepo: AssignmentsRepository,
+     private readonly paymentsRepo: PaymentsRepository,
+     private readonly progressRepo: ProgressRepository,
+     private readonly settingsRepo: SettingsRepository,
+   ) {}
 
   async listUsers(query: AdminListUsersQuery) {
     const limit = Math.min(query.limit ?? 20, 100);

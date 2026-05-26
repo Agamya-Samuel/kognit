@@ -7,6 +7,7 @@ import { CoursesRepository } from '../../../db/repositories/courses.repository';
 import { AssignmentsRepository } from '../../../db/repositories/assignments.repository';
 import { PaymentsRepository } from '../../../db/repositories/payments.repository';
 import { ProgressRepository } from '../../../db/repositories/progress.repository';
+import { SettingsRepository } from '../../../db/repositories/settings.repository';
 
 describe('AdminService', () => {
   let service: AdminService;
@@ -113,17 +114,25 @@ describe('AdminService', () => {
             getDailyStats: jest.fn(),
           },
         },
-        {
-          provide: ProgressRepository,
-          useValue: {
-            findById: jest.fn(),
-            findByStudentAndLecture: jest.fn(),
-            upsert: jest.fn(),
-            count: jest.fn(),
-            countCompleted: jest.fn(),
-          },
-        },
-      ],
+{
+           provide: ProgressRepository,
+           useValue: {
+             findById: jest.fn(),
+             findByStudentAndLecture: jest.fn(),
+             upsert: jest.fn(),
+             count: jest.fn(),
+             countCompleted: jest.fn(),
+           },
+         },
+         {
+           provide: SettingsRepository,
+           useValue: {
+             getById: jest.fn(),
+             getAll: jest.fn(),
+             upsert: jest.fn(),
+           },
+         },
+       ],
     }).compile();
 
     service = module.get<AdminService>(AdminService);
