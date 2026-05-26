@@ -119,4 +119,30 @@ export class InstructorProfilesRepository extends BaseRepository<InstructorProfi
       return false;
     }
   }
+
+  async countAllApproved(): Promise<number> {
+    try {
+      const result = await this.db
+        .select({ count: instructorProfiles.id })
+        .from(instructorProfiles)
+        .where(eq(instructorProfiles.approvalStatus, 'approved'));
+      return result.length;
+    } catch (error) {
+      this.handleError(error, 'countAllApproved');
+      return 0;
+    }
+  }
+
+  async countAllPending(): Promise<number> {
+    try {
+      const result = await this.db
+        .select({ count: instructorProfiles.id })
+        .from(instructorProfiles)
+        .where(eq(instructorProfiles.approvalStatus, 'pending'));
+      return result.length;
+    } catch (error) {
+      this.handleError(error, 'countAllPending');
+      return 0;
+    }
+  }
 }
