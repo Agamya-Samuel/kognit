@@ -1,6 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { EnrollmentsRepository } from '../../db/repositories/enrollments.repository';
-import type { Enrollment } from '../../db/schema/enrollments';
+import { EnrollmentsRepository } from '../../../db/repositories/enrollments.repository';
+import type { Enrollment } from '../../../db/schema/enrollments';
 
 @Injectable()
 export class EnrollmentsService {

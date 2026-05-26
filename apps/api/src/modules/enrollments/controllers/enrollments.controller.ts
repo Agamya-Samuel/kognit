@@ -6,10 +6,10 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../../modules/auth/guards/jwt-auth.guard';
-import { CurrentUser } from '../../modules/auth/decorators/current-user.decorator';
-import { EnrollmentsService } from './services/enrollments.service';
-import type { Enrollment } from '../../db/schema/enrollments';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../../auth/decorators/current-user.decorator';
+import { EnrollmentsService } from '../services/enrollments.service';
+import type { Enrollment } from '../../../db/schema/enrollments';
 
 @ApiTags('Enrollments')
 @Controller('enrollments')

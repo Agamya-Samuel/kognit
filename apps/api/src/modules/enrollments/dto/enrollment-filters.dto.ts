@@ -1,5 +1,5 @@
 import { IsOptional, IsInt, Min, IsEnum } from 'class-validator';
-import { AccessType } from '../../db/schema/enums';
+import { accessType, AccessType } from '../../../db/schema/enums';
 
 export class EnrollmentFiltersDto {
   @IsOptional()
@@ -13,6 +13,6 @@ export class EnrollmentFiltersDto {
   offset?: number;
 
   @IsOptional()
-  @IsEnum(AccessType)
+  @IsEnum(accessType)
   accessType?: AccessType;
 }
