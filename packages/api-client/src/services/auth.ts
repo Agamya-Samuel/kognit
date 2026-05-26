@@ -155,4 +155,52 @@ export const authService = {
   async refreshToken(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> {
     return getApiClient().post<{ accessToken: string; refreshToken: string }>('/auth/refresh', { refreshToken });
   },
+
+  // ─── Password Change ─────────────────────────────────────────────────────
+
+  /**
+   * Change password (authenticated)
+   * @param currentPassword - Current password
+   * @param newPassword - New password
+   * @returns Success message
+   */
+  async changePassword(currentPassword: string, newPassword: string): Promise<{ message: string }> {
+    return getApiClient().post<{ message: string }>('/auth/change-password', { currentPassword, newPassword });
+  },
+
+  // ─── Two-Factor Authentication (2FA) ────────────────────────────────────
+
+  /**
+   * Enable 2FA for user
+   * @returns Secret and QR code for setup
+   */
+  async enableTwoFactor(): Promise<{ secret: string; qrCode: string }> {
+    return getApiClient().post<{ secret: string; qrCode: string }>('/auth/2fa/enable', {});
+  },
+
+  /**
+   * Disable 2FA for user
+   * @param token - 2FA verification token
+   * @returns Success message
+   */
+  async disableTwoFactor(token: string): Promise<{ message: string }> {
+    return getApiClient().post<{ message: string }>('/auth/2fa/disable', { token });
+  },
+
+  /**
+   * Verify 2FA token
+   * @param token - 2FA verification token
+   * @returns Verification status
+   */
+  async verifyTwoFactor(token: string): Promise<{ verified: boolean }> {
+    return getApiClient().post<{ verified: boolean }>('/auth/2fa/verify', { token });
+  },
+
+  /**
+   * Get 2FA QR code
+   * @returns QR code for 2FA setup
+   */
+  async getTwoFactorQrCode(): Promise<{ qrCode: string }> {
+    return getApiClient().get<{ qrCode: string }>('/auth/2fa/qr-code');
+  },
 };
