@@ -2,6 +2,9 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { UsersRepository } from '../../db/repositories/users.repository';
 import { InstructorProfilesRepository } from '../../db/repositories/instructor-profiles.repository';
 import { CoursesRepository } from '../../db/repositories/courses.repository';
+import { AssignmentsRepository } from '../../db/repositories/assignments.repository';
+import { PaymentsRepository } from '../../db/repositories/payments.repository';
+import { TestProgressRepository } from '../../db/repositories/progress.repository';
 import type { User } from '../../db/schema';
 
 export interface AdminListUsersQuery {
@@ -24,12 +27,39 @@ export interface AdminListCoursesQuery {
   isPublished?: boolean;
 }
 
+export interface AdminListAssignmentsQuery {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: string;
+}
+
+export interface DashboardMetrics {
+  totalUsers: number;
+  totalCourses: number;
+  totalInstructors: number;
+  totalRevenue: number;
+  activeUsers: number;
+  newUsersThisMonth: number;
+  completedCourses: number;
+  pendingApprovals: number;
+}
+
+export interface ChartData {
+  name: string;
+  users: number;
+  revenue: number;
+}
+
 @Injectable()
 export class AdminService {
   constructor(
     private readonly usersRepo: UsersRepository,
     private readonly instructorProfilesRepo: InstructorProfilesRepository,
     private readonly coursesRepo: CoursesRepository,
+    private readonly assignmentsRepo: AssignmentsRepository,
+    private readonly paymentsRepo: PaymentsRepository,
+    private readonly progressRepo: TestProgressRepository,
   ) {}
 
   async listUsers(query: AdminListUsersQuery) {
@@ -74,8 +104,6 @@ export class AdminService {
     if (!deleted) throw new NotFoundException('User not found');
     return { message: 'User deleted' };
   }
-
-  // ─── Instructor Approval ─────────────────────────────────────────────────
 
   async listPendingInstructors(query: AdminListInstructorsQuery) {
     const limit = Math.min(query.limit ?? 20, 100);
@@ -132,8 +160,6 @@ export class AdminService {
     return { message: 'Instructor rejected' };
   }
 
-  // ─── Course Moderation ───────────────────────────────────────────────────
-
   async listCourses(query: AdminListCoursesQuery) {
     const limit = Math.min(query.limit ?? 20, 100);
     const offset = ((query.page ?? 1) - 1) * limit;
@@ -184,6 +210,95 @@ export class AdminService {
     const course = await this.coursesRepo.update(courseId, { isPublished: false });
     if (!course) throw new NotFoundException('Course not found');
     return { message: 'Course suspended' };
+  }
+
+  async getDashboardMetrics(): Promise<DashboardMetrics> {
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const [
+      totalUsers,
+      totalCourses,
+      totalInstructors,
+      totalRevenue,
+      activeUsers,
+      newUsersThisMonth,
+      completedCourses,
+      pendingApprovals,
+    ] = await Promise.all([
+      this.usersRepo.count(),
+      this.coursesRepo.count(),
+      this.instructorProfilesRepo.countAllApproved(),
+      this.paymentsRepo.sumPaidAmount(),
+      this.usersRepo.count({ isActive: true }),
+      this.usersRepo.countAfterDate(startOfMonth),
+      this.progressRepo.countCompleted(),
+      this.instructorProfilesRepo.countAllPending(),
+    ]);
+
+    return {
+      totalUsers,
+      totalCourses,
+      totalInstructors,
+      totalRevenue,
+      activeUsers,
+      newUsersThisMonth,
+      completedCourses,
+      pendingApprovals,
+    };
+  }
+
+  async getChartData(days: number = 30): Promise<ChartData[]> {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    return this.paymentsRepo.getDailyStats(startDate);
+  }
+
+  async listAssignments(query: AdminListAssignmentsQuery) {
+    const limit = Math.min(query.limit ?? 20, 100);
+    const offset = ((query.page ?? 1) - 1) * limit;
+
+    const result = await this.assignmentsRepo.findManyWithCourseName({
+      offset,
+      limit,
+      search: query.search,
+      status: query.status,
+    });
+
+    return {
+      assignments: result.data,
+      total: result.total,
+      page: query.page ?? 1,
+      limit,
+    };
+  }
+
+  async deleteAssignment(id: number) {
+    const deleted = await this.assignmentsRepo.delete(id);
+    if (!deleted) throw new NotFoundException('Assignment not found');
+    return { message: 'Assignment deleted' };
+  }
+
+  // ─── Settings Management ───────────────────────────────────────────────
+
+  async getSettings(): Promise<any> {
+    const settings = await this.settingsRepo.getAll();
+    // Group settings by key for easier consumption by frontend
+    const grouped = {};
+    for (const setting of settings) {
+      grouped[setting.id] = JSON.parse(setting.value);
+    }
+    return grouped;
+  }
+
+  async updateSettings(settingsData: any): Promise<{ message: string }> {
+    // Update each setting key-value pair
+    for (const [key, value] of Object.entries(settingsData)) {
+      await this.settingsRepo.upsert(key, JSON.stringify(value), `Setting for ${key}`);
+    }
+    return { message: 'Settings updated successfully' };
   }
 
   private sanitizeUser(user: User) {
