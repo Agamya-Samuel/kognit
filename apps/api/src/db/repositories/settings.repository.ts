@@ -2,9 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { BaseRepository } from './base.repository';
 import { platformSettings } from '../schema';
 import { eq } from 'drizzle-orm';
+import type { PlatformSetting } from '../schema';
 
 @Injectable()
-export class SettingsRepository extends BaseRepository<typeof platformSettings> {
+export class SettingsRepository extends BaseRepository<PlatformSetting> {
   constructor(db: any) {
     super(db, platformSettings);
   }
