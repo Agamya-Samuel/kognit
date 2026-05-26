@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository, PaginatedResult } from './base.repository';
 import { users } from '../schema';
-import { eq, and, desc, or } from 'drizzle-orm';
+import { eq, and, desc, or, gte } from 'drizzle-orm';
 import type { User } from '../schema';
 
 @Injectable()
@@ -136,6 +136,19 @@ export class UsersRepository extends BaseRepository<User> {
       return result.length;
     } catch (error) {
       this.handleError(error, 'count');
+      return 0;
+    }
+  }
+
+  async countAfterDate(date: Date): Promise<number> {
+    try {
+      const result = await this.db
+        .select({ count: users.id })
+        .from(users)
+        .where(gte(users.createdAt, date));
+      return result.length;
+    } catch (error) {
+      this.handleError(error, 'countAfterDate');
       return 0;
     }
   }
