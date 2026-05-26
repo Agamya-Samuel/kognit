@@ -2,6 +2,15 @@ import { pgEnum } from 'drizzle-orm/pg-core';
 
 export const userRoles = pgEnum('user_role', ['student', 'instructor', 'admin', 'institution_admin']);
 
+export const UserRole = {
+  STUDENT: 'student',
+  INSTRUCTOR: 'instructor',
+  ADMIN: 'admin',
+  INSTITUTION_ADMIN: 'institution_admin',
+} as const;
+
+export type UserRoleType = typeof UserRole[keyof typeof UserRole];
+
 export const approvalStatus = pgEnum('approval_status', ['pending', 'approved', 'rejected']);
 
 export const pricingType = pgEnum('pricing_type', ['free', 'paid']);
@@ -15,6 +24,7 @@ export const recordingStatus = pgEnum('recording_status', ['none', 'recording', 
 export const assignmentType = pgEnum('assignment_type', ['mcq', 'short', 'code']);
 
 export const accessType = pgEnum('access_type', ['purchased', 'free']);
+export type AccessType = 'purchased' | 'free';
 
 export const paymentStatus = pgEnum('payment_status', ['pending', 'paid', 'failed', 'refunded']);
 
