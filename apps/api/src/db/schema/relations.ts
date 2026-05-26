@@ -59,8 +59,9 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   refreshTokens: many(refreshTokens),
   betaInvitesInvited: many(betaInvites, { relationName: 'invitedBy' }),
   betaInvitesUsed: many(betaInvites, { relationName: 'usedBy' }),
-  reviews: many(reviews),
-  jobs: many(jobs),
+  reviewsWritten: many(reviews, { relationName: 'user' }),
+  reviewsModerated: many(reviews, { relationName: 'moderatedBy' }),
+  jobsPosted: many(jobs, { relationName: 'postedByUser' }),
   institutionEnrollments: many(institutionEnrollments),
   liveClasses: many(liveClasses),
 }));
@@ -326,6 +327,7 @@ export const reviewsRelations = relations(reviews, ({ one }) => ({
   user: one(users, {
     fields: [reviews.userId],
     references: [users.id],
+    relationName: 'user',
   }),
   course: one(courses, {
     fields: [reviews.courseId],
@@ -334,6 +336,7 @@ export const reviewsRelations = relations(reviews, ({ one }) => ({
   moderatedBy: one(users, {
     fields: [reviews.moderatedBy],
     references: [users.id],
+    relationName: 'moderatedBy',
   }),
 }));
 
@@ -342,6 +345,7 @@ export const jobsRelations = relations(jobs, ({ one }) => ({
   postedByUser: one(users, {
     fields: [jobs.postedBy],
     references: [users.id],
+    relationName: 'postedByUser',
   }),
   course: one(courses, {
     fields: [jobs.courseId],
