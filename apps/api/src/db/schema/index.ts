@@ -32,3 +32,4 @@ export * from './jobs';
 export * from './institution-accounts';
 export * from './institution-enrollments';
 export * from './uploads';
+export * from './platform-settings';
