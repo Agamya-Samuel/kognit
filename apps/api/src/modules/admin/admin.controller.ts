@@ -74,8 +74,6 @@ export class AdminController {
     return this.adminService.deleteUser(id);
   }
 
-  // ─── Instructor Approval ─────────────────────────────────────────────────
-
   @Get('instructors')
   @ApiResponse({ status: 200, description: 'Paginated instructor list' })
   @ApiOperation({ summary: 'List instructor applications with filters' })
@@ -109,8 +107,6 @@ export class AdminController {
   ) {
     return this.adminService.rejectInstructor(id, body.reason);
   }
-
-  // ─── Course Moderation ───────────────────────────────────────────────────
 
   @Get('courses')
   @ApiResponse({ status: 200, description: 'Paginated course list for moderation' })
@@ -154,5 +150,59 @@ export class AdminController {
   @ApiOperation({ summary: 'Suspend a course (unpublish)' })
   async suspendCourse(@Param('id', ParseIntPipe) id: number) {
     return this.adminService.suspendCourse(id);
+  }
+
+  @Get('dashboard/metrics')
+  @ApiResponse({ status: 200, description: 'Dashboard metrics data' })
+  @ApiOperation({ summary: 'Get platform dashboard metrics' })
+  async getDashboardMetrics() {
+    return this.adminService.getDashboardMetrics();
+  }
+
+  @Get('dashboard/chart')
+  @ApiResponse({ status: 200, description: 'Chart data for analytics' })
+  @ApiOperation({ summary: 'Get chart data for analytics' })
+  @ApiQuery({ name: 'days', required: false, description: 'Number of days to fetch data for' })
+  async getChartData(@Query('days') days?: string) {
+    return this.adminService.getChartData(days ? parseInt(days, 10) : 30);
+  }
+
+  @Get('assignments')
+  @ApiResponse({ status: 200, description: 'Paginated assignment list' })
+  @ApiOperation({ summary: 'List all assignments for admin management' })
+  async listAssignments(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+    @Query('status') status?: string,
+  ) {
+    return this.adminService.listAssignments({
+      page: page ? parseInt(page, 10) : undefined,
+      limit: limit ? parseInt(limit, 10) : undefined,
+      search,
+      status,
+    });
+  }
+
+  @Delete('assignments/:id')
+  @ApiResponse({ status: 200, description: 'Assignment deleted' })
+  @ApiParam({ name: 'id', description: 'Assignment ID' })
+  @ApiOperation({ summary: 'Delete an assignment' })
+  async deleteAssignment(@Param('id', ParseIntPipe) id: number) {
+    return this.adminService.deleteAssignment(id);
+  }
+
+  @Get('settings')
+  @ApiResponse({ status: 200, description: 'Platform settings data' })
+  @ApiOperation({ summary: 'Get platform settings' })
+  async getSettings() {
+    return this.adminService.getSettings();
+  }
+
+  @Patch('settings')
+  @ApiResponse({ status: 200, description: 'Platform settings updated' })
+  @ApiOperation({ summary: 'Update platform settings' })
+  async updateSettings(@Body() settingsData: any) {
+    return this.adminService.updateSettings(settingsData);
   }
 }
