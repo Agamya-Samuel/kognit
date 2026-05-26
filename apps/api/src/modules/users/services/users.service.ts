@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { UsersRepository } from '../../db/repositories/users.repository';
-import { User } from '../../db/schema/users';
-import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
+import { UsersRepository } from '../../../db/repositories/users.repository';
+import { User } from '../../../db/schema/users';
+import { UpdateUserProfileDto } from '../dto/update-user-profile.dto';
 
 @Injectable()
 export class UsersService {

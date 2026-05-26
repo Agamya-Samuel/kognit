@@ -8,11 +8,11 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../../modules/auth/guards/jwt-auth.guard';
-import { CurrentUser } from '../../modules/auth/decorators/current-user.decorator';
-import { UsersService } from './services/users.service';
-import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
-import type { User } from '../../db/schema/users';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../../auth/decorators/current-user.decorator';
+import { UsersService } from '../services/users.service';
+import { UpdateUserProfileDto } from '../dto/update-user-profile.dto';
+import type { User } from '../../../db/schema/users';
 
 @ApiTags('Users')
 @Controller('users')
