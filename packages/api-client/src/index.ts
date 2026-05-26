@@ -229,6 +229,9 @@ export * from './services/admin';
 export * from './services/auth';
 export * from './services/schedule';
 export * from './services/recordings';
+export * from './services/users';
+export * from './services/notifications';
+export * from './services/enrollments';
 
 // ─── Hooks ───────────────────────────────────────────────────────────────
 
