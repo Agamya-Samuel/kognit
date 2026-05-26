@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { coursesService, liveClassesService } from '@edutech/api-client';
+import { coursesService, liveClassesService, analyticsService } from '@edutech/api-client';
 
 export function useMyCourses() {
   return useQuery({
@@ -38,28 +38,32 @@ export function useDashboardMetrics() {
   return useQuery({
     queryKey: ['dashboard', 'metrics'],
     queryFn: async () => {
-      return {
-        totalStudents: 0,
-        activeCourses: 0,
-        totalRevenue: 0,
-        upcomingClasses: 0,
-      };
+      return analyticsService.getDashboardMetrics();
     },
   });
 }
 
 export function useRecentActivity() {
-  return useQuery<any[]>({
-    queryKey: ['dashboard', 'activity'],
-    queryFn: async () => [],
-  });
+   return useQuery({
+     queryKey: ['dashboard', 'activity'],
+     queryFn: async () => {
+       const metrics = await analyticsService.getDashboardMetrics();
+       return metrics?.recentActivity || [];
+     },
+   });
 }
 
 export function useUpcomingClasses() {
-  return useQuery({
-    queryKey: ['live', 'upcoming'],
-    queryFn: async () => {
-      return liveClassesService.getUpcomingClasses();
-    },
-  });
+   return useQuery({
+     queryKey: ['live', 'upcoming'],
+     queryFn: async () => {
+       const classes = await liveClassesService.getUpcomingClasses();
+       return classes.map(c => ({
+         id: c.id,
+         title: c.lectureTitle || c.courseTitle,
+         time: c.scheduledAt,
+         enrolledCount: 0,
+       }));
+     },
+   });
 }
