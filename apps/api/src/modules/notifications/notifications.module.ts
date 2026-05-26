@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { DRIZZLE_DB } from '../../db/database.module';
 import { NotificationsRepository } from '../../db/repositories/notifications.repository';
+import { NotificationsService } from './services/notifications.service';
+import { NotificationsController } from './controllers/notifications.controller';
 
 const repositories = [
   {
@@ -11,7 +13,8 @@ const repositories = [
 ];
 
 @Module({
-  providers: [...repositories],
-  exports: [NotificationsRepository],
+  controllers: [NotificationsController],
+  providers: [...repositories, NotificationsService],
+  exports: [NotificationsService],
 })
 export class NotificationsModule {}
