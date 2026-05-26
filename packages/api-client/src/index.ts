@@ -232,6 +232,7 @@ export * from './services/recordings';
 export * from './services/users';
 export * from './services/notifications';
 export * from './services/enrollments';
+export * from './services/analytics';
 
 // ─── Hooks ───────────────────────────────────────────────────────────────
 
