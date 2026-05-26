@@ -413,11 +413,37 @@ export const healthHandler = [
   }),
 ];
 
+// ─── Analytics Handlers ───────────────────────────────────────────────────────────
+
+export const analyticsHandlers = [
+  http.get(`${API_BASE}/analytics/instructor/creation-stats`, async () => {
+    await delay(300);
+    return HttpResponse.json({
+      success: true,
+      data: {
+        totalCourses: 12,
+        publishedCourses: 8,
+        totalStudents: 245,
+        averageCompletionRate: 78,
+        monthlyChange: {
+          totalCourses: 2,
+          averageCompletionRate: 5,
+        },
+        weeklyChange: {
+          publishedCourses: 1,
+          totalStudents: 18,
+        },
+      },
+    });
+  }),
+];
+
 // ─── All Handlers Combined ────────────────────────────────────────────────────
 
 export const handlers = [
   ...authHandlers,
   ...courseHandlers,
+  ...analyticsHandlers,
   ...sectionHandlers,
   ...lectureHandlers,
   ...enrollmentHandlers,
