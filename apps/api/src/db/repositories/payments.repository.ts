@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository, PaginatedResult } from './base.repository';
 import { payments } from '../schema';
-import { eq, and, desc, gte, sql } from 'drizzle-orm';
+import { eq, and, desc, gte, sql, inArray } from 'drizzle-orm';
 import type { Payment } from '../schema';
+import { users } from '../schema/users';
+import { courses } from '../schema/courses';
+import { enrollments } from '../schema/enrollments';
 
 @Injectable()
 export class PaymentsRepository extends BaseRepository<Payment> {
@@ -158,6 +161,25 @@ export class PaymentsRepository extends BaseRepository<Payment> {
       return Number(result[0]?.total) || 0;
     } catch (error) {
       this.handleError(error, 'sumPaidAmount');
+      return 0;
+    }
+  }
+
+  async sumPaidAmountByCourseIds(courseIds: number[]): Promise<number> {
+    if (courseIds.length === 0) return 0;
+    
+    try {
+      const result = await this.db
+        .select({ total: sql`COALESCE(SUM(${payments.amount}), 0)` })
+        .from(payments)
+        .where(and(
+          eq(payments.status, 'paid'),
+          inArray(payments.courseId, courseIds)
+        ));
+      
+      return Number(result[0]?.total) || 0;
+    } catch (error) {
+      this.handleError(error, 'sumPaidAmountByCourseIds');
       return 0;
     }
   }

@@ -3,6 +3,10 @@ import { BaseRepository, PaginatedResult } from './base.repository';
 import { liveClasses } from '../schema';
 import { eq, and, desc, gte, lte, sql } from 'drizzle-orm';
 import type { LiveClass } from '../schema';
+import { users } from '../schema/users';
+import { courses } from '../schema/courses';
+import { lectures } from '../schema/lectures';
+import { sections } from '../schema/sections';
 
 @Injectable()
 export class LiveClassesRepository extends BaseRepository<LiveClass> {
@@ -74,6 +78,7 @@ export class LiveClassesRepository extends BaseRepository<LiveClass> {
           .offset(offset),
         this.db.select({ count: liveClasses.id }).from(liveClasses).where(whereClause),
       ]);
+
       return { data, total: totalResult.length, limit, offset };
     } catch (error) {
       this.handleError(error, 'findMany');
@@ -198,6 +203,59 @@ export class LiveClassesRepository extends BaseRepository<LiveClass> {
       return result;
     } catch (error) {
       this.handleError(error, 'findByLectureIds');
+      return [];
+    }
+  }
+
+// New methods for dashboard metrics
+  async countUpcomingForInstructor(instructorId: number): Promise<number> {
+    try {
+      const result = await this.db
+        .select({ count: liveClasses.id })
+        .from(liveClasses)
+        .where(
+          and(
+            eq(liveClasses.instructorId, instructorId),
+            gte(liveClasses.scheduledAt, new Date()),
+            eq(liveClasses.status, 'scheduled' as any)
+          )
+        );
+       
+      return result.length;
+    } catch (error) {
+      this.handleError(error, 'countUpcomingForInstructor');
+      return 0;
+    }
+  }
+
+  async findRecentForInstructor(instructorId: number, limit: number = 10): Promise<Array<{
+    id: number;
+    scheduledAt: Date;
+    title: string;
+    instructorName: string;
+    courseTitle: string;
+  }>> {
+    try {
+      const result = await this.db
+        .select({
+          id: liveClasses.id,
+          scheduledAt: liveClasses.scheduledAt,
+          title: lectures.title,
+          instructorName: users.name,
+          courseTitle: courses.title,
+        })
+        .from(liveClasses)
+        .innerJoin(users, eq(liveClasses.instructorId, users.id))
+        .innerJoin(lectures, eq(liveClasses.lectureId, lectures.id))
+        .innerJoin(sections, eq(lectures.sectionId, sections.id))
+        .innerJoin(courses, eq(sections.courseId, courses.id))
+        .where(eq(liveClasses.instructorId, instructorId))
+        .orderBy(desc(liveClasses.scheduledAt))
+        .limit(limit);
+
+      return result;
+    } catch (error) {
+      this.handleError(error, 'findRecentForInstructor');
       return [];
     }
   }

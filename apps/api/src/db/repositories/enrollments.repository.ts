@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository, PaginatedResult } from './base.repository';
 import { enrollments } from '../schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, inArray } from 'drizzle-orm';
 import type { Enrollment } from '../schema';
+import { users } from '../schema/users';
+import { courses } from '../schema/courses';
 
 @Injectable()
 export class EnrollmentsRepository extends BaseRepository<Enrollment> {
@@ -130,5 +132,86 @@ export class EnrollmentsRepository extends BaseRepository<Enrollment> {
   async checkEnrollmentExists(studentId: number, courseId: number): Promise<boolean> {
     const enrollment = await this.findByStudentAndCourse(studentId, courseId);
     return enrollment !== null;
+  }
+
+  // New methods for dashboard metrics
+  async findRecentForInstructor(instructorId: number, limit: number = 10): Promise<Array<{
+    id: number;
+    enrolledAt: Date;
+    studentName: string;
+    courseTitle: string;
+  }>> {
+    try {
+      const result = await this.db
+        .select({
+          id: enrollments.id,
+          enrolledAt: enrollments.enrolledAt,
+          studentName: users.name,
+          courseTitle: courses.title,
+        })
+        .from(enrollments)
+        .innerJoin(users, eq(enrollments.studentId, users.id))
+        .innerJoin(courses, eq(enrollments.courseId, courses.id))
+        .where(eq(courses.instructorId, instructorId))
+        .orderBy(desc(enrollments.enrolledAt))
+        .limit(limit);
+
+      return result;
+    } catch (error) {
+      this.handleError(error, 'findRecentForInstructor');
+      return [];
+    }
+  }
+
+  async countByCourseIds(courseIds: number[]): Promise<number> {
+    if (courseIds.length === 0) return 0;
+    
+    try {
+      const result = await this.db
+        .select({ count: enrollments.id })
+        .from(enrollments)
+        .where(inArray(enrollments.courseId, courseIds));
+      
+      return result.length;
+    } catch (error) {
+      this.handleError(error, 'countByCourseIds');
+      return 0;
+    }
+  }
+
+  // New method for instructor students service
+  async findByCoursesWithDetails(courseIds: number[]): Promise<Array<{
+    id: number;
+    studentId: number;
+    courseId: number;
+    enrolledAt: Date;
+    studentName: string;
+    studentEmail: string;
+    courseTitle: string;
+  }>> {
+    if (courseIds.length === 0) return [];
+    
+    try {
+      const result = await this.db
+        .select({
+          id: enrollments.id,
+          studentId: enrollments.studentId,
+          courseId: enrollments.courseId,
+          enrolledAt: enrollments.enrolledAt,
+          studentName: users.name,
+          studentEmail: users.email,
+          courseTitle: courses.title,
+        })
+        .from(enrollments)
+        .innerJoin(users, eq(enrollments.studentId, users.id))
+        .innerJoin(courses, eq(enrollments.courseId, courses.id))
+        .where(inArray(enrollments.courseId, courseIds))
+        .orderBy(desc(enrollments.enrolledAt));
+
+      return result;
+    } catch (error) {
+      this.handleError(error, 'findByCoursesWithDetails');
+      return [];
+    }
   }
 }
