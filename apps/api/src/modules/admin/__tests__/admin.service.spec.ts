@@ -4,6 +4,9 @@ import { AdminService } from '../admin.service';
 import { UsersRepository } from '../../../db/repositories/users.repository';
 import { InstructorProfilesRepository } from '../../../db/repositories/instructor-profiles.repository';
 import { CoursesRepository } from '../../../db/repositories/courses.repository';
+import { AssignmentsRepository } from '../../../db/repositories/assignments.repository';
+import { PaymentsRepository } from '../../../db/repositories/payments.repository';
+import { ProgressRepository } from '../../../db/repositories/progress.repository';
 
 describe('AdminService', () => {
   let service: AdminService;
@@ -62,6 +65,8 @@ describe('AdminService', () => {
             findMany: jest.fn(),
             update: jest.fn(),
             softDelete: jest.fn(),
+            count: jest.fn(),
+            countAfterDate: jest.fn(),
           },
         },
         {
@@ -70,6 +75,8 @@ describe('AdminService', () => {
             findById: jest.fn(),
             findMany: jest.fn(),
             update: jest.fn(),
+            countAllApproved: jest.fn(),
+            countAllPending: jest.fn(),
           },
         },
         {
@@ -79,6 +86,41 @@ describe('AdminService', () => {
             findMany: jest.fn(),
             update: jest.fn(),
             softDelete: jest.fn(),
+            count: jest.fn(),
+          },
+        },
+        {
+          provide: AssignmentsRepository,
+          useValue: {
+            findById: jest.fn(),
+            findByLectureId: jest.fn(),
+            findMany: jest.fn(),
+            findManyWithCourseName: jest.fn(),
+            update: jest.fn(),
+            delete: jest.fn(),
+          },
+        },
+        {
+          provide: PaymentsRepository,
+          useValue: {
+            findById: jest.fn(),
+            findByRazorpayOrderId: jest.fn(),
+            findByRazorpayPaymentId: jest.fn(),
+            findMany: jest.fn(),
+            update: jest.fn(),
+            create: jest.fn(),
+            sumPaidAmount: jest.fn(),
+            getDailyStats: jest.fn(),
+          },
+        },
+        {
+          provide: ProgressRepository,
+          useValue: {
+            findById: jest.fn(),
+            findByStudentAndLecture: jest.fn(),
+            upsert: jest.fn(),
+            count: jest.fn(),
+            countCompleted: jest.fn(),
           },
         },
       ],
