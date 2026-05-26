@@ -7,13 +7,17 @@ import { CoursesRepository } from '../../db/repositories/courses.repository';
 import { CertificatesRepository } from '../../db/repositories/certificates.repository';
 import { PaymentsRepository } from '../../db/repositories/payments.repository';
 import { ProgressRepository } from '../../db/repositories/progress.repository';
+import { LiveClassesRepository } from '../../db/repositories/live-classes.repository';
+import { UsersRepository } from '../../db/repositories/users.repository';
 
 // Services
 import { AnalyticsService } from './analytics.service';
 import { InstructorAnalyticsService } from './instructor-analytics.service';
+import { DashboardMetricsService } from './services/dashboard-metrics.service';
 
 // Controllers
 import { AnalyticsController } from './analytics.controller';
+import { DashboardController } from './controllers/dashboard.controller';
 
 const repositories = [
   {
@@ -41,14 +45,25 @@ const repositories = [
     useFactory: (db: any) => new ProgressRepository(db),
     inject: [DRIZZLE_DB],
   },
+  {
+    provide: LiveClassesRepository,
+    useFactory: (db: any) => new LiveClassesRepository(db),
+    inject: [DRIZZLE_DB],
+  },
+  {
+    provide: UsersRepository,
+    useFactory: (db: any) => new UsersRepository(db),
+    inject: [DRIZZLE_DB],
+  },
 ];
 
 @Module({
-  controllers: [AnalyticsController],
+  controllers: [AnalyticsController, DashboardController],
   providers: [
     ...repositories,
     AnalyticsService,
     InstructorAnalyticsService,
+    DashboardMetricsService,
   ],
   exports: [AnalyticsService],
 })
