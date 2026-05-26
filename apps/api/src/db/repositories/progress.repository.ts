@@ -117,6 +117,19 @@ export class ProgressRepository extends BaseRepository<Progress> {
     }
   }
 
+  async countCompleted(): Promise<number> {
+    try {
+      const result = await this.db
+        .select({ count: progress.id })
+        .from(progress)
+        .where(eq(progress.isCompleted, true));
+      return result.length;
+    } catch (error) {
+      this.handleError(error, 'countCompleted');
+      return 0;
+    }
+  }
+
   /**
    * Get all lecture IDs for a course (published only)
    */
