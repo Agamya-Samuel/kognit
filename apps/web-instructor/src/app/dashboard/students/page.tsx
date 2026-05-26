@@ -7,35 +7,60 @@ import { Input } from '@edutech/ui';
 import { Progress } from '@edutech/ui';
 import { Search, Mail, Users, TrendingUp, CheckCircle } from 'lucide-react';
 import { StatCard, StatsRow } from '@/components/StatsRow';
+import { useInstructorStudents } from '@/hooks/useInstructorStudents';
+import { useMyCourses } from '@/hooks/useCourses';
 
 export default function StudentsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCourse, setSelectedCourse] = useState('all');
 
-  const students = [
-    { id: 1, name: 'John Doe', email: 'john.doe@example.com', course: 'TypeScript Basics', enrolledAt: '2024-01-15', progress: 75 },
-    { id: 2, name: 'Jane Smith', email: 'jane.smith@example.com', course: 'React Patterns', enrolledAt: '2024-01-10', progress: 90 },
-    { id: 3, name: 'Mike Johnson', email: 'mike.j@example.com', course: 'TypeScript Basics', enrolledAt: '2024-01-20', progress: 45 },
-    { id: 4, name: 'Emily Brown', email: 'emily.b@example.com', course: 'Node.js Fundamentals', enrolledAt: '2024-01-08', progress: 100 },
-    { id: 5, name: 'David Lee', email: 'david.l@example.com', course: 'React Patterns', enrolledAt: '2024-01-12', progress: 60 },
-  ];
+  const { data: studentsResponse, isLoading: studentsLoading, error } = useInstructorStudents({
+    search: searchTerm || undefined,
+    courseId: selectedCourse !== 'all' ? selectedCourse : undefined,
+  });
 
+  const { data: coursesData, isLoading: coursesLoading } = useMyCourses();
+
+  const students = studentsResponse?.students || [];
   const filteredStudents = students.filter(
     (student) =>
-      (selectedCourse === 'all' || student.course === selectedCourse) &&
+      (selectedCourse === 'all' || String(student.courseId) === selectedCourse) &&
       (student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         student.email.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  const totalStudents = students.length;
-  const averageProgress = Math.round(students.reduce((sum, s) => sum + s.progress, 0) / students.length);
-  const completedCount = students.filter(s => s.progress === 100).length;
+  const isLoading = studentsLoading || coursesLoading;
+
+  const totalStudents = filteredStudents.length;
+  const averageProgress = filteredStudents.length > 0
+    ? Math.round(filteredStudents.reduce((sum, s) => sum + s.progressPercentage, 0) / filteredStudents.length)
+    : 0;
+  const completedCount = filteredStudents.filter(s => s.progressPercentage === 100).length;
 
   const getProgressColor = (progress: number) => {
     if (progress >= 90) return 'text-emerald-600 dark:text-emerald-400';
     if (progress >= 60) return 'text-yellow-600 dark:text-yellow-400';
     return 'text-rose-600 dark:text-rose-400';
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent" />
+          <p className="mt-4 text-muted-foreground">Loading students...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-destructive">Failed to load students. Please try again.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -89,9 +114,11 @@ export default function StudentsPage() {
                 className="px-3 py-2 border border-input rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <option value="all">All Courses</option>
-                <option value="TypeScript Basics">TypeScript Basics</option>
-                <option value="React Patterns">React Patterns</option>
-                <option value="Node.js Fundamentals">Node.js Fundamentals</option>
+                {coursesData?.map(course => (
+                  <option key={course.id} value={String(course.id)}>
+                    {course.title}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -117,16 +144,16 @@ export default function StudentsPage() {
                         <div className="text-sm text-muted-foreground">{student.email}</div>
                       </div>
                     </td>
-                    <td className="px-4 py-4 text-sm text-foreground">{student.course}</td>
+                    <td className="px-4 py-4 text-sm text-foreground">{student.courseTitle}</td>
                     <td className="px-4 py-4 text-sm text-muted-foreground">
                       {new Date(student.enrolledAt).toLocaleDateString()}
                     </td>
                     <td className="px-4 py-4">
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
-                          <Progress value={student.progress} className="flex-1" />
-                          <span className={`text-sm font-medium w-12 text-right ${getProgressColor(student.progress)}`}>
-                            {student.progress}%
+                          <Progress value={student.progressPercentage} className="flex-1" />
+                          <span className={`text-sm font-medium w-12 text-right ${getProgressColor(student.progressPercentage)}`}>
+                            {student.progressPercentage}%
                           </span>
                         </div>
                       </div>
