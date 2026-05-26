@@ -29,7 +29,7 @@ export default function EditCoursePage() {
 
   const [isSaving, setIsSaving] = useState(false);
 
-  const { data: analytics, isLoading: analyticsLoading } = useInstructorAnalytics(
+  const { data: analytics, isLoading: analyticsLoading, error: analyticsError } = useInstructorAnalytics(
     courseId ? Number(courseId) : undefined,
   );
 
@@ -52,6 +52,8 @@ export default function EditCoursePage() {
       <StatsRow>
         {analyticsLoading ? (
           <>Loading...</>
+        ) : analyticsError ? (
+          <>Error loading analytics</>
         ) : analytics ? (
           <>
             <StatCard
