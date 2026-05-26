@@ -1,11 +1,15 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { NotificationsRepository } from '../../db/repositories/notifications.repository';
-import type { Notification } from '../../db/schema/notifications';
-import { NotificationPreferencesDto } from './dto/notification-preferences.dto';
+import { NotificationsRepository } from '../../../db/repositories/notifications.repository';
+import { UserNotificationPreferencesRepository } from '../repositories/notifications-preferences.repository';
+import type { Notification } from '../../../db/schema/notifications';
+import { NotificationPreferencesDto } from '../dto/notification-preferences.dto';
 
 @Injectable()
 export class NotificationsService {
-  constructor(private readonly notificationsRepository: NotificationsRepository) {}
+  constructor(
+    private readonly notificationsRepository: NotificationsRepository,
+    private readonly preferencesRepository: UserNotificationPreferencesRepository,
+  ) {}
 
   async getNotifications(
     userId: number,
@@ -53,13 +57,21 @@ export class NotificationsService {
   }
 
   async getPreferences(userId: number): Promise<NotificationPreferencesDto> {
-    // For now, return default preferences
-    // In a real implementation, this would come from user settings or a preferences table
+    const preferences = await this.preferencesRepository.findByUserId(userId);
+    if (!preferences) {
+      // Return defaults
+      return {
+        emailNotifications: true,
+        assignmentReminders: true,
+        liveClassAlerts: true,
+        marketingEmails: false,
+      };
+    }
     return {
-      emailNotifications: true,
-      assignmentReminders: true,
-      liveClassAlerts: true,
-      marketingEmails: false,
+      emailNotifications: preferences.emailEnrollments,
+      assignmentReminders: preferences.emailSubmissions,
+      liveClassAlerts: preferences.emailReminders,
+      marketingEmails: preferences.emailMarketing,
     };
   }
 
@@ -67,8 +79,15 @@ export class NotificationsService {
     userId: number,
     preferences: NotificationPreferencesDto,
   ): Promise<NotificationPreferencesDto> {
-    // In a real implementation, this would save to user settings or preferences table
-    // For now, we'll just return the preferences as if they were saved
+    await this.preferencesRepository.upsert(userId, {
+      emailEnrollments: preferences.emailNotifications ?? true,
+      emailSubmissions: preferences.assignmentReminders ?? true,
+      emailReminders: preferences.liveClassAlerts ?? true,
+      emailMarketing: preferences.marketingEmails ?? false,
+      pushEnrollments: true, // Default values for push notifications
+      pushSubmissions: true,
+      pushReminders: true,
+    });
     return preferences;
   }
 }

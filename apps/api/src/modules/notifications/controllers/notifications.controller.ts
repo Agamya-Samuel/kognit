@@ -9,11 +9,12 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiParam } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../../modules/auth/guards/jwt-auth.guard';
-import { CurrentUser } from '../../modules/auth/decorators/current-user.decorator';
-import { NotificationsService } from './services/notifications.service';
-import type { Notification } from '../../db/schema/notifications';
-import { NotificationPreferencesDto } from './dto/notification-preferences.dto';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../../auth/decorators/current-user.decorator';
+import { NotificationsService } from '../services/notifications.service';
+import type { Notification } from '../../../db/schema/notifications';
+import type { PaginatedResult } from '../../../db/repositories/base.repository';
+import { NotificationPreferencesDto } from '../dto/notification-preferences.dto';
 
 @ApiTags('Notifications')
 @Controller('notifications')
@@ -27,7 +28,7 @@ export class NotificationsController {
   @ApiResponse({ status: 200, description: 'Notifications retrieved successfully' })
   async getNotifications(
     @CurrentUser() user: { sub: number },
-  ): Promise<{ success: true; data: Notification[] }> {
+  ): Promise<{ success: true; data: PaginatedResult<Notification> }> {
     const notifications = await this.notificationsService.getNotifications(user.sub);
     return {
       success: true,
