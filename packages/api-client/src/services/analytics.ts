@@ -1,5 +1,5 @@
 import { getApiClient } from '../index';
-import type { DashboardMetrics, InstructorStudentsResponse } from '@edutech/types';
+import type { DashboardMetrics, InstructorStudentsResponse, InstructorAnalytics } from '@edutech/types';
 
 export const analyticsService = {
   async getDashboardMetrics() {
@@ -8,5 +8,12 @@ export const analyticsService = {
   
   async getInstructorStudents(filters?: Record<string, unknown>) {
     return getApiClient().get<InstructorStudentsResponse>('/courses/instructor/students', filters);
+  },
+
+  async getInstructorAnalytics(courseId?: number) {
+    const path = courseId
+      ? `/analytics/instructor/courses/${courseId}`
+      : '/analytics/instructor/courses';
+    return getApiClient().get<InstructorAnalytics>(path);
   },
 };

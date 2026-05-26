@@ -729,3 +729,10 @@ export interface InstructorStudent {
   enrolledAt: string;
   progressPercentage: number;
 }
+
+export interface InstructorAnalytics {
+  totalEnrollments: number;
+  totalRevenue: number;
+  averageCompletionRate: number;
+  totalCertificates: number;
+}
