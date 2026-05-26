@@ -10,7 +10,7 @@ import { Textarea } from '@edutech/ui';
 import { Badge } from '@edutech/ui';
 import { ArrowLeft, Save, Eye, Users, DollarSign, TrendingUp, Clock, BookOpen } from 'lucide-react';
 import { useInstructorAnalytics } from '@/hooks/useCourses';
-import { StatCard } from '@/components/StatsRow';
+import { StatCard, StatsRow } from '@/components/StatsRow';
 import Link from 'next/link';
 
 export default function EditCoursePage() {
@@ -49,11 +49,11 @@ export default function EditCoursePage() {
     <div className="container mx-auto space-y-6">
       {/* Stats Row */}
       {analyticsLoading ? (
-        <>Loading...
+        <div className="p-4 text-center text-muted-foreground">Loading analytics...</div>
       ) : analyticsError ? (
-        <>Error loading analytics
+        <div className="p-4 text-center text-muted-foreground">Error loading analytics</div>
       ) : analytics ? (
-        <>
+        <StatsRow>
           <StatCard
             title="Enrollments"
             value={String(analytics.totalEnrollments)}
@@ -78,7 +78,7 @@ export default function EditCoursePage() {
             change={{ value: 'Issued', trend: 'up' }}
             icon={Clock}
           />
-        </>
+        </StatsRow>
       ) : null}
 
       {/* Page Header */}
