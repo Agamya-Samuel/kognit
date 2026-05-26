@@ -11,6 +11,7 @@ import { Badge } from '@edutech/ui';
 import { ArrowLeft, Save, Eye, Users, DollarSign, TrendingUp, Clock, BookOpen } from 'lucide-react';
 import { StatCard, StatsRow } from '@/components/StatsRow';
 import Link from 'next/link';
+import { useInstructorAnalytics } from '@/hooks/useCourses';
 
 export default function EditCoursePage() {
   const params = useParams();
@@ -28,39 +29,16 @@ export default function EditCoursePage() {
 
   const [isSaving, setIsSaving] = useState(false);
 
-  // Mock data for course analytics
-  const courseStats = [
-    {
-      title: 'Enrollments',
-      value: '245',
-      change: { value: '+12 this week', trend: 'up' as const },
-      icon: Users,
-    },
-    {
-      title: 'Revenue',
-      value: '₹12,450',
-      change: { value: '+2,340 this month', trend: 'up' as const },
-      icon: DollarSign,
-    },
-    {
-      title: 'Completion Rate',
-      value: '78%',
-      change: { value: '+5%', trend: 'up' as const },
-      icon: TrendingUp,
-    },
-    {
-      title: 'Avg. Watch Time',
-      value: '4h 32m',
-      change: { value: '+12m', trend: 'up' as const },
-      icon: Clock,
-    },
-  ];
+  const { data: analytics, isLoading: analyticsLoading, error: analyticsError } = useInstructorAnalytics(courseId ? Number(courseId) : undefined);
 
   const handleSave = async () => {
     setIsSaving(true);
-    setTimeout(() => {
+    try {
+      // TODO: Connect to actual coursesService.update when hook is available
+      console.log('Would save course:', course);
+    } finally {
       setIsSaving(false);
-    }, 1000);
+    }
   };
 
   const togglePublish = () => {
@@ -71,15 +49,38 @@ export default function EditCoursePage() {
     <div className="container mx-auto space-y-6">
       {/* Stats Row */}
       <StatsRow>
-        {courseStats.map((stat) => (
-          <StatCard
-            key={stat.title}
-            title={stat.title}
-            value={stat.value}
-            change={stat.change}
-            icon={stat.icon}
-          />
-        ))}
+        {analyticsLoading ? (
+          <>Loading...</>
+        ) : analyticsError ? (
+          <>Error loading analytics</>
+        ) : analytics ? (
+          <>
+            <StatCard
+              title="Enrollments"
+              value={String(analytics.totalEnrollments)}
+              change={{ value: 'Total enrolled', trend: 'up' }}
+              icon={Users}
+            />
+            <StatCard
+              title="Revenue"
+              value={`₹${analytics.totalRevenue.toLocaleString()}`}
+              change={{ value: 'Total earned', trend: 'up' }}
+              icon={DollarSign}
+            />
+            <StatCard
+              title="Completion Rate"
+              value={`${analytics.averageCompletionRate}%`}
+              change={{ value: 'Avg across courses', trend: 'up' }}
+              icon={TrendingUp}
+            />
+            <StatCard
+              title="Certificates"
+              value={String(analytics.totalCertificates)}
+              change={{ value: 'Issued', trend: 'up' }}
+              icon={Clock}
+            />
+          </>
+        ) : null}
       </StatsRow>
 
       {/* Page Header */}

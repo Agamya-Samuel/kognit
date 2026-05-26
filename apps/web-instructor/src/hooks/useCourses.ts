@@ -67,3 +67,14 @@ export function useUpcomingClasses() {
      },
    });
 }
+
+export function useInstructorAnalytics(courseId: number | undefined) {
+   return useQuery({
+     queryKey: ['analytics', 'instructor', courseId],
+     queryFn: async () => {
+       if (!courseId) throw new Error('Course ID is required');
+       return analyticsService.getCourseAnalytics(courseId);
+     },
+     enabled: !!courseId,
+   });
+}
