@@ -27,6 +27,7 @@ import { AdminModule } from './modules/admin/admin.module';
 import { SocketModule } from './modules/socket/socket.module';
 import { LoggerModule } from './common/logger/logger.module';
 import { SentryModule } from './common/sentry/sentry.module';
+import { PlatformSettingsModule } from './modules/platform-settings/platform-settings.module';
 
 // Feature modules (to be implemented)
 
@@ -65,6 +66,7 @@ import { SentryModule } from './common/sentry/sentry.module';
     AnalyticsModule,
     AdminModule,
     SocketModule,
+    PlatformSettingsModule,
   ],
   controllers: [HealthController],
   providers: [
