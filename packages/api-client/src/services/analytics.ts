@@ -9,4 +9,8 @@ export const analyticsService = {
   async getInstructorStudents(filters?: Record<string, unknown>) {
     return getApiClient().get<InstructorStudentsResponse>('/courses/instructor/students', filters);
   },
+
+  async getCourseAnalytics(courseId: number) {
+    return getApiClient().get('/analytics/instructor', { courseId });
+  },
 };
