@@ -42,10 +42,10 @@ jobs:
         run: npm ci
 
       - name: Run Turbo
-        run: npx turbo run lint --filter=[HEAD~1] --filter=HEAD^
+        run: npx turbo run lint --filter=[HEAD^1]
 
       - name: Run typecheck
-        run: npx turbo run typecheck --filter=[HEAD~1] --filter=HEAD^
+        run: npx turbo run typecheck --filter=[HEAD^1]
 
   test:
     name: Test & Coverage
@@ -114,13 +114,13 @@ jobs:
         working-directory: apps/web-landing
 
       - name: Run unit tests
-        run: npx turbo run test --filter=[HEAD~1] --filter=HEAD^
+        run: npx turbo run test --filter=[HEAD^1]
 
       - name: Check coverage thresholds
-        run: npx turbo run test:coverage --filter=[HEAD~1] --filter=HEAD^
+        run: npx turbo run test:coverage --filter=[HEAD^1]
 
       - name: Run E2E tests
-        run: npx turbo run test:e2e --filter=[HEAD~1] --filter=HEAD^
+        run: npx turbo run test:e2e --filter=[HEAD^1]
         env:
           WEB_SERVER: 'true'
 
@@ -190,7 +190,7 @@ jobs:
         run: npm ci
 
       - name: Build
-        run: npx turbo run build --filter=[HEAD~1] --filter=HEAD^
+        run: npx turbo run build --filter=[HEAD^1]
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
