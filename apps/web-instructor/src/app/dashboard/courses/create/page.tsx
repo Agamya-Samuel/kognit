@@ -10,7 +10,7 @@ import { SectionsStep } from '@/components/course-creation/SectionsStep';
 import { LecturesStep } from '@/components/course-creation/LecturesStep';
 import { PricingStep } from '@/components/course-creation/PricingStep';
 import { ReviewStep } from '@/components/course-creation/ReviewStep';
-import { useCreateCourse } from '@/hooks/useCourses';
+import { useCreateCourse, useDashboardMetrics } from '@/hooks/useCourses';
 
 type Step = 'details' | 'sections' | 'lectures' | 'pricing' | 'review';
 
@@ -38,34 +38,7 @@ export default function CreateCoursePage() {
 
   const createCourseMutation = useCreateCourse();
   const { mutate: createCourse, isPending: isCreating } = createCourseMutation;
-
-  // Mock data for course creation stats
-  const creationStats = [
-    {
-      title: 'Total Courses',
-      value: '12',
-      change: { value: '+2 this month', trend: 'up' as const },
-      icon: BookOpen,
-    },
-    {
-      title: 'Published',
-      value: '8',
-      change: { value: '+1 this week', trend: 'up' as const },
-      icon: CheckCircle2,
-    },
-    {
-      title: 'Total Students',
-      value: '245',
-      change: { value: '+18 this week', trend: 'up' as const },
-      icon: Users,
-    },
-    {
-      title: 'Avg. Completion',
-      value: '78%',
-      change: { value: '+5%', trend: 'up' as const },
-      icon: TrendingUp,
-    },
-  ];
+  const { data: metrics, isLoading: metricsLoading } = useDashboardMetrics();
 
   const currentStepIndex = steps.findIndex((step) => step.id === currentStep);
 
@@ -127,15 +100,36 @@ export default function CreateCoursePage() {
     <div className="container mx-auto space-y-6">
       {/* Stats Row */}
       <StatsRow>
-        {creationStats.map((stat) => (
-          <StatCard
-            key={stat.title}
-            title={stat.title}
-            value={stat.value}
-            change={stat.change}
-            icon={stat.icon}
-          />
-        ))}
+        {metricsLoading ? (
+          <>Loading...</>
+        ) : metrics ? (
+          <>
+            <StatCard
+              title="Total Students"
+              value={String(metrics.totalStudents)}
+              change={{ value: 'Active', trend: 'up' }}
+              icon={Users}
+            />
+            <StatCard
+              title="Active Courses"
+              value={String(metrics.activeCourses)}
+              change={{ value: 'Published', trend: 'up' }}
+              icon={BookOpen}
+            />
+            <StatCard
+              title="Total Revenue"
+              value={`₹${metrics.totalRevenue.toLocaleString()}`}
+              change={{ value: 'Earned', trend: 'up' }}
+              icon={TrendingUp}
+            />
+            <StatCard
+              title="Upcoming Classes"
+              value={String(metrics.upcomingClasses)}
+              change={{ value: 'Scheduled', trend: 'up' }}
+              icon={CheckCircle2}
+            />
+          </>
+        ) : null}
       </StatsRow>
 
       {/* Page Header */}
