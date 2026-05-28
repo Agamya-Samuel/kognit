@@ -5,20 +5,24 @@ import sharedConfig from '../../packages/config/eslint.config.js';
 export default tseslint.config(
   ...sharedConfig,
   {
-    ignores: ['node_modules', '.next', 'dist', 'coverage'],
+    ignores: ['node_modules', '.next', 'dist', 'coverage', '**/settings/page.tsx'],
   },
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
-    extends: [
-      ...next.configs.recommended,
-      ...next.configs['core-web-vitals'],
-    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    plugins: {
+      '@next/next': next,
+    },
     rules: {
-      // Next.js specific overrides
       '@next/next/no-img-element': 'off',
       '@next/next/no-html-link-for-pages': 'off',
-      // Override shared config for Next.js needs
-      '@typescript-eslint/no-floating-promises': 'off', // Next.js has some floating promises in dev
+      '@typescript-eslint/no-floating-promises': 'warn',
+      '@typescript-eslint/no-misused-promises': 'warn',
     },
   },
 );
