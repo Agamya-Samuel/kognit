@@ -481,12 +481,12 @@ export class AuthService {
       return { user: this.sanitizeUser(existingUser), tokens, isNewUser: false };
     }
 
-    // Create new user with OAuth (instructor role, no password)
+    // Create new user with OAuth (student role, no password)
     const user = await this.usersRepo.create({
       email,
       name,
       passwordHash: null,
-      role: 'instructor',
+      role: 'student',
       avatarUrl: avatarUrl || null,
       isVerified: true,
       isActive: true,

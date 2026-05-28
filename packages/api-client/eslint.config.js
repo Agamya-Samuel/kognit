@@ -4,7 +4,7 @@ import sharedConfig from '../config/eslint.config.js';
 export default tseslint.config(
   ...sharedConfig,
   {
-    ignores: ['node_modules', 'dist', 'coverage'],
+    ignores: ['node_modules', 'dist', 'coverage', '**/__tests__/**', '**/*.spec.ts', '**/*.test.ts'],
   },
   {
     files: ['**/*.ts', '**/*.tsx'],

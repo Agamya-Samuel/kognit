@@ -3,7 +3,7 @@ import * as nextPlugin from '@next/eslint-plugin-next';
 
 export default tseslint.config(
   {
-    ignores: ['node_modules', '.next', 'dist', 'coverage', 'src/app/dashboard/settings/page.tsx', 'src/app/(authenticated)/profile/page.tsx'],
+    ignores: ['node_modules', '.next', 'dist', 'coverage', 'src/app/dashboard/page.tsx'],
   },
   {
     files: ['**/*.ts', '**/*.tsx'],

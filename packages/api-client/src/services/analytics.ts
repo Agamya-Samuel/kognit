@@ -1,6 +1,11 @@
 import { getApiClient } from '../index';
 import type { DashboardMetrics, InstructorStudentsResponse } from '@edutech/types';
-import type { ChartData } from '@/types';
+
+interface InstructorChartData {
+  name: string;
+  users: number;
+  revenue: number;
+}
 
 export const analyticsService = {
   async getDashboardMetrics() {
@@ -17,6 +22,6 @@ export const analyticsService = {
    * @returns Chart data array with name, users, and revenue
    */
   async getInstructorChartData(days?: number) {
-    return getApiClient().get<ChartData[]>(`/analytics/instructor/charts`, { days: days || 30 });
+    return getApiClient().get<InstructorChartData[]>(`/analytics/instructor/charts`, { days: days || 30 });
   },
 };
