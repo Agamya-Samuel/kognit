@@ -1,16 +1,15 @@
 const tseslint = require('typescript-eslint');
+const sharedConfig = require('../../packages/config/eslint.config.js');
 
-module.exports = tseslint.config(
+module.exports = [
+  ...sharedConfig,
   {
     ignores: ['dist/**', 'node_modules/**', '**/__tests__/**', '**/*.spec.ts', 'test/**'],
   },
   {
     files: ['**/*.ts'],
-    extends: [
-      ...tseslint.configs.recommended,
-    ],
     rules: {
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      // Override shared config rules for API-specific needs
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/ban-ts-comment': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
@@ -18,4 +17,4 @@ module.exports = tseslint.config(
       '@typescript-eslint/no-non-null-assertion': 'off',
     },
   },
-);
+];

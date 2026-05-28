@@ -107,7 +107,7 @@ export interface EmailVerificationCodeVerifyResponse {
 }
 
 export interface ExistingUserEmailVerificationRequest {
-  // Requires authentication
+    // Requires authentication
 }
 
 export interface ExistingUserEmailVerificationResponse {
