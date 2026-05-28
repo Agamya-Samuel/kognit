@@ -1,85 +1,116 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, Button, Input } from '@edutech/ui';
+import { Card, CardContent, CardHeader, CardTitle, Button, Input, Label, Switch, Separator, Textarea } from '@edutech/ui';
 import { Settings, Bell, Shield, Users, Database, Save, Plus, Trash2 } from 'lucide-react';
+import { useAdminSettings } from '@/hooks/useAdminSettings';
 
-interface SettingsData {
-  platform: {
-    name: string;
-    description: string;
-    logo: string;
-    contactEmail: string;
-    supportEmail: string;
+// Helper function to unflatten the flat key-value pairs from the API into our nested structure
+function unflattenSettings(flat: Record<string, string>) {
+  return {
+    platform: {
+      name: flat['platform.name'] ?? 'EduTech Platform',
+      description: flat['platform.description'] ?? 'Modern online learning platform for students and instructors',
+      logo: flat['platform.logo'] ?? '/logo.png',
+      contactEmail: flat['platform.contactEmail'] ?? 'support@edutech.com',
+      supportEmail: flat['platform.supportEmail'] ?? 'help@edutech.com',
+    },
+    notifications: {
+      email: flat['notifications.email'] === 'true',
+      push: flat['notifications.push'] === 'true',
+      sms: flat['notifications.sms'] === 'true',
+      frequency: (flat['notifications.frequency'] as 'immediate' | 'daily' | 'weekly') ?? 'daily',
+    },
+    security: {
+      twoFactorAuth: flat['security.twoFactorAuth'] === 'true',
+      sessionTimeout: parseInt(flat['security.sessionTimeout']) || 30,
+      passwordPolicy: {
+        minLength: parseInt(flat['security.passwordPolicy.minLength']) || 8,
+        requireUppercase: flat['security.passwordPolicy.requireUppercase'] === 'true',
+        requireNumbers: flat['security.passwordPolicy.requireNumbers'] === 'true',
+        requireSpecialChars: flat['security.passwordPolicy.requireSpecialChars'] === 'true',
+      },
+    },
+    users: {
+      allowRegistration: flat['users.allowRegistration'] === 'true',
+      requireApproval: flat['users.requireApproval'] === 'true',
+      defaultRole: (flat['users.defaultRole'] as 'student' | 'instructor' | 'admin') ?? 'student',
+    },
   };
-  notifications: {
-    email: boolean;
-    push: boolean;
-    sms: boolean;
-    frequency: 'immediate' | 'daily' | 'weekly';
-  };
-  security: {
-    twoFactorAuth: boolean;
-    sessionTimeout: number;
-    passwordPolicy: {
-      minLength: number;
-      requireUppercase: boolean;
-      requireNumbers: boolean;
-      requireSpecialChars: boolean;
-    };
-  };
-  users: {
-    allowRegistration: boolean;
-    requireApproval: boolean;
-    defaultRole: 'student' | 'instructor' | 'admin';
+}
+
+// Helper function to flatten our nested structure into flat key-value pairs (as strings) for the API
+function flattenSettingsForUpdate(settings: any): Record<string, string> {
+  return {
+    'platform.name': settings.platform.name,
+    'platform.description': settings.platform.description,
+    'platform.logo': settings.platform.logo,
+    'platform.contactEmail': settings.platform.contactEmail,
+    'platform.supportEmail': settings.platform.supportEmail,
+    'notifications.email': String(settings.notifications.email),
+    'notifications.push': String(settings.notifications.push),
+    'notifications.sms': String(settings.notifications.sms),
+    'notifications.frequency': settings.notifications.frequency,
+    'security.twoFactorAuth': String(settings.security.twoFactorAuth),
+    'security.sessionTimeout': String(settings.security.sessionTimeout),
+    'security.passwordPolicy.minLength': String(settings.security.passwordPolicy.minLength),
+    'security.passwordPolicy.requireUppercase': String(settings.security.passwordPolicy.requireUppercase),
+    'security.passwordPolicy.requireNumbers': String(settings.security.passwordPolicy.requireNumbers),
+    'security.passwordPolicy.requireSpecialChars': String(settings.security.passwordPolicy.requireSpecialChars),
+    'users.allowRegistration': String(settings.users.allowRegistration),
+    'users.requireApproval': String(settings.users.requireApproval),
+    'users.defaultRole': settings.users.defaultRole,
   };
 }
 
 export default function SettingsPage() {
-  const [settings, setSettings] = useState<SettingsData>({
-    platform: {
-      name: 'EduTech Platform',
-      description: 'Modern online learning platform for students and instructors',
-      logo: '/logo.png',
-      contactEmail: 'support@edutech.com',
-      supportEmail: 'help@edutech.com',
-    },
-    notifications: {
-      email: true,
-      push: true,
-      sms: false,
-      frequency: 'daily',
-    },
-    security: {
-      twoFactorAuth: false,
-      sessionTimeout: 30,
-      passwordPolicy: {
-        minLength: 8,
-        requireUppercase: true,
-        requireNumbers: true,
-        requireSpecialChars: false,
-      },
-    },
-    users: {
-      allowRegistration: true,
-      requireApproval: false,
-      defaultRole: 'student',
-    },
-  });
-
-  const [loading, setLoading] = useState(false);
+  const { data: flatSettings, isLoading, error, updateSettings, isUpdating } = useAdminSettings();
+  const [settings, setSettings] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('platform');
 
+  // Convert flat API settings to nested structure when data is received
+  if (flatSettings && !settings) {
+    setSettings(unflattenSettings(flatSettings));
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent" />
+          <p className="mt-4 text-muted-foreground">Loading settings...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-destructive">Failed to load settings. Please try again.</p>
+      </div>
+    );
+  }
+
+  if (!settings) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-muted-foreground">No settings data available.</p>
+      </div>
+    );
+  }
+
   const handleSave = async () => {
-    setLoading(true);
     try {
-      // TODO: Implement save functionality
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      await new Promise<void>((resolve) => {
+        // Call the updateSettings mutation with the flattened settings
+        updateSettings(flattenSettingsForUpdate(settings));
+        resolve();
+      });
       alert('Settings saved successfully!');
-    } catch (error) {
+    } catch (err) {
+      console.error('Failed to save settings:', err);
       alert('Failed to save settings. Please try again.');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -107,24 +138,18 @@ export default function SettingsPage() {
                   </label>
                   <Input
                     value={settings.platform.name}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      platform: { ...settings.platform, name: e.target.value }
-                    })}
+                    onChange={(e) => setSettings(prev => ({ ...prev, platform: { ...prev.platform, name: e.target.value } }))}
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Description
                   </label>
-                  <textarea
+                  <Textarea
                     className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                     rows={3}
                     value={settings.platform.description}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      platform: { ...settings.platform, description: e.target.value }
-                    })}
+                    onChange={(e) => setSettings(prev => ({ ...prev, platform: { ...prev.platform, description: e.target.value } }))}
                   />
                 </div>
                 <div>
@@ -134,10 +159,7 @@ export default function SettingsPage() {
                   <Input
                     type="email"
                     value={settings.platform.contactEmail}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      platform: { ...settings.platform, contactEmail: e.target.value }
-                    })}
+                    onChange={(e) => setSettings(prev => ({ ...prev, platform: { ...prev.platform, contactEmail: e.target.value } }))}
                   />
                 </div>
                 <div>
@@ -147,10 +169,7 @@ export default function SettingsPage() {
                   <Input
                     type="email"
                     value={settings.platform.supportEmail}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      platform: { ...settings.platform, supportEmail: e.target.value }
-                    })}
+                    onChange={(e) => setSettings(prev => ({ ...prev, platform: { ...prev.platform, supportEmail: e.target.value } }))}
                   />
                 </div>
               </CardContent>
@@ -174,10 +193,7 @@ export default function SettingsPage() {
                       <input
                         type="checkbox"
                         checked={settings.notifications.email}
-                        onChange={(e) => setSettings({
-                          ...settings,
-                          notifications: { ...settings.notifications, email: e.target.checked }
-                        })}
+                        onChange={(e) => setSettings(prev => ({ ...prev, notifications: { ...prev.notifications, email: e.target.checked } }))}
                         className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                       />
                     </label>
@@ -186,10 +202,7 @@ export default function SettingsPage() {
                       <input
                         type="checkbox"
                         checked={settings.notifications.push}
-                        onChange={(e) => setSettings({
-                          ...settings,
-                          notifications: { ...settings.notifications, push: e.target.checked }
-                        })}
+                        onChange={(e) => setSettings(prev => ({ ...prev, notifications: { ...prev.notifications, push: e.target.checked } }))}
                         className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                       />
                     </label>
@@ -198,38 +211,31 @@ export default function SettingsPage() {
                       <input
                         type="checkbox"
                         checked={settings.notifications.sms}
-                        onChange={(e) => setSettings({
-                          ...settings,
-                          notifications: { ...settings.notifications, sms: e.target.checked }
-                        })}
+                        onChange={(e) => setSettings(prev => ({ ...prev, notifications: { ...prev.notifications, sms: e.target.checked } }))}
                         className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                       />
                     </label>
                   </div>
-                </div>
 
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">Email Frequency</h3>
-                  <div className="grid grid-cols-3 gap-3">
-                    {['immediate', 'daily', 'weekly'].map((frequency) => (
-                      <button
-                        key={frequency}
-                        onClick={() => setSettings({
-                          ...settings,
-                          notifications: { ...settings.notifications, frequency: frequency as any }
-                        })}
-                        className={`p-3 rounded-lg border text-center text-sm font-medium transition-colors ${
-                          settings.notifications.frequency === frequency
-                            ? 'border-primary bg-primary/10 text-primary'
-                            : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-                        }`}
-                      >
-                        {frequency.charAt(0).toUpperCase() + frequency.slice(1)}
-                      </button>
-                    ))}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">Email Frequency</h3>
+                    <div className="grid grid-cols-3 gap-3">
+                      {['immediate', 'daily', 'weekly'].map((frequency) => (
+                        <button
+                          key={frequency}
+                          onClick={() => setSettings(prev => ({ ...prev, notifications: { ...prev.notifications, frequency: frequency as any } }))}
+                          className={`p-3 rounded-lg border text-center text-sm font-medium transition-colors ${
+                            settings.notifications.frequency === frequency
+                              ? 'border-primary bg-primary/10 text-primary'
+                              : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                          }`}
+                        >
+                          {frequency.charAt(0).toUpperCase() + frequency.slice(1)}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              </CardContent>
+                </CardContent>
             </Card>
           </div>
         );
@@ -256,120 +262,76 @@ export default function SettingsPage() {
                     <input
                       type="checkbox"
                       checked={settings.security.twoFactorAuth}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        security: { ...settings.security, twoFactorAuth: e.target.checked }
-                      })}
+                      onChange={(e) => setSettings(prev => ({ ...prev, security: { ...prev.security, twoFactorAuth: e.target.checked } }))}
                       className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                     />
-                  </label>
-                </div>
-
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">Session Timeout</h3>
-                  <div className="flex items-center gap-4">
-                    <Input
-                      type="number"
-                      value={settings.security.sessionTimeout}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        security: { 
-                          ...settings.security, 
-                          sessionTimeout: parseInt(e.target.value) || 30 
-                        }
-                      })}
-                      className="w-24"
-                    />
-                    <span className="text-sm text-gray-600 dark:text-gray-400">minutes</span>
                   </div>
-                </div>
 
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">Password Policy</h3>
-                  <div className="space-y-3">
-                    <label className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Minimum password length
-                      </span>
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">Session Timeout</h3>
+                    <div className="flex items-center gap-4">
                       <Input
                         type="number"
-                        value={settings.security.passwordPolicy.minLength}
-                        onChange={(e) => setSettings({
-                          ...settings,
-                          security: {
-                            ...settings.security,
-                            passwordPolicy: {
-                              ...settings.security.passwordPolicy,
-                              minLength: parseInt(e.target.value) || 8
-                            }
-                          }
-                        })}
-                        className="w-24"
+                        value={settings.security.sessionTimeout}
+                        onChange={(e) => setSettings(prev => ({ ...prev, security: { ...prev.security, sessionTimeout: parseInt(e.target.value) || 30 } }))}
                       />
-                    </label>
-                    <label className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Require uppercase letters
-                      </span>
-                      <input
-                        type="checkbox"
-                        checked={settings.security.passwordPolicy.requireUppercase}
-                        onChange={(e) => setSettings({
-                          ...settings,
-                          security: {
-                            ...settings.security,
-                            passwordPolicy: {
-                              ...settings.security.passwordPolicy,
-                              requireUppercase: e.target.checked
-                            }
-                          }
-                        })}
-                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                      />
-                    </label>
-                    <label className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Require numbers
-                      </span>
-                      <input
-                        type="checkbox"
-                        checked={settings.security.passwordPolicy.requireNumbers}
-                        onChange={(e) => setSettings({
-                          ...settings,
-                          security: {
-                            ...settings.security,
-                            passwordPolicy: {
-                              ...settings.security.passwordPolicy,
-                              requireNumbers: e.target.checked
-                            }
-                          }
-                        })}
-                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                      />
-                    </label>
-                    <label className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Require special characters
-                      </span>
-                      <input
-                        type="checkbox"
-                        checked={settings.security.passwordPolicy.requireSpecialChars}
-                        onChange={(e) => setSettings({
-                          ...settings,
-                          security: {
-                            ...settings.security,
-                            passwordPolicy: {
-                              ...settings.security.passwordPolicy,
-                              requireSpecialChars: e.target.checked
-                            }
-                          }
-                        })}
-                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                      />
-                    </label>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">minutes</span>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
+
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">Password Policy</h3>
+                    <div className="space-y-3">
+                      <label className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Minimum password length
+                        </span>
+                        <Input
+                          type="number"
+                          value={settings.security.passwordPolicy.minLength}
+                          onChange={(e) => setSettings(prev => ({ ...prev, security: { ...prev.security, passwordPolicy: { ...prev.security.passwordPolicy, minLength: parseInt(e.target.value) || 8 } }))}
+                        />
+                        <span className="w-24" />
+                      </label>
+
+                      <label className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Require uppercase letters
+                        </span>
+                        <input
+                          type="checkbox"
+                          checked={settings.security.passwordPolicy.requireUppercase}
+                          onChange={(e) => setSettings(prev => ({ ...prev, security: { ...prev.security, passwordPolicy: { ...prev.security.passwordPolicy, requireUppercase: e.target.checked } }))}
+                          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                        />
+                      </label>
+
+                      <label className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Require numbers
+                        </span>
+                        <input
+                          type="checkbox"
+                          checked={settings.security.passwordPolicy.requireNumbers}
+                          onChange={(e) => setSettings(prev => ({ ...prev, security: { ...prev.security, passwordPolicy: { ...prev.security.passwordPolicy, requireNumbers: e.target.checked } }))}
+                          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                        />
+                      </label>
+
+                      <label className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Require special characters
+                        </span>
+                        <input
+                          type="checkbox"
+                          checked={settings.security.passwordPolicy.requireSpecialChars}
+                          onChange={(e) => setSettings(prev => ({ ...prev, security: { ...prev.security, passwordPolicy: { ...prev.security.passwordPolicy, requireSpecialChars: e.target.checked } }))}
+                          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </CardContent>
             </Card>
           </div>
         );
@@ -392,10 +354,7 @@ export default function SettingsPage() {
                       <input
                         type="checkbox"
                         checked={settings.users.allowRegistration}
-                        onChange={(e) => setSettings({
-                          ...settings,
-                          users: { ...settings.users, allowRegistration: e.target.checked }
-                        })}
+                        onChange={(e) => setSettings(prev => ({ ...prev, users: { ...prev.users, allowRegistration: e.target.checked } }))}
                         className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                       />
                     </label>
@@ -406,38 +365,31 @@ export default function SettingsPage() {
                       <input
                         type="checkbox"
                         checked={settings.users.requireApproval}
-                        onChange={(e) => setSettings({
-                          ...settings,
-                          users: { ...settings.users, requireApproval: e.target.checked }
-                        })}
+                        onChange={(e) => setSettings(prev => ({ ...prev, users: { ...prev.users, requireApproval: e.target.checked } }))}
                         className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                       />
                     </label>
                   </div>
-                </div>
 
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">Default User Role</h3>
-                  <div className="grid grid-cols-3 gap-3">
-                    {['student', 'instructor', 'admin'].map((role) => (
-                      <button
-                        key={role}
-                        onClick={() => setSettings({
-                          ...settings,
-                          users: { ...settings.users, defaultRole: role as any }
-                        })}
-                        className={`p-3 rounded-lg border text-center text-sm font-medium transition-colors capitalize ${
-                          settings.users.defaultRole === role
-                            ? 'border-primary bg-primary/10 text-primary'
-                            : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-                        }`}
-                      >
-                        {role}
-                      </button>
-                    ))}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">Default User Role</h3>
+                    <div className="grid grid-cols-3 gap-3">
+                      {['student', 'instructor', 'admin'].map((role) => (
+                        <button
+                          key={role}
+                          onClick={() => setSettings(prev => ({ ...prev, users: { ...prev.users, defaultRole: role as any } }))}
+                          className={`p-3 rounded-lg border text-center text-sm font-medium transition-colors capitalize ${
+                            settings.users.defaultRole === role
+                              ? 'border-primary bg-primary/10 text-primary'
+                              : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                          }`}
+                        >
+                          {role}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              </CardContent>
+                </CardContent>
             </Card>
           </div>
         );
@@ -536,9 +488,9 @@ export default function SettingsPage() {
             <Button variant="outline" onClick={() => window.location.reload()}>
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={loading}>
+            <Button onClick={handleSave} disabled={isUpdating}>
               <Save className="h-4 w-4 mr-2" />
-              {loading ? 'Saving...' : 'Save Changes'}
+              {isUpdating ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
         </div>

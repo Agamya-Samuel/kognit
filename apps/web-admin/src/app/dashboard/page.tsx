@@ -1,5 +1,7 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
+import { adminService } from '@edutech/api-client';
 import { Users, BookOpen, DollarSign, Activity, CheckCircle, Clock, UserPlus } from 'lucide-react';
 import { StatCard, StatsRow } from '@/components/StatsRow';
 import { RevenueChart, EngagementChart } from '@/components/charts/Charts';
@@ -8,39 +10,113 @@ import { Button } from '@edutech/ui';
 import Link from 'next/link';
 import { PageHeader } from '@/components/PageHeader';
 
+interface RevenueDataPoint {
+  month: string;
+  revenue: number;
+  costs: number;
+}
+
+interface EngagementDataPoint {
+  date: string;
+  views: number;
+  interactions: number;
+}
+
+interface RecentActivityItem {
+  id: number;
+  type: 'enrollment' | 'completion';
+  title: string;
+  time: string;
+}
+
+interface PendingModerationItem {
+  id: number;
+  title: string;
+  instructor: string;
+  count: number;
+}
+
+interface AdminDashboardData {
+  totalUsers: number;
+  activeCourses: number;
+  revenueMTD: number;
+  activeNow: number;
+  revenueData: RevenueDataPoint[];
+  engagementData: EngagementDataPoint[];
+  recentActivity: RecentActivityItem[];
+  pendingModeration: PendingModerationItem[];
+}
+
 export default function AdminDashboardPage() {
-  const revenueData = [
-    { month: 'Jan', revenue: 125000, costs: 85000 },
-    { month: 'Feb', revenue: 142000, costs: 92000 },
-    { month: 'Mar', revenue: 168000, costs: 98000 },
-    { month: 'Apr', revenue: 155000, costs: 94000 },
-    { month: 'May', revenue: 189000, costs: 105000 },
-    { month: 'Jun', revenue: 215000, costs: 112000 },
-  ];
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['admin', 'dashboard'],
+    queryFn: async () => {
+      const [metricsResponse, chartResponse] = await Promise.all([
+        adminService.getDashboardMetrics(),
+        adminService.getChartData()
+      ]);
 
-  const engagementData = [
-    { date: 'Mon', views: 12400, interactions: 8200 },
-    { date: 'Tue', views: 11200, interactions: 7600 },
-    { date: 'Wed', views: 15600, interactions: 10400 },
-    { date: 'Thu', views: 14200, interactions: 9200 },
-    { date: 'Fri', views: 16800, interactions: 11800 },
-    { date: 'Sat', views: 9800, interactions: 6200 },
-    { date: 'Sun', views: 8400, interactions: 5100 },
-  ];
+      // Transform the API response to match the expected shape
+      return {
+        totalUsers: metricsResponse.data.totalUsers || 0,
+        activeCourses: metricsResponse.data.activeCourses || 0,
+        revenueMTD: metricsResponse.data.revenueMTD || 0,
+        activeNow: metricsResponse.data.activeNow || 0,
+        revenueData: chartResponse.data.map((item: any) => ({
+          month: item.month,
+          revenue: item.revenue,
+          costs: item.costs
+        })) || [],
+        engagementData: chartResponse.data.map((item: any) => ({
+          date: item.date,
+          views: item.views,
+          interactions: item.interactions
+        })) || [],
+        recentActivity: metricsResponse.data.recentActivity?.map((activity: any) => ({
+          id: activity.id,
+          type: activity.type,
+          title: activity.title,
+          time: activity.time
+        })) || [],
+        pendingModeration: metricsResponse.data.pendingModeration?.map((item: any) => ({
+          id: item.id,
+          title: item.title,
+          instructor: item.instructor,
+          count: item.count
+        })) || []
+      };
+    }
+  });
 
-  const recentActivity = [
-    { id: 1, type: 'enrollment', title: 'New enrollment in React Fundamentals', time: '2 minutes ago' },
-    { id: 2, type: 'completion', title: 'Priya Sharma completed Advanced Python', time: '15 minutes ago' },
-    { id: 3, type: 'enrollment', title: 'New enrollment in UI/UX Design', time: '32 minutes ago' },
-    { id: 4, type: 'enrollment', title: 'New enrollment in Data Science', time: '1 hour ago' },
-    { id: 5, type: 'completion', title: 'Rahul Verma completed Machine Learning', time: '2 hours ago' },
-  ];
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent" />
+          <p className="mt-4 text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
-  const pendingModeration = [
-    { id: 1, title: 'AWS Cloud Architecture Course', instructor: 'Ankit Patel', count: 3 },
-    { id: 2, title: 'Digital Marketing Masterclass', instructor: 'Sneha Gupta', count: 2 },
-    { id: 3, title: 'Full Stack Development Bootcamp', instructor: 'Vikram Singh', count: 5 },
-  ];
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-destructive">Failed to load dashboard. Please try again.</p>
+      </div>
+    );
+  }
+
+  const { totalUsers, activeCourses, revenueMTD, activeNow, revenueData, engagementData, recentActivity, pendingModeration } = data || {
+    totalUsers: 0,
+    activeCourses: 0,
+    revenueMTD: 0,
+    activeNow: 0,
+    revenueData: [],
+    engagementData: [],
+    recentActivity: [],
+    pendingModeration: []
+  };
 
   return (
     <div className="space-y-8">
@@ -52,33 +128,32 @@ export default function AdminDashboardPage() {
       <StatsRow>
         <StatCard
           title="Total Users"
-          value="12,847"
+          value={totalUsers.toLocaleString()}
           change={{ value: '+5.2%', trend: 'up' }}
           icon={Users}
           iconClassName="bg-blue-500/10 text-blue-600 dark:text-blue-400"
         />
         <StatCard
           title="Active Courses"
-          value="234"
+          value={activeCourses.toString()}
           change={{ value: '+12', trend: 'up' }}
           icon={BookOpen}
           iconClassName="bg-purple-500/10 text-purple-600 dark:text-purple-400"
         />
         <StatCard
           title="Revenue (MTD)"
-          value="₹2,15,000"
+          value={`₹${revenueMTD.toLocaleString('en-IN')}`}
           change={{ value: '+22%', trend: 'up' }}
           icon={DollarSign}
           iconClassName="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
         />
         <StatCard
           title="Active Now"
-          value="342"
+          value={activeNow.toString()}
           icon={Activity}
           iconClassName="bg-orange-500/10 text-orange-600 dark:text-orange-400"
         />
       </StatsRow>
-
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
@@ -89,7 +164,6 @@ export default function AdminDashboardPage() {
             <RevenueChart data={revenueData} />
           </CardContent>
         </Card>
-
 
         <Card>
           <CardHeader>

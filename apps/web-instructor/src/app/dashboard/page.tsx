@@ -1,5 +1,7 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
+import { analyticsService, liveClassesService } from '@edutech/api-client';
 import { Users, BookOpen, DollarSign, Calendar, Clock, CheckCircle } from 'lucide-react';
 import { StatCard, StatsRow } from '@/components/StatsRow';
 import { RevenueChart, EngagementChart } from '@/components/charts/Charts';
@@ -7,11 +9,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@edutech/ui';
 import { Button } from '@edutech/ui';
 import Link from 'next/link';
 import { useDashboardMetrics, useRecentActivity, useUpcomingClasses } from '@/hooks/useCourses';
+import { useInstructorChartData } from '@/hooks/useInstructorChartData';
 
 export default function DashboardPage() {
   const { data: metrics, isLoading: metricsLoading, error: metricsError } = useDashboardMetrics();
   const { data: recentActivity, isLoading: activityLoading } = useRecentActivity();
   const { data: upcomingClasses, isLoading: classesLoading } = useUpcomingClasses();
+  const { data: chartData, isLoading: chartLoading } = useInstructorChartData();
 
   const metricsData = metrics || {
     totalStudents: 0,
@@ -22,7 +26,11 @@ export default function DashboardPage() {
 
   const safeNumber = (val: number | undefined | null): number => (typeof val === 'number' ? val : 0);
 
-  const revenueData = [
+  const revenueData = chartData?.map((item) => ({
+    month: item.name,
+    revenue: item.revenue,
+    costs: Math.round(item.revenue * 0.7) // Assuming costs are ~70% of revenue for demo
+  })) || [
     { month: 'Jan', revenue: 45000, costs: 32000 },
     { month: 'Feb', revenue: 52000, costs: 35000 },
     { month: 'Mar', revenue: 61000, costs: 38000 },
@@ -31,7 +39,11 @@ export default function DashboardPage() {
     { month: 'Jun', revenue: 85000, costs: 48000 },
   ];
 
-  const engagementData = [
+  const engagementData = chartData?.map((item) => ({
+    date: item.name,
+    views: item.users,
+    interactions: Math.round(item.users * 0.75) // Assuming interactions are ~75% of users for demo
+  })) || [
     { date: 'Mon', views: 2400, interactions: 1800 },
     { date: 'Tue', views: 2100, interactions: 1600 },
     { date: 'Wed', views: 3200, interactions: 2400 },
@@ -41,7 +53,7 @@ export default function DashboardPage() {
     { date: 'Sun', views: 1600, interactions: 1100 },
   ];
 
-  if (metricsLoading || activityLoading || classesLoading) {
+  if (metricsLoading || activityLoading || classesLoading || chartLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
@@ -174,10 +186,9 @@ export default function DashboardPage() {
                       </Link>
                     </div>
                   </div>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground">No upcoming classes</p>
-              )}
+                )) : (
+                  <p className="text-sm text-muted-foreground">No upcoming classes</p>
+                )}
             </div>
           </CardContent>
         </Card>

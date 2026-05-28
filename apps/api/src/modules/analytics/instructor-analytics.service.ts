@@ -22,6 +22,12 @@ export interface CourseAnalytics {
   certificateCount: number;
 }
 
+export interface ChartData {
+  name: string;
+  users: number;
+  revenue: number;
+}
+
 @Injectable()
 export class InstructorAnalyticsService {
   private readonly logger = new Logger(InstructorAnalyticsService.name);
@@ -106,6 +112,25 @@ export class InstructorAnalyticsService {
       averageCompletionRate: courses.length > 0 ? Math.round(completionSum / courses.length) : 0,
       courseAnalytics,
     };
+  }
+
+  /**
+   * Get chart data for instructor dashboard (revenue and user engagement over time)
+   * @param days - Number of days to fetch data for
+   */
+  async getInstructorChartData(days: number = 30): Promise<ChartData[]> {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    // Get daily stats for the instructor's courses
+    const dailyStats = await this.paymentsRepository.getInstructorDailyStats(startDate);
+    
+    // Transform to the expected format
+    return dailyStats.map((stat: any) => ({
+      name: stat.date, // Format: YYYY-MM-DD
+      users: stat.uniqueUsers || 0,
+      revenue: stat.totalRevenue || 0,
+    }));
   }
 
   private async getInstructorCourses(instructorId: number) {

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository, PaginatedResult } from './base.repository';
 import { courses } from '../schema';
-import { eq, and, desc, like, or } from 'drizzle-orm';
+import { eq, and, desc, like, or, not } from 'drizzle-orm';
 import type { Course } from '../schema';
 
 @Injectable()
@@ -131,29 +131,42 @@ export class CoursesRepository extends BaseRepository<Course> {
     return this.findMany({ ...options, instructorId });
   }
 
-  async count(filters?: { instructorId?: number; isPublished?: boolean; domain?: string }): Promise<number> {
-    try {
-      const conditions = [eq(courses.deletedAt, null as any)];
+   async count(filters?: { instructorId?: number; isPublished?: boolean; domain?: string; deletedAt?: any }): Promise<number> {
+     try {
+       const conditions = [];
 
-      if (filters?.instructorId) {
-        conditions.push(eq(courses.instructorId, filters.instructorId));
-      }
+       // Only add deletedAt condition if filters.specifically asks for it
+       // By default, we count non-deleted records (deletedAt IS NULL)
+       if (filters?.deletedAt === null) {
+         // Explicitly asking for non-deleted
+         conditions.push(eq(courses.deletedAt, null as any));
+       } else if (filters?.deletedAt !== undefined && filters.deletedAt !== null) {
+         // Explicitly asking for deleted records (deletedAt IS NOT NULL)
+         conditions.push(not(eq(courses.deletedAt, null as any)));
+       } else {
+         // Default case: count non-deleted records
+         conditions.push(eq(courses.deletedAt, null as any));
+       }
 
-      if (filters?.isPublished !== undefined) {
-        conditions.push(eq(courses.isPublished, filters.isPublished));
-      }
+       if (filters?.instructorId) {
+         conditions.push(eq(courses.instructorId, filters.instructorId));
+       }
 
-      if (filters?.domain) {
-        conditions.push(eq(courses.domain, filters.domain));
-      }
+       if (filters?.isPublished !== undefined) {
+         conditions.push(eq(courses.isPublished, filters.isPublished));
+       }
 
-      const whereClause = and(...conditions);
+       if (filters?.domain) {
+         conditions.push(eq(courses.domain, filters.domain));
+       }
 
-      const result = await this.db.select({ count: courses.id }).from(courses).where(whereClause);
-      return result.length;
-    } catch (error) {
-      this.handleError(error, 'count');
-      return 0;
-    }
-  }
+       const whereClause = and(...conditions);
+
+       const result = await this.db.select({ count: courses.id }).from(courses).where(whereClause);
+       return result.length;
+     } catch (error) {
+       this.handleError(error, 'count');
+       return 0;
+     }
+   }
 }

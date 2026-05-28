@@ -184,30 +184,51 @@ export class PaymentsRepository extends BaseRepository<Payment> {
     }
   }
 
-  async getDailyStats(startDate: Date): Promise<{ name: string; users: number; revenue: number }[]> {
-    try {
-      const result = await this.db
-        .select({
-          date: sql`DATE(${payments.createdAt})`,
-          total: sql`COALESCE(SUM(${payments.amount}), 0)`,
-          count: sql`COUNT(DISTINCT ${payments.studentId})`,
-        })
-        .from(payments)
-        .where(and(
-          gte(payments.createdAt, startDate),
-          eq(payments.status, 'paid')
-        ))
-        .groupBy(sql`DATE(${payments.createdAt})`)
-        .orderBy(sql`DATE(${payments.createdAt})`);
+   async getDailyStats(startDate: Date): Promise<{ name: string; users: number; revenue: number }[]> {
+     try {
+       const result = await this.db
+         .select({
+           date: sql`DATE(${payments.createdAt})`,
+           total: sql`COALESCE(SUM(${payments.amount}), 0)`,
+           count: sql`COUNT(DISTINCT ${payments.studentId})`,
+         })
+         .from(payments)
+         .where(and(
+           gte(payments.createdAt, startDate),
+           eq(payments.status, 'paid')
+         ))
+         .groupBy(sql`DATE(${payments.createdAt})`)
+         .orderBy(sql`DATE(${payments.createdAt})`);
 
-      return result.map(row => ({
-        name: String(row.date),
-        users: Number(row.count) || 0,
-        revenue: Number(row.total) || 0,
-      }));
-    } catch (error) {
-      this.handleError(error, 'getDailyStats');
-      return [];
-    }
-  }
+       return result.map(row => ({
+         name: String(row.date),
+         users: Number(row.count) || 0,
+         revenue: Number(row.total) || 0,
+       }));
+     } catch (error) {
+       this.handleError(error, 'getDailyStats');
+       return [];
+     }
+   }
+
+   async getRevenueBreakdown(): Promise<{ type: string; amount: number }[]> {
+     try {
+       const result = await this.db
+         .select({
+           type: payments.type,
+           total: sql`COALESCE(SUM(${payments.amount}), 0)`,
+         })
+         .from(payments)
+         .where(eq(payments.status, 'paid'))
+         .groupBy(payments.type);
+
+       return result.map(row => ({
+         type: row.type,
+         amount: Number(row.total) || 0,
+       }));
+     } catch (error) {
+       this.handleError(error, 'getRevenueBreakdown');
+       return [];
+     }
+   }
 }
