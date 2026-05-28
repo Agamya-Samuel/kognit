@@ -7,11 +7,15 @@ import { useMyEnrollments } from '@/hooks/useEnrollments';
 import { useCourseProgress } from '@/hooks/useEnrollments';
 import { useProgressTracking } from '@/hooks/useProgressTracking';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useMyCertificates } from '@/hooks/useCertificates';
+import { useWatchSummary } from '@/hooks/useWatchSummary';
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const { data: enrollments, isLoading: enrollmentsLoading } = useMyEnrollments();
   const { data: notifications, isLoading: notificationsLoading } = useNotifications({ isRead: false });
+  const { data: certificates, isLoading: certificatesLoading } = useMyCertificates();
+  const { data: watchTime, isLoading: watchTimeLoading } = useWatchSummary();
   
   // Calculate metrics from enrollments and other data
   const [metrics, setMetrics] = useState({
@@ -29,7 +33,7 @@ export default function DashboardPage() {
       const enrolledCourses = enrollments.length;
       const completedCourses = enrollments.filter(e => e.progress === 100).length;
       
-      // Calculate total watch time (this would come from progress tracking)
+      // Calculate total watch time from progress tracking
       let totalWatchTime = 0;
       const inProgress = [];
       const activity = [];
@@ -42,7 +46,7 @@ export default function DashboardPage() {
             title: enrollment.courseTitle,
             instructor: enrollment.instructorName,
             progress: enrollment.progress,
-            lastWatched: 'Recently', // This would come from progress tracking
+            lastWatched: 'Recently', // Would ideally come from progress tracking
           });
         }
         
@@ -89,31 +93,31 @@ export default function DashboardPage() {
       setMetrics({
         enrolledCourses,
         completedCourses,
-        watchTime: totalWatchTime, // Would come from progress tracking
-        certificates: 0 // Would come from certificates service
+        watchTime: watchTime?.totalWatchedSeconds || 0, // Use actual watch time from API
+        certificates: certificates?.total || 0 // Actual certificate count from API
       });
       
       setRecentActivity([...sortedActivity, ...notificationActivity].slice(0, 3));
       setInProgressCourses(inProgress.slice(0, 2)); // Show top 2 in progress
     }
-  }, [enrollments, notifications]);
-  
-  if (enrollmentsLoading) {
-    return (
-      <StudentDashboard
-        metrics={{
-          enrolledCourses: 0,
-          completedCourses: 0,
-          watchTime: 0,
-          certificates: 0,
-        }}
-        metricsLoading={true}
-        recentActivity={[]}
-        inProgressCourses={[]}
-      />
-    );
-  }
-  
+  }, [enrollments, notifications, certificates, watchTime]);
+   
+    if (enrollmentsLoading || certificatesLoading || watchTimeLoading) {
+      return (
+        <StudentDashboard
+          metrics={{
+            enrolledCourses: 0,
+            completedCourses: 0,
+            watchTime: 0,
+            certificates: 0,
+          }}
+          metricsLoading={true}
+          recentActivity={[]}
+          inProgressCourses={[]}
+        />
+      );
+    }
+   
   return (
     <StudentDashboard
       metrics={metrics}

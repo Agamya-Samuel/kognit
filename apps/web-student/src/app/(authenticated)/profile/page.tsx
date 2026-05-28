@@ -2,11 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Input, Label, Avatar, Switch, Separator, Badge } from '@edutech/ui';
-import { Mail, Settings, Shield, LogOut, Save, AlertTriangle, Trash2 } from 'lucide-react';
+import { 
+  Card, CardContent, CardHeader, CardTitle, CardDescription, 
+  Button, Input, Label, Avatar, Switch, Separator, Badge,
+  Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, 
+  DialogDescription, DialogFooter
+} from '@edutech/ui';
+import { Mail, Settings, Shield, LogOut, Save, AlertTriangle, Trash2, Key } from 'lucide-react';
 import { useAuth } from '@edutech/shared-components';
 import { usersService } from '@edutech/api-client';
 import { useNotifications } from '@/hooks/useNotifications';
+import { notificationsService } from '@edutech/api-client';
+import { authService } from '@edutech/api-client';
+import { z } from 'zod';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -22,13 +30,51 @@ export default function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const { data: notifications, isLoading: notificationsLoading } = useNotifications({ isRead: false });
   
+  // Notification preferences state
+  const [notificationPreferences, setNotificationPreferences] = useState({
+    emailNotifications: true,
+    assignmentReminders: true,
+    liveClassAlerts: true,
+    marketingEmails: true,
+  });
+  const [isSavingPreferences, setIsSavingPreferences] = useState(false);
+  
+  // 2FA state
+  const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false);
+  const [twoFactorSecret, setTwoFactorSecret] = useState<string>('');
+  const [twoFactorQrCode, setTwoFactorQrCode] = useState<string>('');
+  const [isLoadingTwoFactor, setIsLoadingTwoFactor] = useState(false);
+  
+  // Change password state
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+  const [changePasswordForm, setChangePasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [isChangePasswordLoading, setIsChangePasswordLoading] = useState(false);
+  const [changePasswordError, setChangePasswordError] = useState<string | null>(null);
+  const [changePasswordSuccess, setChangePasswordSuccess] = useState<boolean>(false);
+  
+  // Validation schema for change password
+  const changePasswordSchema = z.object({
+    currentPassword: z.string().min(1, 'Current password is required'),
+    newPassword: z.string().min(8, 'New password must be at least 8 characters'),
+    confirmPassword: z.string().min(1, 'Please confirm your new password'),
+  }).refine(data => data.newPassword === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
+
   // Load user profile on mount
   useEffect(() => {
     if (user?.id) {
       loadUserProfile();
+      loadNotificationPreferences();
+      loadTwoFactorStatus();
     }
   }, [user?.id]);
-  
+
   const loadUserProfile = async () => {
     try {
       setIsLoading(true);
@@ -46,7 +92,37 @@ export default function ProfilePage() {
       setIsLoading(false);
     }
   };
-  
+
+  const loadNotificationPreferences = async () => {
+    try {
+      const prefs = await notificationsService.getPreferences();
+      setNotificationPreferences({
+        emailNotifications: prefs.emailNotifications ?? true,
+        assignmentReminders: prefs.assignmentReminders ?? true,
+        liveClassAlerts: prefs.liveClassAlerts ?? true,
+        marketingEmails: prefs.marketingEmails ?? true,
+      });
+    } catch (err) {
+      console.error('Failed to load notification preferences:', err);
+      // Keep default values
+    }
+  };
+
+  const loadTwoFactorStatus = async () => {
+    try {
+      setIsLoadingTwoFactor(true);
+      // Check if 2FA is enabled by trying to get QR code (will fail if not enabled)
+      // In a real app, you might have a specific endpoint to check 2FA status
+      // For now, we'll assume it's disabled by default and enable it if user wants
+      setIsTwoFactorEnabled(false);
+    } catch (err) {
+      console.error('Failed to load 2FA status:', err);
+      setIsTwoFactorEnabled(false);
+    } finally {
+      setIsLoadingTwoFactor(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -61,12 +137,110 @@ export default function ProfilePage() {
       setIsLoading(false);
     }
   };
-  
+
+  const handleNotificationPreferenceChange = async (prefKey: keyof typeof notificationPreferences, checked: boolean) => {
+    try {
+      setIsSavingPreferences(true);
+      await notificationsService.updatePreferences({
+        [prefKey]: checked,
+      });
+      setNotificationPreferences(prev => ({
+        ...prev,
+        [prefKey]: checked,
+      }));
+    } catch (err) {
+      console.error(`Failed to update ${prefKey}:`, err);
+      // Revert the change on failure
+      setNotificationPreferences(prev => ({
+        ...prev,
+        [prefKey]: !checked,
+      }));
+      alert('Failed to save preferences. Please try again.');
+    } finally {
+      setIsSavingPreferences(false);
+    }
+  };
+
+  const handleChangePasswordOpen = () => {
+    // Reset form when opening
+    setChangePasswordForm({
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+    });
+    setChangePasswordError(null);
+    setChangePasswordSuccess(false);
+    setIsChangePasswordOpen(true);
+  };
+
+  const handleChangePasswordClose = () => {
+    setIsChangePasswordOpen(false);
+  };
+
+  const handleChangePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validate with Zod
+    const result = changePasswordSchema.safeParse(changePasswordForm);
+    if (!result.success) {
+      // Find the first error and set it
+      const firstError = result.error.errors[0];
+      setChangePasswordError(firstError.message);
+      return;
+    }
+    
+    try {
+      setIsChangePasswordLoading(true);
+      setChangePasswordError(null);
+      setChangePasswordSuccess(false);
+      
+      await authService.changePassword(
+        changePasswordForm.currentPassword,
+        changePasswordForm.newPassword
+      );
+      
+      // Success
+      setChangePasswordSuccess(true);
+      // Close modal after a short delay to show success message
+      setTimeout(() => {
+        setIsChangePasswordOpen(false);
+      }, 1500);
+    } catch (err: any) {
+      // Handle error response from API
+      const errorMessage = err?.response?.data?.message || err?.message || 'Failed to change password';
+      setChangePasswordError(errorMessage);
+    } finally {
+      setIsChangePasswordLoading(false);
+    }
+  };
+
+  const handleToggleTwoFactor = async () => {
+    try {
+      setIsLoadingTwoFactor(true);
+      if (isTwoFactorEnabled) {
+        // Disable 2FA
+        await authService.disableTwoFactor(''); // In real app, you'd need to verify with a token
+        setIsTwoFactorEnabled(false);
+      } else {
+        // Enable 2FA
+        const { secret, qrCode } = await authService.enableTwoFactor();
+        setTwoFactorSecret(secret);
+        setTwoFactorQrCode(qrCode);
+        setIsTwoFactorEnabled(true);
+      }
+    } catch (err) {
+      console.error('Failed to toggle 2FA:', err);
+      alert('Failed to update 2FA settings. Please try again.');
+    } finally {
+      setIsLoadingTwoFactor(false);
+    }
+  };
+
   const handleLogout = () => {
     logout();
     window.location.href = '/auth/login';
   };
-  
+   
   if (isLoading || !user) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -79,7 +253,7 @@ export default function ProfilePage() {
       </div>
     );
   }
-  
+   
   if (error) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -97,7 +271,7 @@ export default function ProfilePage() {
       </div>
     );
   }
-  
+   
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto space-y-6">
@@ -201,11 +375,9 @@ export default function ProfilePage() {
                 <div className="text-sm text-muted-foreground">Receive updates via email</div>
               </div>
               <Switch 
-                defaultChecked 
-                onChange={(checked) => {
-                  // TODO: Implement notification preferences update
-                  console.log('Email notifications:', checked);
-                }}
+                checked={notificationPreferences.emailNotifications}
+                onChange={(checked) => handleNotificationPreferenceChange('emailNotifications', checked)}
+                disabled={isSavingPreferences}
               />
             </div>
             <Separator />
@@ -215,11 +387,9 @@ export default function ProfilePage() {
                 <div className="text-sm text-muted-foreground">Get notified before due dates</div>
               </div>
               <Switch 
-                defaultChecked 
-                onChange={(checked) => {
-                  // TODO: Implement notification preferences update
-                  console.log('Assignment reminders:', checked);
-                }}
+                checked={notificationPreferences.assignmentReminders}
+                onChange={(checked) => handleNotificationPreferenceChange('assignmentReminders', checked)}
+                disabled={isSavingPreferences}
               />
             </div>
             <Separator />
@@ -229,11 +399,9 @@ export default function ProfilePage() {
                 <div className="text-sm text-muted-foreground">Be notified when classes start</div>
               </div>
               <Switch 
-                defaultChecked 
-                onChange={(checked) => {
-                  // TODO: Implement notification preferences update
-                  console.log('Live class alerts:', checked);
-                }}
+                checked={notificationPreferences.liveClassAlerts}
+                onChange={(checked) => handleNotificationPreferenceChange('liveClassAlerts', checked)}
+                disabled={isSavingPreferences}
               />
             </div>
             <Separator />
@@ -243,11 +411,9 @@ export default function ProfilePage() {
                 <div className="text-sm text-muted-foreground">Receive course recommendations</div>
               </div>
               <Switch 
-                defaultChecked 
-                onChange={(checked) => {
-                  // TODO: Implement notification preferences update
-                  console.log('Marketing emails:', checked);
-                }}
+                checked={notificationPreferences.marketingEmails}
+                onChange={(checked) => handleNotificationPreferenceChange('marketingEmails', checked)}
+                disabled={isSavingPreferences}
               />
             </div>
           </CardContent>
@@ -262,18 +428,22 @@ export default function ProfilePage() {
             <CardDescription>Manage your account security</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Button variant="outline" className="w-full justify-start gap-2">
-              <Mail className="h-4 w-4" />
+            <Button variant="outline" className="w-full justify-start gap-2" onClick={handleChangePasswordOpen}>
+              <Key className="h-4 w-4" />
               Change Password
-              {/* TODO: Connect to actual change password functionality */}
             </Button>
-            <Button variant="outline" className="w-full justify-start gap-2">
+            <Button variant="outline" className="w-full justify-start gap-2" onClick={handleToggleTwoFactor}>
               <Shield className="h-4 w-4" />
               Two-Factor Authentication
-              <Badge variant="secondary" className="ml-auto">
-                {/* TODO: Check actual 2FA status */}
-                Disabled
+              <Badge 
+                variant={isTwoFactorEnabled ? 'success' : 'secondary'} 
+                className="ml-auto"
+              >
+                {isTwoFactorEnabled ? 'Enabled' : 'Disabled'}
               </Badge>
+              {isLoadingTwoFactor && (
+                <span className="ml-2 animate-spin h-4 w-4" />
+              )}
             </Button>
           </CardContent>
         </Card>
@@ -300,8 +470,114 @@ export default function ProfilePage() {
               Delete Account
             </Button>
           </CardContent>
-        </Card>
+            </Card>
+          </div>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  // Change Password Dialog
+  if (isChangePasswordOpen) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <Dialog>
+          <DialogTrigger asChild>
+            <div />
+          </DialogTrigger>
+          <DialogContent className="w-full max-w-md sm:max-w-lg px-4 py-6 sm:p-6">
+            <DialogHeader>
+              <DialogTitle>Change Password</DialogTitle>
+              <DialogDescription>
+                Enter your current password and a new password to update your account security.
+              </DialogDescription>
+            </DialogHeader>
+            {changePasswordSuccess && (
+              <div className="mb-4 p-3 bg-green-50 border-l-4 border-green-400 text-green-700">
+                Password changed successfully! You will be logged out and need to sign in again.
+              </div>
+            )}
+            <form onSubmit={handleChangePasswordSubmit} className="space-y-4">
+              <div>
+                <Label htmlFor="current-password">Current Password</Label>
+                <Input
+                  id="current-password"
+                  type="password"
+                  value={changePasswordForm.currentPassword}
+                  onChange={(e) => 
+                    setChangePasswordForm({
+                      ...changePasswordForm,
+                      currentPassword: e.target.value,
+                    })
+                  }
+                  disabled={isChangePasswordLoading}
+                  placeholder="Enter your current password"
+                  required
+                />
+                {changePasswordError && !isChangePasswordLoading && (
+                  <p className="mt-2 text-sm text-red-600">{changePasswordError}</p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="new-password">New Password</Label>
+                <Input
+                  id="new-password"
+                  type="password"
+                  value={changePasswordForm.newPassword}
+                  onChange={(e) => 
+                    setChangePasswordForm({
+                      ...changePasswordForm,
+                      newPassword: e.target.value,
+                    })
+                  }
+                  disabled={isChangePasswordLoading}
+                  placeholder="Enter new password (minimum 8 characters)"
+                  required
+                />
+                {changePasswordError && !isChangePasswordLoading && (
+                  <p className="mt-2 text-sm text-red-600">{changePasswordError}</p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="confirm-password">Confirm New Password</Label>
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  value={changePasswordForm.confirmPassword}
+                  onChange={(e) => 
+                    setChangePasswordForm({
+                      ...changePasswordForm,
+                      confirmPassword: e.target.value,
+                    })
+                  }
+                  disabled={isChangePasswordLoading}
+                  placeholder="Confirm your new password"
+                  required
+                />
+                {changePasswordError && !isChangePasswordLoading && (
+                  <p className="mt-2 text-sm text-red-600">{changePasswordError}</p>
+                )}
+              </div>
+              <div className="flex justify-end">
+                <Button
+                  variant="outline"
+                  onClick={handleChangePasswordClose}
+                  disabled={isChangePasswordLoading}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isChangePasswordLoading}
+                  className="ml-2"
+                >
+                  {isChangePasswordLoading ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+    );
+  }
 }

@@ -22,6 +22,24 @@ interface ChartData {
   revenue: number;
 }
 
+interface UserDemographics {
+  students: number;
+  instructors: number;
+  admins: number;
+}
+
+interface CourseStats {
+  active: number;
+  draft: number;
+  archived: number;
+}
+
+interface RevenueBreakdown {
+  course_sales: number;
+  subscriptions: number;
+  other: number;
+}
+
 export default function ReportsPage() {
   const [metrics, setMetrics] = useState<DashboardMetrics>({
     totalUsers: 0,
@@ -34,6 +52,21 @@ export default function ReportsPage() {
     pendingApprovals: 0,
   });
   const [chartData, setChartData] = useState<ChartData[]>([]);
+  const [demographics, setDemographics] = useState<UserDemographics>({
+    students: 0,
+    instructors: 0,
+    admins: 0,
+  });
+  const [courseStats, setCourseStats] = useState<CourseStats>({
+    active: 0,
+    draft: 0,
+    archived: 0,
+  });
+  const [revenueBreakdown, setRevenueBreakdown] = useState<RevenueBreakdown>({
+    course_sales: 0,
+    subscriptions: 0,
+    other: 0,
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -47,6 +80,18 @@ export default function ReportsPage() {
         // Fetch chart data (last 30 days)
         const chartResult = await adminService.getChartData();
         setChartData(chartResult);
+
+        // Fetch user demographics
+        const demographicsResult = await adminService.getDemographics();
+        setDemographics(demographicsResult);
+
+        // Fetch course stats
+        const courseStatsResult = await adminService.getCourseStats();
+        setCourseStats(courseStatsResult);
+
+        // Fetch revenue breakdown
+        const revenueBreakdownResult = await adminService.getRevenueBreakdown();
+        setRevenueBreakdown(revenueBreakdownResult);
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);
       } finally {
@@ -285,18 +330,20 @@ export default function ReportsPage() {
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Students</span>
                 <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {Math.round(metrics.totalUsers * 0.7).toLocaleString()}
+                  {demographics.students.toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Instructors</span>
                 <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {metrics.totalInstructors}
+                  {demographics.instructors}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Admins</span>
-                <span className="text-sm font-medium text-gray-900 dark:text-white">5</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                  {demographics.admins}
+                </span>
               </div>
             </div>
           </CardContent>
@@ -311,19 +358,19 @@ export default function ReportsPage() {
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Active Courses</span>
                 <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {Math.round(metrics.totalCourses * 0.8).toLocaleString()}
+                  {courseStats.active.toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Draft Courses</span>
                 <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {Math.round(metrics.totalCourses * 0.2).toLocaleString()}
+                  {courseStats.draft.toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Archived Courses</span>
                 <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {Math.round(metrics.totalCourses * 0.1).toLocaleString()}
+                  {courseStats.archived.toLocaleString()}
                 </span>
               </div>
             </div>
@@ -339,19 +386,19 @@ export default function ReportsPage() {
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Course Sales</span>
                 <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {formatCurrency(metrics.totalRevenue * 0.7)}
+                  {formatCurrency(revenueBreakdown.course_sales)}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Subscriptions</span>
                 <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {formatCurrency(metrics.totalRevenue * 0.25)}
+                  {formatCurrency(revenueBreakdown.subscriptions)}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Other</span>
                 <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {formatCurrency(metrics.totalRevenue * 0.05)}
+                  {formatCurrency(revenueBreakdown.other)}
                 </span>
               </div>
             </div>
