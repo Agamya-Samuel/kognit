@@ -46,23 +46,40 @@ export interface DashboardMetrics {
   pendingApprovals: number;
 }
 
+export interface RevenueBreakdown {
+  course_sales: number;
+  subscriptions: number;
+  other: number;
+}
+
 export interface ChartData {
   name: string;
   users: number;
   revenue: number;
 }
 
+export interface UserCountByRole {
+  role: string;
+  count: number;
+}
+
+export interface CourseCountByStatus {
+  active: number;
+  draft: number;
+  archived: number;
+}
+
 @Injectable()
- export class AdminService {
-   constructor(
-     private readonly usersRepo: UsersRepository,
-     private readonly instructorProfilesRepo: InstructorProfilesRepository,
-     private readonly coursesRepo: CoursesRepository,
-     private readonly assignmentsRepo: AssignmentsRepository,
-     private readonly paymentsRepo: PaymentsRepository,
-     private readonly progressRepo: ProgressRepository,
-     private readonly settingsRepo: SettingsRepository,
-   ) {}
+export class AdminService {
+  constructor(
+    private readonly usersRepo: UsersRepository,
+    private readonly instructorProfilesRepo: InstructorProfilesRepository,
+    private readonly coursesRepo: CoursesRepository,
+    private readonly assignmentsRepo: AssignmentsRepository,
+    private readonly paymentsRepo: PaymentsRepository,
+    private readonly progressRepo: ProgressRepository,
+    private readonly settingsRepo: SettingsRepository,
+  ) {}
 
   async listUsers(query: AdminListUsersQuery) {
     const limit = Math.min(query.limit ?? 20, 100);
@@ -302,6 +319,59 @@ export interface ChartData {
     }
     return { message: 'Settings updated successfully' };
   }
+
+  async getUserCountsByRole(): Promise<UserCountByRole[]> {
+    // Define all possible roles from the enum
+    const roles = ['student', 'instructor', 'admin', 'institution_admin'];
+    
+    // Get count for each role
+    const counts = await Promise.all(
+      roles.map(async (role) => {
+        const count = await this.usersRepo.count({ role });
+        return { role, count };
+      })
+    );
+    
+    return counts;
+  }
+
+   async getCourseCountsByStatus(): Promise<CourseCountByStatus> {
+     const [active, draft, archived] = await Promise.all([
+       this.coursesRepo.count({ isPublished: true }), // Active: published and not deleted
+       this.coursesRepo.count({ isPublished: false }), // Draft: unpublished and not deleted
+       this.coursesRepo.count({ deletedAt: true }), // Archived: deleted (regardless of publish state)
+     ]);
+
+     return {
+       active,
+       draft,
+       archived,
+     };
+   }
+
+   async getRevenueBreakdown(): Promise<RevenueBreakdown> {
+     const breakdown = await this.paymentsRepo.getRevenueBreakdown();
+     
+     // Initialize with default values
+     const result: RevenueBreakdown = {
+       course_sales: 0,
+       subscriptions: 0,
+       other: 0
+     };
+     
+     // Map the breakdown to our expected format
+     breakdown.forEach(item => {
+       if (item.type === 'course_sales') {
+         result.course_sales = Number(item.amount);
+       } else if (item.type === 'subscription') {
+         result.subscriptions = Number(item.amount);
+       } else {
+         result.other += Number(item.amount);
+       }
+     });
+     
+     return result;
+   }
 
   private sanitizeUser(user: User) {
     const { passwordHash, deletedAt, ...safe } = user;

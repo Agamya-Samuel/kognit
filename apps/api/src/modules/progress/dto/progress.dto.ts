@@ -118,3 +118,17 @@ export class WatchHistoryResponseDto {
   @ApiProperty({ example: 0 })
   offset: number;
 }
+
+/**
+ * Watch time summary response
+ */
+export class WatchTimeSummaryDto {
+  @ApiProperty({ example: 7200 })
+  totalWatchedSeconds: number;
+
+  @ApiProperty({ example: 5 })
+  totalCourses: number;
+
+  @ApiProperty({ example: '2026-05-17T10:30:00Z' })
+  lastWatchedAt: string | null;
+}

@@ -14,6 +14,10 @@ describe('AdminService', () => {
   let usersRepo: jest.Mocked<UsersRepository>;
   let instructorProfilesRepo: jest.Mocked<InstructorProfilesRepository>;
   let coursesRepo: jest.Mocked<CoursesRepository>;
+  let assignmentsRepo: jest.Mocked<AssignmentsRepository>;
+  let paymentsRepo: jest.Mocked<PaymentsRepository>;
+  let progressRepo: jest.Mocked<ProgressRepository>;
+  let settingsRepo: jest.Mocked<SettingsRepository>;
 
   const mockUser = {
     id: 1,
@@ -112,33 +116,38 @@ describe('AdminService', () => {
             create: jest.fn(),
             sumPaidAmount: jest.fn(),
             getDailyStats: jest.fn(),
+            getRevenueBreakdown: jest.fn(),
           },
         },
-{
-           provide: ProgressRepository,
-           useValue: {
-             findById: jest.fn(),
-             findByStudentAndLecture: jest.fn(),
-             upsert: jest.fn(),
-             count: jest.fn(),
-             countCompleted: jest.fn(),
-           },
-         },
-         {
-           provide: SettingsRepository,
-           useValue: {
-             getById: jest.fn(),
-             getAll: jest.fn(),
-             upsert: jest.fn(),
-           },
-         },
-       ],
+        {
+          provide: ProgressRepository,
+          useValue: {
+            findById: jest.fn(),
+            findByStudentAndLecture: jest.fn(),
+            upsert: jest.fn(),
+            count: jest.fn(),
+            countCompleted: jest.fn(),
+          },
+        },
+        {
+          provide: SettingsRepository,
+          useValue: {
+            getById: jest.fn(),
+            getAll: jest.fn(),
+            upsert: jest.fn(),
+          },
+        },
+      ],
     }).compile();
 
     service = module.get<AdminService>(AdminService);
     usersRepo = module.get(UsersRepository);
     instructorProfilesRepo = module.get(InstructorProfilesRepository);
     coursesRepo = module.get(CoursesRepository);
+    assignmentsRepo = module.get(AssignmentsRepository);
+    paymentsRepo = module.get(PaymentsRepository);
+    progressRepo = module.get(ProgressRepository);
+    settingsRepo = module.get(SettingsRepository);
   });
 
   it('should be defined', () => {
@@ -288,4 +297,110 @@ describe('AdminService', () => {
       await expect(service.suspendCourse(999)).rejects.toThrow(NotFoundException);
     });
   });
-});
+
+  // ─── Course Statistics ───────────────────────────────────────────────────
+
+  describe('getCourseCountsByStatus', () => {
+    it('should return course counts by status', async () => {
+      coursesRepo.count
+        .mockResolvedValueOnce(10) // active
+        .mockResolvedValueOnce(5)  // draft
+        .mockResolvedValueOnce(2); // archived
+
+      const result = await service.getCourseCountsByStatus();
+
+      expect(result).toEqual({
+        active: 10,
+        draft: 5,
+        archived: 2,
+      });
+      expect(coursesRepo.count).toHaveBeenCalledTimes(3);
+      // First call: active courses (isPublished: true)
+      expect(coursesRepo.count).toHaveBeenNthCalledWith(1, { isPublished: true });
+      // Second call: draft courses (isPublished: false)
+      expect(coursesRepo.count).toHaveBeenNthCalledWith(2, { isPublished: false });
+      // Third call: archived courses (deletedAt: true)
+      expect(coursesRepo.count).toHaveBeenNthCalledWith(3, { deletedAt: true });
+   });
+
+     it('should handle zero counts', async () => {
+       coursesRepo.count
+         .mockResolvedValueOnce(0) // active
+         .mockResolvedValueOnce(0)  // draft
+         .mockResolvedValueOnce(0); // archived
+
+       const result = await service.getCourseCountsByStatus();
+
+       expect(result).toEqual({
+         active: 0,
+         draft: 0,
+         archived: 0,
+       });
+     });
+   });
+
+   // ─── Revenue Breakdown ───────────────────────────────────────────────────
+
+   describe('getRevenueBreakdown', () => {
+     it('should return revenue breakdown by type', async () => {
+       paymentsRepo.getRevenueBreakdown.mockResolvedValue([
+         { type: 'course_sales', amount: 1000 },
+         { type: 'subscription', amount: 500 },
+         { type: 'other', amount: 250 }
+       ]);
+
+       const result = await service.getRevenueBreakdown();
+
+       expect(result).toEqual({
+         course_sales: 1000,
+         subscriptions: 500,
+         other: 250
+       });
+       expect(paymentsRepo.getRevenueBreakdown).toHaveBeenCalledTimes(1);
+     });
+
+     it('should handle missing payment types gracefully', async () => {
+       paymentsRepo.getRevenueBreakdown.mockResolvedValue([
+         { type: 'course_sales', amount: 1000 }
+         // Missing subscription and other types
+       ]);
+
+       const result = await service.getRevenueBreakdown();
+
+       expect(result).toEqual({
+         course_sales: 1000,
+         subscriptions: 0,
+         other: 0
+       });
+     });
+
+     it('should accumulate multiple payments of same type', async () => {
+       paymentsRepo.getRevenueBreakdown.mockResolvedValue([
+         { type: 'other', amount: 100 },
+         { type: 'other', amount: 50 },
+         { type: 'course_sales', amount: 200 },
+         { type: 'course_sales', amount: 300 }
+       ]);
+
+       const result = await service.getRevenueBreakdown();
+
+       expect(result).toEqual({
+         course_sales: 500,
+         subscriptions: 0,
+         other: 150
+       });
+     });
+
+     it('should return zero values when no payments exist', async () => {
+       paymentsRepo.getRevenueBreakdown.mockResolvedValue([]);
+
+       const result = await service.getRevenueBreakdown();
+
+       expect(result).toEqual({
+         course_sales: 0,
+         subscriptions: 0,
+         other: 0
+       });
+     });
+   });
+ });

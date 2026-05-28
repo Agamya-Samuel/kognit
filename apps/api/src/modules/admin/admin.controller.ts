@@ -192,17 +192,38 @@ export class AdminController {
     return this.adminService.deleteAssignment(id);
   }
 
-  @Get('settings')
-  @ApiResponse({ status: 200, description: 'Platform settings data' })
-  @ApiOperation({ summary: 'Get platform settings' })
-  async getSettings() {
-    return this.adminService.getSettings();
-  }
+    @Get('settings')
+    @ApiResponse({ status: 200, description: 'Platform settings data' })
+    @ApiOperation({ summary: 'Get platform settings' })
+    async getSettings() {
+        return this.adminService.getSettings();
+    }
 
-  @Patch('settings')
-  @ApiResponse({ status: 200, description: 'Platform settings updated' })
-  @ApiOperation({ summary: 'Update platform settings' })
-  async updateSettings(@Body() settingsData: any) {
-    return this.adminService.updateSettings(settingsData);
-  }
+     @Get('dashboard/demographics')
+     @ApiResponse({ status: 200, description: 'User counts by role' })
+     @ApiOperation({ summary: 'Get user counts by role for dashboard demographics' })
+     async getUserCountsByRole() {
+         return this.adminService.getUserCountsByRole();
+     }
+
+      @Get('dashboard/course-stats')
+      @ApiResponse({ status: 200, description: 'Course counts by status' })
+      @ApiOperation({ summary: 'Get course counts by status (active/draft/archived)' })
+      async getCourseCountsByStatus() {
+          return this.adminService.getCourseCountsByStatus();
+      }
+
+    @Get('dashboard/revenue-breakdown')
+    @ApiResponse({ status: 200, description: 'Revenue breakdown by type' })
+    @ApiOperation({ summary: 'Get revenue breakdown by type (course_sales, subscriptions, other)' })
+    async getRevenueBreakdown() {
+        return this.adminService.getRevenueBreakdown();
+    }
+
+    @Patch('settings')
+    @ApiResponse({ status: 200, description: 'Platform settings updated' })
+    @ApiOperation({ summary: 'Update platform settings' })
+    async updateSettings(@Body() settingsData: any) {
+        return this.adminService.updateSettings(settingsData);
+    }
 }

@@ -19,6 +19,7 @@ import {
   LectureProgressDto,
   CourseProgressResponseDto,
   WatchHistoryResponseDto,
+  WatchTimeSummaryDto,
 } from './dto/progress.dto';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 
@@ -154,6 +155,23 @@ export class ProgressController {
       limit: limit ? parseInt(limit, 10) : 20,
       offset: offset ? parseInt(offset, 10) : 0,
     });
+
+    return {
+      success: true,
+      data: result,
+    };
+  }
+
+  @Get('summary')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get watch time summary for the current student' })
+  @ApiResponse({ status: 200, description: 'Watch time summary retrieved successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getWatchSummary(
+    @CurrentUser() user: { sub: number; role: string },
+  ) {
+    const result = await this.progressService.getWatchSummary(user.sub);
 
     return {
       success: true,
