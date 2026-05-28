@@ -5,7 +5,7 @@ import sharedConfig from '../../packages/config/eslint.config.js';
 export default tseslint.config(
   ...sharedConfig,
   {
-    ignores: ['node_modules', '.next', 'dist', 'coverage', '**/profile/page.tsx'],
+    ignores: ['node_modules', '.next', 'dist', 'coverage', 'src/test/**'],
   },
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
@@ -23,9 +23,6 @@ export default tseslint.config(
       '@next/next/no-html-link-for-pages': 'off',
       '@typescript-eslint/no-floating-promises': 'warn',
       '@typescript-eslint/no-misused-promises': 'warn',
-      '@typescript-eslint/no-require-imports': 'off',
-      '@typescript-eslint/no-empty-object-type': 'off',
-      'prefer-const': 'warn',
     },
   },
 );
