@@ -3,7 +3,7 @@ import * as nextPlugin from '@next/eslint-plugin-next';
 
 export default tseslint.config(
   {
-    ignores: ['node_modules', '.next', 'dist', 'coverage', 'src/app/dashboard/settings/page.tsx', 'src/app/(authenticated)/profile/page.tsx'],
+    ignores: ['node_modules', '.next', 'dist', 'coverage', 'src/test/**'],
   },
   {
     files: ['**/*.ts', '**/*.tsx'],
@@ -12,6 +12,10 @@ export default tseslint.config(
     },
     languageOptions: {
       parser: tseslint.parser,
+      parserOptions: {
+        tsconfigRootDir: import.meta.dirname,
+        project: ['./tsconfig.json'],
+      },
     },
     rules: {
       '@next/next/no-img-element': 'off',

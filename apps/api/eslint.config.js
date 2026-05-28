@@ -1,20 +1,27 @@
-const tseslint = require('typescript-eslint');
-const sharedConfig = require('../../packages/config/eslint.config.js');
+import tseslint from 'typescript-eslint';
 
-module.exports = [
-  ...sharedConfig,
-  {
-    ignores: ['dist/**', 'node_modules/**', '**/__tests__/**', '**/*.spec.ts', 'test/**'],
-  },
+export default tseslint.config(
+  { ignores: ['dist/**', 'node_modules/**', '**/__tests__/**', '**/*.spec.ts', 'test/**'] },
+  ...tseslint.configs.recommended,
   {
     files: ['**/*.ts'],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.json', '../../packages/config/tsconfig.base.json'],
+      },
+    },
     rules: {
-      // Override shared config rules for API-specific needs
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/ban-ts-comment': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-require-imports': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/no-misused-promises': 'error',
+      '@typescript-eslint/await-thenable': 'error',
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'prefer-const': 'error',
     },
-  },
-];
+  }
+);
