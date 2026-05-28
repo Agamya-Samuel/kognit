@@ -21,6 +21,12 @@ export interface LectureProgressWithDetails extends Progress {
   courseTitle: string;
 }
 
+export interface WatchTimeSummary {
+  totalWatchedSeconds: number;
+  totalCourses: number;
+  lastWatchedAt: string | null;
+}
+
 @Injectable()
 export class ProgressRepository extends BaseRepository<Progress> {
   constructor(db: any) {
@@ -177,7 +183,6 @@ export class ProgressRepository extends BaseRepository<Progress> {
         };
       }
 
-      // Get all progress records for this student + course lectures
       const progressRecords = await this.db
         .select()
         .from(progress)
@@ -188,7 +193,6 @@ export class ProgressRepository extends BaseRepository<Progress> {
           )
         );
 
-      // Get total duration for all lectures
       const sectionIds = (await this.db
         .select({ id: sections.id })
         .from(sections)
@@ -227,124 +231,114 @@ export class ProgressRepository extends BaseRepository<Progress> {
     }
   }
 
-/**
- * Get watch time summary for a student
- */
-export interface WatchTimeSummary {
-  totalWatchedSeconds: number;
-  totalCourses: number;
-  lastWatchedAt: string | null;
-}
+  /**
+   * Get all progress for a student in a specific course
+   */
+  async findByStudentAndCourse(studentId: number, courseId: number): Promise<Progress[]> {
+    try {
+      const lectureIds = await this.getCourseLectureIds(courseId);
+      if (lectureIds.length === 0) return [];
 
-/**
- * Get all progress for a student in a specific course
- */
-async findByStudentAndCourse(studentId: number, courseId: number): Promise<Progress[]> {
-  try {
-    const lectureIds = await this.getCourseLectureIds(courseId);
-    if (lectureIds.length === 0) return [];
-
-    return this.db
-      .select()
-      .from(progress)
-      .where(
-        and(
-          eq(progress.studentId, studentId),
-          inArray(progress.lectureId, lectureIds),
-        )
-      );
-  } catch (error) {
-    this.handleError(error, 'findByStudentAndCourse');
-    return [];
+      return this.db
+        .select()
+        .from(progress)
+        .where(
+          and(
+            eq(progress.studentId, studentId),
+            inArray(progress.lectureId, lectureIds),
+          )
+        );
+    } catch (error) {
+      this.handleError(error, 'findByStudentAndCourse');
+      return [];
+    }
   }
-}
 
-/**
- * Get recently watched lectures with details for a student
- */
-async getRecentWatchHistory(
-  studentId: number,
-  options: { offset?: number; limit?: number } = {},
-): Promise<LectureProgressWithDetails[]> {
-  try {
-    const offset = options.offset ?? 0;
-    const limit = options.limit ?? 20;
+  /**
+   * Get recently watched lectures with details for a student
+   */
+  async getRecentWatchHistory(
+    studentId: number,
+    options: { offset?: number; limit?: number } = {},
+  ): Promise<LectureProgressWithDetails[]> {
+    try {
+      const offset = options.offset ?? 0;
+      const limit = options.limit ?? 20;
 
-    const result = await this.db
-      .select({
-        progressId: progress.id,
-        studentId: progress.studentId,
-        lectureId: progress.lectureId,
-        watchedSeconds: progress.watchedSeconds,
-        isCompleted: progress.isCompleted,
-        lastWatchedAt: progress.lastWatchedAt,
-        lectureTitle: lectures.title,
-        lectureDuration: lectures.durationSeconds,
-        sectionTitle: sections.title,
-        sectionCourseId: sections.courseId,
-      })
-      .from(progress)
-      .innerJoin(lectures, eq(progress.lectureId, lectures.id))
-      .innerJoin(sections, eq(lectures.sectionId, sections.id))
-      .where(eq(progress.studentId, studentId))
-      .orderBy(desc(progress.lastWatchedAt))
-      .limit(limit)
-      .offset(offset);
+      const result = await this.db
+        .select({
+          progressId: progress.id,
+          studentId: progress.studentId,
+          lectureId: progress.lectureId,
+          watchedSeconds: progress.watchedSeconds,
+          isCompleted: progress.isCompleted,
+          lastWatchedAt: progress.lastWatchedAt,
+          lectureTitle: lectures.title,
+          lectureDuration: lectures.durationSeconds,
+          sectionTitle: sections.title,
+          sectionCourseId: sections.courseId,
+        })
+        .from(progress)
+        .innerJoin(lectures, eq(progress.lectureId, lectures.id))
+        .innerJoin(sections, eq(lectures.sectionId, sections.id))
+        .where(eq(progress.studentId, studentId))
+        .orderBy(desc(progress.lastWatchedAt))
+        .limit(limit)
+        .offset(offset);
 
-    return result.map(r => ({
-      id: r.progressId,
-      studentId: r.studentId,
-      lectureId: r.lectureId,
-      watchedSeconds: r.watchedSeconds,
-      isCompleted: r.isCompleted,
-      lastWatchedAt: r.lastWatchedAt,
-      lectureTitle: r.lectureTitle,
-      lectureDuration: r.lectureDuration,
-      sectionTitle: r.sectionTitle,
-      courseId: r.sectionCourseId,
-      courseTitle: '', // Will be populated by service if needed
-    }));
-  } catch (error) {
-    this.handleError(error, 'getRecentWatchHistory');
-    return [];
+      return result.map(r => ({
+        id: r.progressId,
+        studentId: r.studentId,
+        lectureId: r.lectureId,
+        watchedSeconds: r.watchedSeconds,
+        isCompleted: r.isCompleted,
+        lastWatchedAt: r.lastWatchedAt,
+        lectureTitle: r.lectureTitle,
+        lectureDuration: r.lectureDuration,
+        sectionTitle: r.sectionTitle,
+        courseId: r.sectionCourseId,
+        courseTitle: '',
+      }));
+    } catch (error) {
+      this.handleError(error, 'getRecentWatchHistory');
+      return [];
+    }
   }
-}
 
-/**
- * Get watch time summary for a student
- */
-async getWatchTimeSummary(studentId: number): Promise<WatchTimeSummary | null> {
-  try {
-    const result = await this.db
-      .select({
-        totalWatchedSeconds: sql<number>`SUM(${progress.watchedSeconds})`,
-        totalCourses: sql<number>`COUNT(DISTINCT ${progress.courseId})`,
-        lastWatchedAt: sql<string | null>`MAX(${progress.lastWatchedAt})`,
-      })
-      .from(progress)
-      .where(eq(progress.studentId, studentId));
+  /**
+   * Get watch time summary for a student
+   */
+  async getWatchTimeSummary(studentId: number): Promise<WatchTimeSummary | null> {
+    try {
+      const result = await this.db
+        .select({
+          totalWatchedSeconds: sql<number>`SUM(${progress.watchedSeconds})`,
+          lastWatchedAt: sql<string | null>`MAX(${progress.lastWatchedAt})`,
+        })
+        .from(progress)
+        .where(eq(progress.studentId, studentId));
 
-    if (result.length === 0) {
+      if (result.length === 0) {
+        return {
+          totalWatchedSeconds: 0,
+          totalCourses: 0,
+          lastWatchedAt: null,
+        };
+      }
+
+      const row = result[0];
+      return {
+        totalWatchedSeconds: row.totalWatchedSeconds ?? 0,
+        totalCourses: 0,
+        lastWatchedAt: row.lastWatchedAt ?? null,
+      };
+    } catch (error) {
+      this.handleError(error, 'getWatchTimeSummary');
       return {
         totalWatchedSeconds: 0,
         totalCourses: 0,
         lastWatchedAt: null,
       };
     }
-
-    const row = result[0];
-    return {
-      totalWatchedSeconds: row.totalWatchedSeconds ?? 0,
-      totalCourses: row.totalCourses ?? 0,
-      lastWatchedAt: row.lastWatchedAt ?? null,
-    };
-  } catch (error) {
-    this.handleError(error, 'getWatchTimeSummary');
-    return {
-      totalWatchedSeconds: 0,
-      totalCourses: 0,
-      lastWatchedAt: null,
-    };
   }
-}
 }

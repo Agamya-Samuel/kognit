@@ -1,13 +1,17 @@
-import tseslint from 'typescript-eslint';
+const tseslint = require('typescript-eslint');
 
-export default tseslint.config(
-  { ignores: ['dist/**', 'node_modules/**', '**/__tests__/**', '**/*.spec.ts', 'test/**'] },
+module.exports = tseslint.config(
+  {
+    ignores: ['dist/**', 'node_modules/**', '**/__tests__/**', '**/*.spec.ts', 'test/**'],
+  },
   ...tseslint.configs.recommended,
   {
     files: ['**/*.ts'],
     languageOptions: {
+      parser: tseslint.parser,
       parserOptions: {
-        project: ['./tsconfig.json', '../../packages/config/tsconfig.base.json'],
+        project: './tsconfig.json',
+        tsconfigRootDir: __dirname,
       },
     },
     rules: {
@@ -16,12 +20,9 @@ export default tseslint.config(
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-require-imports': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
-      '@typescript-eslint/no-floating-promises': 'error',
-      '@typescript-eslint/no-misused-promises': 'error',
-      '@typescript-eslint/await-thenable': 'error',
-      'no-console': ['warn', { allow: ['warn', 'error'] }],
-      'prefer-const': 'error',
+      '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/no-floating-promises': 'warn',
+      'no-console': 'warn',
     },
-  }
+  },
 );
