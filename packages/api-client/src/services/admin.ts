@@ -45,7 +45,19 @@ export const adminService = {
     return getApiClient().get<any>('/admin/dashboard/metrics');
   },
 
-  async getChartData(days?: number) {
-    return getApiClient().get<any[]>('/admin/dashboard/chart', { days: days || 30 });
-  },
-};
+   async getChartData(days?: number) {
+     return getApiClient().get<any[]>('/admin/dashboard/chart', { days: days || 30 });
+   },
+
+   async getDemographics() {
+     return getApiClient().get<any>('/admin/dashboard/demographics');
+   },
+
+   async getCourseStats() {
+     return getApiClient().get<any>('/admin/dashboard/course-stats');
+   },
+
+   async getRevenueBreakdown() {
+     return getApiClient().get<any>('/admin/dashboard/revenue-breakdown');
+   },
+ };

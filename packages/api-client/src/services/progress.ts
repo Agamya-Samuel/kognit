@@ -1,6 +1,12 @@
 import { getApiClient } from '../index';
 import type { LectureProgress, UpdateProgressResponse, WatchHistoryResponse } from '@edutech/types';
 
+export interface WatchTimeSummary {
+  totalWatchedSeconds: number;
+  totalCourses: number;
+  lastWatchedAt: string | null;
+}
+
 export const progressService = {
   async getLectureProgress(lectureId: number): Promise<LectureProgress | null> {
     try {
@@ -23,5 +29,9 @@ export const progressService = {
       offset,
       limit,
     });
+  },
+
+  async getWatchSummary(): Promise<WatchTimeSummary> {
+    return getApiClient().get<WatchTimeSummary>('/progress/summary');
   },
 };
