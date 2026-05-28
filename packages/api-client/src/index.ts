@@ -89,7 +89,7 @@ export class ApiClient {
                 originalRequest._retry = true;
 
                 return this.client.request(originalRequest);
-              } catch (refreshError) {
+              } catch (_refreshError) {
                 this.refreshPromise = null;
                 this.onUnauthorized?.();
                 throw error;

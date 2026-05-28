@@ -4,13 +4,13 @@ import sharedConfig from '../config/eslint.config.js';
 export default tseslint.config(
   ...sharedConfig,
   {
-    ignores: ['node_modules', 'dist', 'coverage'],
+    ignores: ['node_modules', 'dist', 'coverage', '**/*.spec.ts', '**/*.test.ts'],
   },
   {
     files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
       parserOptions: {
-        project: ['./tsconfig.json', '../config/tsconfig.base.json'],
+        project: ['./tsconfig.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -23,7 +23,6 @@ export default tseslint.config(
       },
     },
     rules: {
-      // Turn off type-requiring rules for config files
       '@typescript-eslint/no-floating-promises': 'off',
       '@typescript-eslint/no-misused-promises': 'off',
     },

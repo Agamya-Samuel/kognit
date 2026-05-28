@@ -34,7 +34,7 @@ export default function DashboardPage() {
       const completedCourses = enrollments.filter(e => e.progress === 100).length;
       
       // Calculate total watch time from progress tracking
-      let totalWatchTime = 0;
+      const totalWatchTime = 0;
       const inProgress = [];
       const activity = [];
       
