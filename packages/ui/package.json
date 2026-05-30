@@ -10,6 +10,15 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./tokens": {
+      "style": "./dist/tokens/index.css"
+    },
+    "./tailwind-theme": {
+      "style": "./dist/tokens/tailwind.css"
+    },
+    "./globals.css": {
+      "style": "./dist/globals.css"
     }
   },
   "scripts": {
