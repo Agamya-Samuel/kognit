@@ -7,6 +7,9 @@ import { AssignmentsRepository } from '../../db/repositories/assignments.reposit
 import { PaymentsRepository } from '../../db/repositories/payments.repository';
 import { ProgressRepository } from '../../db/repositories/progress.repository';
 import { SettingsRepository } from '../../db/repositories/settings.repository';
+import { StudentProfilesRepository } from '../../db/repositories/student-profiles.repository';
+import { InstitutionAccountsRepository } from '../../db/repositories/institution-accounts.repository';
+import { EmailVerificationsRepository } from '../../db/repositories/email-verifications.repository';
 import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
 
@@ -44,6 +47,21 @@ const repositories = [
   {
     provide: SettingsRepository,
     useFactory: (db: any) => new SettingsRepository(db),
+    inject: [DRIZZLE_DB],
+  },
+  {
+    provide: StudentProfilesRepository,
+    useFactory: (db: any) => new StudentProfilesRepository(db),
+    inject: [DRIZZLE_DB],
+  },
+  {
+    provide: InstitutionAccountsRepository,
+    useFactory: (db: any) => new InstitutionAccountsRepository(db),
+    inject: [DRIZZLE_DB],
+  },
+  {
+    provide: EmailVerificationsRepository,
+    useFactory: (db: any) => new EmailVerificationsRepository(db),
     inject: [DRIZZLE_DB],
   },
 ];

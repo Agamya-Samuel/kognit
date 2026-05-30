@@ -2,12 +2,16 @@ import {
   Controller,
   Get,
   Patch,
+  Post,
   Delete,
   Param,
   Query,
   Body,
   ParseIntPipe,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { Roles } from '../auth/decorators/auth.decorators';
 import { AdminService } from './admin.service';
@@ -225,5 +229,46 @@ export class AdminController {
     @ApiOperation({ summary: 'Update platform settings' })
     async updateSettings(@Body() settingsData: any) {
         return this.adminService.updateSettings(settingsData);
+    }
+
+    // ─── Institution Management ──────────────────────────────────────────
+
+    @Get('institutions')
+    @ApiResponse({ status: 200, description: 'Paginated institution list' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 403, description: 'Forbidden — admin only' })
+    @ApiOperation({ summary: 'List all institutions with pagination' })
+    async listInstitutions(
+      @Query('page') page?: string,
+      @Query('limit') limit?: string,
+      @Query('search') search?: string,
+    ) {
+      return this.adminService.listInstitutions({
+        page: page ? parseInt(page, 10) : undefined,
+        limit: limit ? parseInt(limit, 10) : undefined,
+        search,
+      });
+    }
+
+    @Get('institutions/:id')
+    @ApiResponse({ status: 200, description: 'Institution details' })
+    @ApiResponse({ status: 404, description: 'Institution not found' })
+    @ApiParam({ name: 'id', description: 'Institution ID' })
+    @ApiOperation({ summary: 'Get a single institution by ID' })
+    async getInstitution(@Param('id', ParseIntPipe) id: number) {
+      return this.adminService.getInstitution(id);
+    }
+
+    // ─── Student Bulk Import ──────────────────────────────────────────────
+
+    @Post('institutions/:id/students/import')
+    @ApiResponse({ status: 200, description: 'Students imported successfully' })
+    @ApiOperation({ summary: 'Import students from CSV for an institution' })
+    @ApiParam({ name: 'id', description: 'Institution ID' })
+    async importStudentsFromCSV(
+      @Param('id', ParseIntPipe) institutionId: number,
+      @Body() body: { students: { name: string; email: string }[] },
+    ) {
+      return this.adminService.importStudentsFromCSV(institutionId, body.students);
     }
 }
