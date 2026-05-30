@@ -8,6 +8,8 @@ export interface UserProfile {
   avatarUrl?: string;
   isVerified: boolean;
   isActive: boolean;
+  grade?: string;
+  institution?: string;
   createdAt: string;
   updatedAt: string;
 }
