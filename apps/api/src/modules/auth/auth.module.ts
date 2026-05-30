@@ -10,6 +10,7 @@ import { EmailVerificationsRepository } from '../../db/repositories/email-verifi
 import { PasswordResetsRepository } from '../../db/repositories/password-resets.repository';
 import { RefreshTokensRepository } from '../../db/repositories/refresh-tokens.repository';
 import { UserAuthProvidersRepository } from '../../db/repositories/user-auth-providers.repository';
+import { StudentProfilesRepository } from '../../db/repositories/student-profiles.repository';
 
 // Strategies
 import { JwtStrategy } from './strategies/jwt.strategy';
@@ -27,6 +28,7 @@ import { TokenService } from './services/token.service';
 import { LockoutService } from './services/lockout.service';
 import { EmailVerificationService } from './services/email-verification.service';
 import { PasswordResetService } from './services/password-reset.service';
+import { StudentActivationService } from './services/student-activation.service';
 
 // Controller & main service
 import { AuthController } from './auth.controller';
@@ -56,6 +58,11 @@ const repositories = [
   {
     provide: UserAuthProvidersRepository,
     useFactory: (db: any) => new UserAuthProvidersRepository(db),
+    inject: [DRIZZLE_DB],
+  },
+  {
+    provide: StudentProfilesRepository,
+    useFactory: (db: any) => new StudentProfilesRepository(db),
     inject: [DRIZZLE_DB],
   },
 ];
@@ -89,10 +96,12 @@ const repositories = [
     LockoutService,
     EmailVerificationService,
     PasswordResetService,
+    StudentActivationService,
     AuthService,
   ],
   exports: [
     AuthService,
+    StudentActivationService,
     JwtAuthGuard,
     JwtRefreshGuard,
     RolesGuard,
