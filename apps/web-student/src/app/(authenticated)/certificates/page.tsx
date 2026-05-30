@@ -13,8 +13,8 @@ export default function CertificatesPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto space-y-4">
-          {Array.from({ length: 3 }).map((i) => (
-            <Card key={i}>
+          {Array.from({ length: 3 }).map((_, index) => (
+            <Card key={index}>
               <CardContent className="p-6 space-y-3">
                 <Skeleton className="h-6 w-1/2" />
                 <Skeleton className="h-4 w-1/3" />
