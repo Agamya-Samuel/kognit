@@ -38,12 +38,6 @@ export default function ProfilePage() {
   const [isLoadingTwoFactor, setIsLoadingTwoFactor] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/auth/login');
-    }
-  }, [authLoading, user, router]);
-
-  useEffect(() => {
     if (user?.id) {
       loadUserProfile();
       loadNotificationPreferences();
@@ -148,7 +142,7 @@ export default function ProfilePage() {
     window.location.href = '/auth/login';
   };
 
-  if (authLoading) {
+  if (authLoading || !user) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
