@@ -36,7 +36,13 @@ export default function ProfilePage() {
   
   const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false);
   const [isLoadingTwoFactor, setIsLoadingTwoFactor] = useState(false);
-  
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/auth/login');
+    }
+  }, [authLoading, user, router]);
+
   useEffect(() => {
     if (user?.id) {
       loadUserProfile();
@@ -141,7 +147,7 @@ export default function ProfilePage() {
     logout();
     window.location.href = '/auth/login';
   };
-    
+
   if (authLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -155,11 +161,6 @@ export default function ProfilePage() {
     );
   }
 
-  if (!user) {
-    router.push('/auth/login');
-    return null;
-  }
-    
   if (error) {
     return (
       <div className="container mx-auto px-4 py-8">
