@@ -13,6 +13,8 @@ export interface User {
   role: string;
   avatarUrl?: string;
   isVerified: boolean;
+  approvalStatus?: string;
+  onboardingCompleted?: boolean;
 }
 
 export interface AuthContextType {
@@ -21,7 +23,7 @@ export interface AuthContextType {
   refreshToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, portal?: string) => Promise<void>;
   logout: () => void;
   setTokens: (accessToken: string, refreshToken: string) => void;
   refreshTokens: () => Promise<void>;
@@ -84,8 +86,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const login = async (email: string, password: string) => {
-    const response = await axios.post(`${API_BASE}/auth/login`, { email, password });
+  const login = async (email: string, password: string, portal?: string) => {
+    const response = await axios.post(`${API_BASE}/auth/login`, { email, password, portal });
     const { user: authUser, tokens } = response.data;
 
     localStorage.setItem('accessToken', tokens.accessToken);

@@ -20,10 +20,11 @@ export interface LoginFormProps extends Omit<React.ComponentProps<'div'>, 'onSub
   onAppleLogin?: () => void;
   onGoogleLogin?: () => void;
   isLoading?: boolean;
+  error?: string;
 }
 
 export const LoginForm = React.forwardRef<HTMLDivElement, LoginFormProps>(
-  ({ className, onSubmit, onForgotPassword, onSignUpClick, onAppleLogin, onGoogleLogin, isLoading, ...props }, ref) => {
+  ({ className, onSubmit, onForgotPassword, onSignUpClick, onAppleLogin, onGoogleLogin, isLoading, error, ...props }, ref) => {
     const {
       register,
       handleSubmit,
@@ -77,6 +78,11 @@ export const LoginForm = React.forwardRef<HTMLDivElement, LoginFormProps>(
                   <FieldLabel htmlFor="email">Email</FieldLabel>
                   <Input id="email" type="email" placeholder="m@example.com" {...register('email')} error={errors.email?.message} />
                 </Field>
+                {error && (
+                  <Field>
+                    <p className="text-sm text-destructive">{error}</p>
+                  </Field>
+                )}
                 <Field>
                   <div className="flex items-center">
                     <FieldLabel htmlFor="password">Password</FieldLabel>
