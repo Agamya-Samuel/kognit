@@ -60,4 +60,16 @@ export const adminService = {
    async getRevenueBreakdown() {
      return getApiClient().get<any>('/admin/dashboard/revenue-breakdown');
    },
+
+   async getInstitutions(filters?: { page?: number; limit?: number; search?: string }) {
+     return getApiClient().get<any>('/admin/institutions', filters);
+   },
+
+   async getInstitution(id: number) {
+     return getApiClient().get<any>(`/admin/institutions/${id}`);
+   },
+
+   async importStudents(institutionId: number, students: { name: string; email: string }[]) {
+     return getApiClient().post<{ successCount: number; failureCount: number; errors: { row: number; email: string; reason: string }[] }>(`/admin/institutions/${institutionId}/students/import`, { students });
+   },
  };

@@ -55,10 +55,11 @@ export const authService = {
   /**
    * Step 1: Request verification code for registration
    * @param email - User's email address
+   * @param intent - Registration intent: 'student' | 'instructor'
    * @returns Response with message (and code in development)
    */
-  async requestRegistrationVerification(email: string): Promise<EmailVerificationResponse> {
-    return getApiClient().post<EmailVerificationResponse>('/auth/register/request', { email });
+  async requestRegistrationVerification(email: string, intent?: string): Promise<EmailVerificationResponse> {
+    return getApiClient().post<EmailVerificationResponse>('/auth/register/request', { email, intent });
   },
 
   /**
@@ -77,10 +78,11 @@ export const authService = {
    * @param code - 6-digit verification code
    * @param name - User's display name
    * @param password - User's password
+   * @param intent - Registration intent: 'student' | 'instructor'
    * @returns User profile and authentication tokens
    */
-  async completeRegistration(email: string, code: string, name: string, password: string): Promise<RegistrationCompleteResponse> {
-    return getApiClient().post<RegistrationCompleteResponse>('/auth/register/complete', { email, code, name, password });
+  async completeRegistration(email: string, code: string, name: string, password: string, intent?: string): Promise<RegistrationCompleteResponse> {
+    return getApiClient().post<RegistrationCompleteResponse>('/auth/register/complete', { email, code, name, password, intent });
   },
 
   // ─── Login / Logout ──────────────────────────────────────────────────────
@@ -89,10 +91,11 @@ export const authService = {
    * Authenticate user with email and password
    * @param email - User's email address
    * @param password - User's password
+   * @param portal - Portal being accessed: 'student' | 'instructor' | 'admin'
    * @returns User profile and authentication tokens
    */
-  async login(email: string, password: string): Promise<LoginResponse> {
-    return getApiClient().post<LoginResponse>('/auth/login', { email, password });
+  async login(email: string, password: string, portal?: string): Promise<LoginResponse> {
+    return getApiClient().post<LoginResponse>('/auth/login', { email, password, portal });
   },
 
   /**
@@ -202,5 +205,53 @@ export const authService = {
    */
   async getTwoFactorQrCode(): Promise<{ qrCode: string }> {
     return getApiClient().get<{ qrCode: string }>('/auth/2fa/qr-code');
+  },
+
+  // ─── Student Activation (Bulk Import) ──────────────────────────────────
+
+  /**
+   * Validate a student activation token from bulk import
+   * @param token - Activation token from email
+   * @returns User info if valid
+   */
+  async validateActivationToken(token: string): Promise<{ valid: boolean; email: string; name: string; institutionName: string | null }> {
+    return getApiClient().post<{ valid: boolean; email: string; name: string; institutionName: string | null }>('/auth/student-activation/validate', { token });
+  },
+
+  /**
+   * Complete student activation with password and profile
+   * @param token - Activation token from email
+   * @param password - Password to set
+   * @param name - Full name
+   * @param mobile - Mobile phone
+   * @param address - Street address
+   * @param city - City
+   * @param state - State
+   * @param pinCode - PIN/ZIP code
+   * @param country - Country
+   * @returns User profile and tokens (auto-login)
+   */
+  async completeActivation(
+    token: string,
+    password: string,
+    name: string,
+    mobile: string,
+    address: string,
+    city: string,
+    state: string,
+    pinCode: string,
+    country: string,
+  ): Promise<RegistrationCompleteResponse> {
+    return getApiClient().post<RegistrationCompleteResponse>('/auth/student-activation/complete', {
+      token,
+      password,
+      name,
+      mobile,
+      address,
+      city,
+      state,
+      pinCode,
+      country,
+    });
   },
 };
