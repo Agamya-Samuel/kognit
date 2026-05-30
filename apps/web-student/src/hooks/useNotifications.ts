@@ -26,11 +26,14 @@ export function useNotifications(filters: NotificationFilters = {}) {
     queryFn: async () => {
       const apiClient = getApiClient();
       try {
-        const result = await apiClient.get<{ data: Notification[] }>('/notifications', filters);
-        if (result && typeof result === 'object' && 'data' in result && Array.isArray(result.data)) {
-          return result.data as Notification[];
+        const result = await apiClient.get('/notifications', filters);
+        if (!result) {
+          return [];
         }
-        console.error('[useNotifications] Unexpected response structure:', result);
+        const resultObj = result as { data?: Notification[] };
+        if (resultObj.data && Array.isArray(resultObj.data)) {
+          return resultObj.data;
+        }
         return [];
       } catch (error) {
         console.error('[useNotifications] API error:', error);
@@ -47,7 +50,7 @@ export function useUnreadCount() {
     queryKey: ['notifications', 'unread-count'],
     queryFn: async () => {
       const apiClient = getApiClient();
-      const result = await apiClient.get<{ count: number }>('/notifications/unread-count');
+      const result = await apiClient.get('/notifications/unread-count') as { count: number };
       return result;
     },
     staleTime: 1 * 60 * 1000,
