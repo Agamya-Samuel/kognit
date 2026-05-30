@@ -116,14 +116,15 @@ export class InstructorAnalyticsService {
 
   /**
    * Get chart data for instructor dashboard (revenue and user engagement over time)
+   * @param instructorId - The instructor's user ID
    * @param days - Number of days to fetch data for
    */
-  async getInstructorChartData(days: number = 30): Promise<ChartData[]> {
+  async getInstructorChartData(instructorId: number, days: number = 30): Promise<ChartData[]> {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
     // Get daily stats for the instructor's courses
-    const dailyStats = await this.paymentsRepository.getInstructorDailyStats(startDate);
+    const dailyStats = await this.paymentsRepository.getInstructorDailyStats(instructorId, startDate);
     
     // Transform to the expected format
     return dailyStats.map((stat: any) => ({

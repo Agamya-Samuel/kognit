@@ -1,6 +1,9 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { UsersRepository } from '../../db/repositories/users.repository';
 import { InstructorProfilesRepository } from '../../db/repositories/instructor-profiles.repository';
+import { StudentProfilesRepository } from '../../db/repositories/student-profiles.repository';
+import { InstitutionAccountsRepository } from '../../db/repositories/institution-accounts.repository';
+import { EmailVerificationsRepository } from '../../db/repositories/email-verifications.repository';
 import { CoursesRepository } from '../../db/repositories/courses.repository';
 import { AssignmentsRepository } from '../../db/repositories/assignments.repository';
 import { PaymentsRepository } from '../../db/repositories/payments.repository';
@@ -352,29 +355,24 @@ export class AdminService {
      };
    }
 
-   async getRevenueBreakdown(): Promise<RevenueBreakdown> {
-     const breakdown = await this.paymentsRepo.getRevenueBreakdown();
-     
-     // Initialize with default values
-     const result: RevenueBreakdown = {
-       course_sales: 0,
-       subscriptions: 0,
-       other: 0
-     };
-     
-     // Map the breakdown to our expected format
-     breakdown.forEach(item => {
-       if (item.type === 'course_sales') {
-         result.course_sales = Number(item.amount);
-       } else if (item.type === 'subscription') {
-         result.subscriptions = Number(item.amount);
-       } else {
-         result.other += Number(item.amount);
-       }
-     });
-     
-     return result;
-   }
+async getRevenueBreakdown(): Promise<RevenueBreakdown> {
+      const breakdown = await this.paymentsRepo.getRevenueBreakdown();
+
+      // Initialize with default values
+      const result: RevenueBreakdown = {
+        course_sales: 0,
+        subscriptions: 0,
+        other: 0
+      };
+
+      // All payments are course-based now (no type column)
+      // Sum up all revenue as course_sales
+      breakdown.forEach(item => {
+        result.course_sales += Number(item.total);
+      });
+
+      return result;
+    }
 
   private sanitizeUser(user: User) {
     const { passwordHash, deletedAt, ...safe } = user;
@@ -467,6 +465,15 @@ export class AdminService {
         await this.studentProfilesRepo.create({
           userId: user.id,
           affiliatedInstituteId: institutionId,
+          resumeUrl: null,
+          skills: [],
+          placementStatus: null,
+          mobile: null,
+          address: null,
+          city: null,
+          state: null,
+          pinCode: null,
+          country: null,
         });
 
         // Generate activation token
