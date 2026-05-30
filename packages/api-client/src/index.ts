@@ -18,12 +18,21 @@ export class ApiClientError extends Error {
   status: number;
   details?: Array<{ field: string; message: string }>;
 
-  constructor(error: ApiErrorResponse, status: number) {
-    super(error.error.message);
+  constructor(error: unknown, status: number) {
+    const errorObj = (error && typeof error === 'object' ? error : {}) as Partial<ApiErrorResponse>;
+    const errorData = errorObj.error || errorObj.data;
+    const message = (errorData && typeof errorData === 'object' && 'message' in errorData)
+      ? (errorData as { message: string }).message
+      : 'An unexpected error occurred';
+    super(message);
     this.name = 'ApiClientError';
-    this.code = error.error.code;
+    this.code = (errorData && typeof errorData === 'object' && 'code' in errorData)
+      ? (errorData as { code: string }).code
+      : 'UNKNOWN_ERROR';
     this.status = status;
-    this.details = error.error.details;
+    this.details = (errorData && typeof errorData === 'object' && 'details' in errorData)
+      ? (errorData as { details: Array<{ field: string; message: string }> }).details
+      : undefined;
   }
 }
 
@@ -118,7 +127,7 @@ export class ApiClient {
           );
         }
 
-        if (error.response?.data) {
+        if (error.response?.data && typeof error.response.data === 'object') {
           throw new ApiClientError(error.response.data, error.response.status);
         }
 

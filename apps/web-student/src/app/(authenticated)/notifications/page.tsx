@@ -71,8 +71,8 @@ export default function NotificationsPage() {
 
         {isLoading ? (
           <div className="space-y-4">
-            {Array.from({ length: 4 }).map((i) => (
-              <Card key={i}>
+            {Array.from({ length: 4 }).map((_, index) => (
+              <Card key={index}>
                 <CardContent className="p-4 flex items-start gap-4">
                   <Skeleton className="h-10 w-10 rounded-full" />
                   <div className="flex-1 space-y-2">
