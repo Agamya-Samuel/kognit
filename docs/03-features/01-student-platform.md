@@ -475,6 +475,38 @@ The student platform implements comprehensive UX states to ensure seamless user 
 
 ---
 
+## Student Onboarding
+
+### Features
+- Required after initial registration to complete profile
+- Collects: mobile number, address, city, state, pinCode, country, affiliated institution
+- Name cannot be changed after onboarding completion
+- Automatic redirect to onboarding page if not completed
+
+### UX States
+
+#### Onboarding Form
+**Loading State:**
+- Form submission processing spinner
+- "Saving profile..." message
+
+**Error State:**
+- Field validation errors with specific messages
+- Save failure with retry option
+- Name locked error if attempting to change after onboarding
+
+**Success State:**
+- Onboarding complete confirmation
+- Redirect to dashboard
+- Profile marked as complete (onboardingCompleted = true)
+
+#### Institution Affiliation
+- Students can be affiliated with an institution during onboarding
+- Institution imported via admin CSV import generates activation token
+- Student uses activation token to set password and complete onboarding
+
+---
+
 ## Placement Support
 
 ### Features

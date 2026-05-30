@@ -321,8 +321,54 @@ The admin dashboard implements comprehensive UX states optimized for platform ma
 ## Institution Management
 
 ### Features
-- Institution account management
+- Institution account management with list and detail views
+- Student bulk import via CSV (admin creates activation tokens)
 - Support ticket management (Phase 2)
+
+### UX States
+
+#### Institution List
+**Loading State:**
+- Institution table loading spinner
+- Pagination controls in skeleton state
+- "Loading institutions..." message
+
+**Error State:**
+- Data fetch failure with retry option
+- Empty state when no institutions exist
+
+**Success State:**
+- Paginated institution table with ID, name, contact email, phone, address
+- View button linking to institution detail page
+
+#### Institution Detail
+**Loading State:**
+- Institution details loading spinner
+- "Loading institution details..." message
+
+**Error State:**
+- Institution not found error
+- Back to institutions link
+
+**Success State:**
+- Institution details: name, contact email, phone, address, created date
+- Student count and enrollment statistics (future)
+- Navigation back to institution list
+
+#### Student Bulk Import
+**Loading State:**
+- CSV parsing and processing spinner
+- "Importing students..." message with progress
+
+**Error State:**
+- CSV format validation errors
+- Email already registered errors per row
+- Invalid data format warnings
+
+**Success State:**
+- Import summary: success count, failure count
+- Row-level error details for failed imports
+- Activation tokens generated (logged for admin to distribute)
 
 ### UX States
 

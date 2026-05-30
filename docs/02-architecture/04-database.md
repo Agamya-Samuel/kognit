@@ -10,12 +10,17 @@
 ### `users`
 ```
 id, email, password_hash (bcrypt 12 rounds), role, name, avatar_url,
-is_verified, is_active, deleted_at, created_at, updated_at
+is_verified, is_active, approval_status (pending|approved|rejected),
+onboarding_completed (boolean), deleted_at, created_at, updated_at
 ```
 
 > **Single role per user.** The `role` column is an enum (`student`|`instructor`|`admin`|`institution_admin`). Each user account has exactly one role. Users who need access to multiple portals must create separate accounts with different emails.
 >
 > **Password hashing:** bcrypt with 12 salt rounds. Passwords capped at 128 characters to prevent DoS via expensive bcrypt computation on extremely long inputs.
+>
+> **Approval status:** Students always have `approval_status = 'approved'`. Instructors have `approval_status = 'pending'` until admin approves. Admins are created via seed only.
+>
+> **Onboarding:** Students have `onboarding_completed = false` until they complete their profile via `PATCH /users/profile`. Once set to true, the name field becomes locked.
 
 ### `instructor_profiles`
 ```
@@ -27,8 +32,13 @@ razorpay_seller_account_id, created_at
 ### `student_profiles`
 ```
 id, user_id (FK), resume_url, skills[],
-placement_status, created_at
+mobile, address, city, state, pin_code, country,
+affiliated_institute_id (FK to institution_accounts),
+approval_status, onboarding_completed,
+created_at, updated_at
 ```
+
+> **Affiliated Institute:** Students can be affiliated with an institution during onboarding, linking to `institution_accounts.id`. Used for institutional billing and cohort management.
 
 ### `admin_profiles`
 ```
@@ -151,10 +161,14 @@ id, user_id (FK), token_hash (VARCHAR(60) — bcrypt 10 rounds), expires_at, use
 
 ### `email_verifications`
 ```
-id, user_id (FK), token_hash (VARCHAR(60) — bcrypt 10 rounds), expires_at, verified, created_at
+id, user_id (FK), token_hash (VARCHAR(255) — bcrypt 10 rounds),
+purpose (email_verification|student_activation), expires_at, verified, created_at
 ```
 
-> **Hashing:** Verification tokens are hashed with bcrypt (10 rounds, not plain SHA) to prevent rainbow table attacks if the database is leaked. The bcrypt output is always 60 characters, hence `VARCHAR(60)`. Token hashing uses 10 rounds (vs 12 for passwords) because tokens are short-lived and verified once — faster verification is acceptable for temporary tokens.
+> **Purpose field:** Tracks why the verification was created:
+> - `email_verification`: For initial email verification during registration
+> - `student_activation`: For activation tokens when students are imported via CSV
+> - **Hashing:** Verification tokens are hashed with bcrypt (10 rounds, not plain SHA) to prevent rainbow table attacks if the database is leaked. Token hashing uses 10 rounds (vs 12 for passwords) because tokens are short-lived and verified once.
 
 ### `user_auth_providers`
 ```

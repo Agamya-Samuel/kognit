@@ -36,6 +36,7 @@ The instructor platform implements comprehensive UX states optimized for content
 - Bio, expertise, social links
 - Banking/payout setup (Razorpay Route — manual payout processing per negotiated revenue share)
 - Profile page visible to students
+- Pending state page after application submission
 
 ### UX States
 

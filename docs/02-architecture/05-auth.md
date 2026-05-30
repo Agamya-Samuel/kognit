@@ -39,15 +39,22 @@ Each web app (`web-student`, `web-instructor`, `web-admin`, `web-institution`) c
 
 ### Web (all apps)
 ```
-Next.js app → POST api.eduplatform.com/api/v1/auth/login → NestJS Auth Module
-  → Validate credentials
+Next.js app → POST api.eduplatform.com/api/v1/auth/login { portal } → NestJS Auth Module
+  → Validate credentials + portal access (assertPortalAccess)
   → Check account lockout status
   → Issue JWT + Refresh Token
   → Frontend stores tokens in localStorage
   → ApiProvider configures ApiClient with getToken callback
   → All subsequent requests include Authorization: Bearer <token>
-  → Return user profile
+  → Return user profile with studentProfile (for student role)
 ```
+
+### Portal Access Control
+- Each app must pass `portal` parameter on login
+- `portal: 'admin'` requires `role === 'admin'` ONLY (institution_admin excluded)
+- `portal: 'instructor'` requires `role === 'instructor'`
+- `portal: 'student'` requires `role === 'student'`
+- Wrong portal access returns 403 error
 
 ### Email-First Registration
 ```
@@ -56,33 +63,39 @@ User enters email → POST /api/v1/auth/send-verification-code
   → Send code via email (AWS SES)
   → User enters code → POST /api/v1/auth/verify-email
   → Verify code (bcrypt.compare)
-  → Mark email as verified (stored in Redis: `verified_email:{email}` with 1-hour TTL)
-  → User sets password + name → POST /api/v1/auth/register
+  → Store intent in Redis: `verified_email:{email}` (includes role intent)
+  → User sets password + name → POST /api/v1/auth/register { intent }
   → Validate email was recently verified
-  → Create account
+  → Create account with approvalStatus based on role
+  → For student: onboardingCompleted = false
+  → For instructor: approvalStatus = 'pending'
   → Issue JWT + Refresh Token
 ```
 
-### Mobile (Phase 2)
+#### Role-based Registration Flow
+- `intent: 'student'` → Creates student with `approvalStatus: 'approved'`, `onboardingCompleted: false`
+- `intent: 'instructor'` → Creates instructor with `approvalStatus: 'pending'` (requires admin approval)
+
+#### Student Onboarding After Registration
 ```
-React Native → POST /api/v1/auth/login → NestJS Auth Module
-  → Validate credentials
-  → Issue JWT + Refresh Token
-  → Return tokens (stored in SecureStore)
+Student → PATCH /users/profile → Update student profile fields
+  → mobile, address, city, state, pinCode, country, affiliatedInstituteId
+  → Sets onboardingCompleted = true
+  → Name changes locked after onboarding (403 NAME_LOCKED)
 ```
 
-### OAuth (Google, GitHub)
+#### Instructor Registration
 ```
-Frontend → Auth.js OAuth flow
-   → Auth.js callback → NestJS /auth/oauth-callback
-   → NestJS creates/finds user
-   → Issues JWT + Refresh Token
-   → Tokens returned to frontend
-   → ApiProvider stores tokens in localStorage
-   → User redirected to appropriate app based on role
+Instructor → POST /auth/register → Account created with approvalStatus: 'pending'
+  → Frontend redirects to /auth/pending
+  → Admin reviews application → PATCH /admin/instructors/:id/approve
+  → Student can then login normally
 ```
 
-> **Email verification bypass:** OAuth providers (Google, GitHub) already verify the user's email. Users registering via OAuth skip the email verification step — their account is created immediately with `is_verified = true`.
+### Admin Registration
+- Admin registration is **disabled** via UI
+- Admins are created via seed or API by existing admins
+- No self-service admin registration page
 
 ### OAuth Account Linking
 
@@ -168,6 +181,26 @@ UNIQUE (provider, provider_id) — prevents duplicate provider links
 - When a 3rd device starts playback, the oldest session receives a `session:evicted` Socket.IO event and playback is paused
 - **Progress reconciliation:** Server uses max merge — always keeps the highest `watched_seconds` value. Implemented as `UPDATE progress SET watched_seconds = GREATEST(watched_seconds, $1) WHERE student_id = $2 AND lecture_id = $3`. Progress never goes backward.
 - **Non-playback sessions** (browsing, chat) are unlimited — the 2-device limit applies only to video playback
+
+## Student Activation (Institution-Imported Students)
+
+### Activation Flow
+```
+Admin imports student CSV → Admin creates student accounts without passwords
+  → System generates activation tokens (stored in email_verifications with purpose='student_activation')
+Admin sends activation emails to imported students
+Student clicks activation link → /auth/activate?token=xxxx
+  → POST /auth/student-activation/validate { token }
+  → Returns { valid: boolean, email, name, institutionName }
+  → Student sets password → POST /auth/student-activation/complete
+  → Creates password hash, marks is_verified = true
+  → Student completes onboarding via PATCH /users/profile
+  → Sets onboardingCompleted = true
+```
+
+### Token Expiry
+- Activation tokens expire after 1200 days (configurable)
+- Tokens are single-use (verified column prevents reuse)
 
 ## RBAC Roles
 
