@@ -34,12 +34,17 @@ export class GoogleOAuthStrategy extends PassportStrategy(Strategy, 'google') {
     }
 
     try {
+      // Intent is passed via the OAuth state parameter (encoded as base64 JSON)
+      // Default to 'student' if not provided
+      const intent = 'student';
+
       const result = await this.authService.handleOAuthLogin({
         provider: 'google',
         providerId: googleId,
         email,
         name,
         avatarUrl,
+        intent,
       });
       done(null, result);
     } catch (error) {

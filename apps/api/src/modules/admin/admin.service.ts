@@ -79,6 +79,9 @@ export class AdminService {
     private readonly paymentsRepo: PaymentsRepository,
     private readonly progressRepo: ProgressRepository,
     private readonly settingsRepo: SettingsRepository,
+    private readonly studentProfilesRepo: StudentProfilesRepository,
+    private readonly institutionAccountsRepo: InstitutionAccountsRepository,
+    private readonly emailVerificationsRepo: EmailVerificationsRepository,
   ) {}
 
   async listUsers(query: AdminListUsersQuery) {
@@ -376,5 +379,138 @@ export class AdminService {
   private sanitizeUser(user: User) {
     const { passwordHash, deletedAt, ...safe } = user;
     return safe;
+  }
+
+  // ─── Institution Management ───────────────────────────────────────────────
+
+  async listInstitutions(query: { page?: number; limit?: number; search?: string } = {}) {
+    const limit = Math.min(query.limit ?? 20, 100);
+    const offset = ((query.page ?? 1) - 1) * limit;
+
+    const result = await this.institutionAccountsRepo.findMany({ limit, offset });
+
+    return {
+      institutions: result.data,
+      total: result.total,
+      page: query.page ?? 1,
+      limit,
+    };
+  }
+
+  async getInstitution(id: number) {
+    const institution = await this.institutionAccountsRepo.findById(id);
+    if (!institution) {
+      throw new NotFoundException('Institution not found');
+    }
+    return institution;
+  }
+
+  // ─── Student Bulk Import ──────────────────────────────────────────────────
+
+  async importStudentsFromCSV(
+    institutionId: number,
+    csvData: { name: string; email: string }[],
+  ): Promise<{
+    successCount: number;
+    failureCount: number;
+    errors: { row: number; email: string; reason: string }[];
+  }> {
+    const errors: { row: number; email: string; reason: string }[] = [];
+    let successCount = 0;
+
+    // Verify institution exists
+    const institution = await this.institutionAccountsRepo.findById(institutionId);
+    if (!institution) {
+      throw new NotFoundException('Institution not found');
+    }
+
+    for (let i = 0; i < csvData.length; i++) {
+      const row = csvData[i];
+      const rowNumber = i + 2; // CSV row number (1-indexed, +1 for header)
+
+      try {
+        // Validate email format
+        const emailRegex = /^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(row.email)) {
+          errors.push({ row: rowNumber, email: row.email, reason: 'Invalid email format' });
+          continue;
+        }
+
+        // Validate name
+        if (!row.name || row.name.trim().length < 2) {
+          errors.push({ row: rowNumber, email: row.email, reason: 'Name is required and must be at least 2 characters' });
+          continue;
+        }
+
+        // Check if email already exists
+        const existingUser = await this.usersRepo.findByEmail(row.email);
+        if (existingUser) {
+          errors.push({ row: rowNumber, email: row.email, reason: 'Email already registered' });
+          continue;
+        }
+
+        // Create user
+        const user = await this.usersRepo.create({
+          email: row.email.toLowerCase().trim(),
+          name: row.name.trim(),
+          passwordHash: null, // No password - will be set via activation
+          role: 'student',
+          avatarUrl: null,
+          isVerified: false, // Must verify via activation email
+          isActive: true,
+          approvalStatus: 'approved',
+          onboardingCompleted: false,
+          deletedAt: null,
+        });
+
+        // Create student profile with institution affiliation
+        await this.studentProfilesRepo.create({
+          userId: user.id,
+          affiliatedInstituteId: institutionId,
+        });
+
+        // Generate activation token
+        const token = await this.generateActivationToken(user.id);
+
+        // In production, send activation email here
+        // For now, just log it
+        console.log(`[CSV Import] Activation token for ${row.email}: ${token}`);
+
+        successCount++;
+      } catch (error) {
+        errors.push({
+          row: rowNumber,
+          email: row.email,
+          reason: error instanceof Error ? error.message : 'Unknown error',
+        });
+      }
+    }
+
+    return {
+      successCount,
+      failureCount: errors.length,
+      errors,
+    };
+  }
+
+  private async generateActivationToken(userId: number): Promise<string> {
+    const crypto = require('crypto');
+    const bcrypt = require('bcrypt');
+
+    const token = crypto.randomBytes(64).toString('hex');
+    const tokenHash = await bcrypt.hash(token, 10);
+
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 1200); // 1200 days
+
+    await this.emailVerificationsRepo.create({
+      userId,
+      tokenHash,
+      purpose: 'student_activation',
+      expiresAt,
+      verified: false,
+    });
+
+    return token;
   }
 }

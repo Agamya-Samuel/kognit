@@ -14,6 +14,7 @@ import { UsersRepository } from '../../db/repositories/users.repository';
 import { EmailVerificationsRepository } from '../../db/repositories/email-verifications.repository';
 import { RefreshTokensRepository } from '../../db/repositories/refresh-tokens.repository';
 import { UserAuthProvidersRepository } from '../../db/repositories/user-auth-providers.repository';
+import { StudentProfilesRepository } from '../../db/repositories/student-profiles.repository';
 import { PasswordService } from './services/password.service';
 import { TokenService, TokenPayload } from './services/token.service';
 import { LockoutService } from './services/lockout.service';
@@ -44,6 +45,7 @@ export class AuthService {
     private readonly cacheService: CacheService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly studentProfilesRepo: StudentProfilesRepository,
   ) {}
 
   // ─── Email-First Registration Flow ──────────────────────────────────────
@@ -53,26 +55,29 @@ export class AuthService {
    * Stores a 6-digit code in Redis (pending_registration:{email}).
    * Returns the plaintext code (in production, send via email).
    */
-  async requestRegistrationVerification(email: string): Promise<{ message: string; code: string }> {
+  async requestRegistrationVerification(email: string, intent?: string): Promise<{ message: string; code: string }> {
     // Check if email is already registered
     const existingUser = await this.usersRepo.findByEmail(email);
     if (existingUser) {
       throw new ConflictException('An account with this email already exists.');
     }
 
+    // Validate intent - only allow student or instructor
+    const validIntent = intent === 'instructor' ? 'instructor' : 'student';
+
     // Generate 6-digit code
     const code = crypto.randomInt(100000, 999999).toString();
     const codeHash = await bcrypt.hash(code, 10);
 
-    // Store in Redis with TTL
+    // Store in Redis with TTL (include intent for later use)
     await this.cacheService.set(
       PENDING_REGISTRATION_NAMESPACE,
       email,
-      { codeHash, createdAt: new Date().toISOString() },
+      { codeHash, createdAt: new Date().toISOString(), intent: validIntent },
       VERIFICATION_CODE_TTL_SECONDS,
     );
 
-    this.logger.log(`Registration verification code sent for ${email}`);
+    this.logger.log(`Registration verification code sent for ${email} (intent: ${validIntent})`);
     return {
       message: 'Verification code sent to your email.',
       code, // In production, this would be sent via email
@@ -107,7 +112,7 @@ export class AuthService {
       throw new BadRequestException('Invalid verification code.');
     }
 
-    // Mark as verified in Redis (extend TTL for the completion step)
+    // Mark as verified in Redis (extend TTL for the completion step, preserve intent)
     await this.cacheService.set(
       PENDING_REGISTRATION_NAMESPACE,
       email,
@@ -127,12 +132,14 @@ export class AuthService {
     code: string,
     name: string,
     password: string,
+    intent?: string,
   ): Promise<{ user: any; tokens: TokenPayload }> {
     // Re-verify the code (must still be valid and marked as verified)
     const pending = await this.cacheService.get<{
       codeHash: string;
       createdAt: string;
       emailVerified: boolean;
+      intent?: string;
     }>(PENDING_REGISTRATION_NAMESPACE, email);
 
     if (!pending?.emailVerified) {
@@ -151,6 +158,11 @@ export class AuthService {
       throw new ConflictException('An account with this email already exists.');
     }
 
+    // Determine role and approvalStatus based on intent (from Redis, not request body)
+    const registrationIntent = pending.intent || intent || 'student';
+    const role = registrationIntent === 'instructor' ? 'instructor' : 'student';
+    const approvalStatus = registrationIntent === 'instructor' ? 'pending' : 'approved';
+
     // Hash password
     const passwordHash = await this.passwordService.hash(password);
 
@@ -159,10 +171,12 @@ export class AuthService {
       email,
       passwordHash,
       name,
-      role: 'student',
+      role,
       avatarUrl: null,
       isVerified: true,
       isActive: true,
+      approvalStatus,
+      onboardingCompleted: false,
       deletedAt: null,
     });
 
@@ -172,7 +186,7 @@ export class AuthService {
     // Generate tokens
     const tokens = await this.tokenService.generateTokenPair(user);
 
-    this.logger.log(`User registered successfully: ${user.id} (${email})`);
+    this.logger.log(`User registered successfully: ${user.id} (${email}, role: ${role}, approval: ${approvalStatus})`);
 
     return {
       user: this.sanitizeUser(user),
@@ -184,8 +198,9 @@ export class AuthService {
 
   /**
    * Authenticate user with email and password.
+   * Optionally enforce portal-vs-role access control.
    */
-  async login(email: string, password: string): Promise<{ user: any; tokens: TokenPayload }> {
+  async login(email: string, password: string, portal?: string): Promise<{ user: any; tokens: TokenPayload }> {
     // Check if account is locked
     await this.lockoutService.assertNotLocked(email);
 
@@ -198,6 +213,11 @@ export class AuthService {
     // Check if user is active
     if (!user.isActive) {
       throw new ForbiddenException('Account has been deactivated. Please contact support.');
+    }
+
+    // Enforce portal-vs-role access control
+    if (portal) {
+      this.assertPortalAccess(user, portal);
     }
 
     // Verify password
@@ -224,6 +244,43 @@ export class AuthService {
       user: this.sanitizeUser(user),
       tokens,
     };
+  }
+
+  /**
+   * Enforce portal-vs-role access control.
+   * Returns ForbiddenException if user's role doesn't match the portal they tried to access.
+   */
+  private assertPortalAccess(user: any, portal: string): void {
+    switch (portal) {
+      case 'student':
+        if (user.role !== 'student') {
+          throw new ForbiddenException(
+            'This account is not a student account. Please use the correct portal for your role.',
+          );
+        }
+        break;
+      case 'instructor':
+        if (user.role !== 'instructor') {
+          throw new ForbiddenException(
+            'This account is not an instructor account. Please use the correct portal for your role.',
+          );
+        }
+        // Check if instructor is approved
+        if (user.approvalStatus !== 'approved') {
+          throw new ForbiddenException(
+            'Your instructor account is pending approval. Please wait for an administrator to approve your account.',
+          );
+        }
+        break;
+      case 'admin':
+        // Only admin role can access admin portal - institution_admin is explicitly excluded
+        if (user.role !== 'admin') {
+          throw new ForbiddenException(
+            'This portal is for platform administrators only. Please contact your organization admin.',
+          );
+        }
+        break;
+    }
   }
 
   // ─── Logout ─────────────────────────────────────────────────────────────
@@ -332,7 +389,19 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('User not found.');
     }
-    return this.sanitizeUser(user);
+
+    const safeUser = this.sanitizeUser(user);
+
+    // If user is a student, also fetch their student profile
+    if (user.role === 'student') {
+      const studentProfile = await this.studentProfilesRepo.findByUserId(userId);
+      return {
+        ...safeUser,
+        studentProfile: studentProfile || null,
+      };
+    }
+
+    return safeUser;
   }
 
   // ─── Change Password ────────────────────────────────────────────────────
@@ -481,15 +550,22 @@ export class AuthService {
       return { user: this.sanitizeUser(existingUser), tokens, isNewUser: false };
     }
 
-    // Create new user with OAuth (instructor role, no password)
+    // Create new user with OAuth (role depends on intent, default to student)
+    // TODO: Once OAuth strategy passes intent from state parameter, use params.intent
+    const intent = (params as any).intent || 'student';
+    const role = intent === 'instructor' ? 'instructor' : 'student';
+    const approvalStatus = intent === 'instructor' ? 'pending' : 'approved';
+
     const user = await this.usersRepo.create({
       email,
       name,
       passwordHash: null,
-      role: 'instructor',
+      role,
       avatarUrl: avatarUrl || null,
       isVerified: true,
       isActive: true,
+      approvalStatus,
+      onboardingCompleted: false,
       deletedAt: null,
     });
 

@@ -13,6 +13,12 @@ interface User {
   avatarUrl: string | null;
   createdAt: string;
   updatedAt: string;
+  approvalStatus?: string;
+  onboardingCompleted?: boolean;
+  affiliatedInstituteId?: number | null;
+  studentProfile?: {
+    affiliatedInstituteId?: number | null;
+  };
 }
 
 interface UserDetailDrawerProps {
@@ -75,7 +81,7 @@ export function UserDetailDrawer({ user, open, onClose, onRoleChange, onToggleAc
           </div>
 
           {/* Status badges */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${roleColor(user.role)}`}>
               {user.role.replace('_', ' ')}
             </span>
@@ -90,6 +96,31 @@ export function UserDetailDrawer({ user, open, onClose, onRoleChange, onToggleAc
               <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                 <CheckCircle2 className="h-3 w-3" />
                 Verified
+              </span>
+            )}
+            {user.role === 'student' && user.approvalStatus && (
+              <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
+                user.approvalStatus === 'approved'
+                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200'
+                  : user.approvalStatus === 'pending'
+                  ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                  : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
+              }`}>
+                {user.approvalStatus}
+              </span>
+            )}
+            {user.role === 'student' && (
+              <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
+                user.onboardingCompleted
+                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200'
+                  : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+              }`}>
+                {user.onboardingCompleted ? 'Onboarding Done' : 'Onboarding Pending'}
+              </span>
+            )}
+            {(user.affiliatedInstituteId || user.studentProfile?.affiliatedInstituteId) && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-100 px-2.5 py-1 text-xs font-medium text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                Inst #{user.affiliatedInstituteId || user.studentProfile?.affiliatedInstituteId}
               </span>
             )}
           </div>
