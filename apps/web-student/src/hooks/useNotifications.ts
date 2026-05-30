@@ -23,10 +23,19 @@ export interface NotificationFilters {
 export function useNotifications(filters: NotificationFilters = {}) {
   return useQuery({
     queryKey: ['notifications', 'list', filters],
-    queryFn: async (): Promise<Notification[]> => {
+    queryFn: async () => {
       const apiClient = getApiClient();
-      const response = await apiClient.get<Notification[]>('/notifications', filters);
-      return response;
+      try {
+        const result = await apiClient.get<{ data: Notification[] }>('/notifications', filters);
+        if (result && typeof result === 'object' && 'data' in result && Array.isArray(result.data)) {
+          return result.data as Notification[];
+        }
+        console.error('[useNotifications] Unexpected response structure:', result);
+        return [];
+      } catch (error) {
+        console.error('[useNotifications] API error:', error);
+        return [];
+      }
     },
     staleTime: 1 * 60 * 1000,
     refetchInterval: 5 * 60 * 1000,
@@ -36,10 +45,10 @@ export function useNotifications(filters: NotificationFilters = {}) {
 export function useUnreadCount() {
   return useQuery({
     queryKey: ['notifications', 'unread-count'],
-    queryFn: async (): Promise<{ count: number }> => {
+    queryFn: async () => {
       const apiClient = getApiClient();
-      const response = await apiClient.get<{ count: number }>('/notifications/unread-count');
-      return response;
+      const result = await apiClient.get<{ count: number }>('/notifications/unread-count');
+      return result;
     },
     staleTime: 1 * 60 * 1000,
     refetchInterval: 2 * 60 * 1000,
