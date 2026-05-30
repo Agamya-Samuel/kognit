@@ -44,7 +44,7 @@ export default function RegisterPage() {
     setEmail(data.email);
 
     try {
-      await authService.requestRegistrationVerification(data.email);
+      await authService.requestRegistrationVerification(data.email, 'instructor');
       setStep('verify');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to send verification code. Please try again.');
@@ -74,8 +74,9 @@ export default function RegisterPage() {
     // Note: confirmPassword field is validated on frontend but NOT sent to API
 
     try {
-      await authService.completeRegistration(email, code, data.name, data.password);
-      router.push('/auth/login');
+      await authService.completeRegistration(email, code, data.name, data.password, 'instructor');
+      // Redirect to pending approval page since instructors require admin approval
+      router.push('/auth/pending');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
