@@ -314,8 +314,11 @@ export default function ProfilePage() {
                     id="name"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    disabled={!isEditing}
+                    disabled={!isEditing || user.onboardingCompleted}
                   />
+                  {user.onboardingCompleted && (
+                    <p className="text-xs text-muted-foreground">Name cannot be changed after onboarding</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>

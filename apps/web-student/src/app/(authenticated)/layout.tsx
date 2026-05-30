@@ -1,7 +1,8 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { DashboardShell, useAuth } from '@edutech/shared-components';
 import {
   LayoutDashboard,
@@ -38,7 +39,17 @@ const navItems: NavItem[] = [
 
 export default function AuthenticatedLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const { logout } = useAuth();
+  const router = useRouter();
+  const { user, logout, isLoading } = useAuth();
+
+  useEffect(() => {
+    if (!isLoading && user && user.onboardingCompleted === false) {
+      const allowedPaths = ['/onboarding', '/auth/login', '/auth/logout'];
+      if (!allowedPaths.includes(pathname)) {
+        router.push('/onboarding');
+      }
+    }
+  }, [isLoading, user, pathname, router]);
 
   const activeLabel = navItems.find((item) => pathname === item.href || pathname?.startsWith(item.href + '/'))?.label || 'Dashboard';
 
