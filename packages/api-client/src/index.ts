@@ -19,14 +19,26 @@ export class ApiClientError extends Error {
   details?: Array<{ field: string; message: string }>;
 
   constructor(error: unknown, status: number) {
-    const errorObj = (error && typeof error === 'object' ? error : {}) as Partial<ApiErrorResponse>;
-    const errorData = errorObj.error || errorObj.data;
-    const message = (errorData && typeof errorData === 'object' && 'message' in errorData)
+    let errorObj: Partial<ApiErrorResponse>;
+    if (error && typeof error === 'object' && error !== null) {
+      errorObj = error as Partial<ApiErrorResponse>;
+    } else if (error instanceof Error) {
+      errorObj = { success: false, data: null, error: { code: 'UNKNOWN_ERROR', message: error.message } };
+    } else {
+      errorObj = {};
+    }
+    let errorData: unknown;
+    try {
+      errorData = errorObj?.error ?? errorObj?.data;
+    } catch {
+      errorData = null;
+    }
+    const message = (errorData && typeof errorData === 'object' && 'message' in errorData && typeof (errorData as { message: unknown }).message === 'string')
       ? (errorData as { message: string }).message
       : 'An unexpected error occurred';
     super(message);
     this.name = 'ApiClientError';
-    this.code = (errorData && typeof errorData === 'object' && 'code' in errorData)
+    this.code = (errorData && typeof errorData === 'object' && 'code' in errorData && typeof (errorData as { code: unknown }).code === 'string')
       ? (errorData as { code: string }).code
       : 'UNKNOWN_ERROR';
     this.status = status;
@@ -74,7 +86,21 @@ export class ApiClient {
     this.client.interceptors.response.use(
       (response) => response,
       async (error: AxiosError<ApiErrorResponse>) => {
-        const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
+        const originalRequest = error.config as (AxiosRequestConfig & { _retry?: boolean }) | undefined;
+
+        if (!originalRequest) {
+          throw new ApiClientError(
+            {
+              success: false,
+              data: null,
+              error: {
+                code: 'REQUEST_ERROR',
+                message: error.message || 'An unexpected error occurred',
+              },
+            },
+            error.response?.status || 0,
+          );
+        }
 
         if (error.response?.status === 401) {
           const isRefreshEndpoint = originalRequest.url?.includes('/auth/refresh');
@@ -110,7 +136,7 @@ export class ApiClient {
             this.onUnauthorized?.();
           }
 
-          if (error.response?.data && typeof error.response.data === 'object') {
+          if (error.response?.data && typeof error.response.data === 'object' && error.response.data !== null) {
             throw new ApiClientError(error.response.data, error.response.status);
           }
 
@@ -127,7 +153,7 @@ export class ApiClient {
           );
         }
 
-        if (error.response?.data && typeof error.response.data === 'object') {
+        if (error.response?.data && typeof error.response.data === 'object' && error.response.data !== null) {
           throw new ApiClientError(error.response.data, error.response.status);
         }
 
@@ -162,7 +188,8 @@ export class ApiClient {
   // ─── HTTP Methods ───────────────────────────────────────────────────────
 
   async get<T>(url: string, params?: Record<string, unknown>, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.client.get<ApiResponse<T>>(url, { params, ...config });
+    const safeParams = params && typeof params === 'object' && !Array.isArray(params) ? params : {};
+    const response = await this.client.get<ApiResponse<T>>(url, { params: safeParams, ...config });
     return response.data.data;
   }
 
