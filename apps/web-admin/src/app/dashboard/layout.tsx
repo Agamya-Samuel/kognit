@@ -12,11 +12,13 @@ import {
   GraduationCap,
   BarChart3,
   Settings,
+  Building2,
 } from 'lucide-react';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/users', label: 'Users', icon: Users },
+  { href: '/dashboard/institutions', label: 'Institutions', icon: Building2 },
   { href: '/dashboard/instructors', label: 'Instructors', icon: GraduationCap },
   { href: '/dashboard/courses', label: 'Courses', icon: BookOpen },
   { href: '/dashboard/reports', label: 'Reports', icon: BarChart3 },
