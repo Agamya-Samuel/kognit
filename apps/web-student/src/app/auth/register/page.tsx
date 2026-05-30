@@ -44,7 +44,7 @@ export default function RegisterPage() {
     setEmail(data.email);
 
     try {
-      await authService.requestRegistrationVerification(data.email);
+      await authService.requestRegistrationVerification(data.email, 'student');
       setStep('verify');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to send verification code. Please try again.');
@@ -73,8 +73,9 @@ export default function RegisterPage() {
     setError('');
 
     try {
-      await authService.completeRegistration(email, code, data.name, data.password);
-      router.push('/auth/login');
+      await authService.completeRegistration(email, code, data.name, data.password, 'student');
+      // Redirect to onboarding after successful registration
+      router.push('/onboarding');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
