@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository } from './base.repository';
 import { emailVerifications } from '../schema';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, desc } from 'drizzle-orm';
 import type { EmailVerification } from '../schema';
 
 @Injectable()
@@ -35,6 +35,20 @@ export class EmailVerificationsRepository extends BaseRepository<EmailVerificati
     } catch (error) {
       this.handleError(error, 'findByTokenHash');
       return null;
+    }
+  }
+
+  async findByPurpose(purpose: string): Promise<EmailVerification[]> {
+    try {
+      const result = await this.db
+        .select()
+        .from(emailVerifications)
+        .where(eq(emailVerifications.purpose, purpose as any))
+        .orderBy(desc(emailVerifications.createdAt));
+      return result;
+    } catch (error) {
+      this.handleError(error, 'findByPurpose');
+      return [];
     }
   }
 
