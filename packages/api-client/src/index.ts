@@ -110,7 +110,7 @@ export class ApiClient {
             this.onUnauthorized?.();
           }
 
-          if (error.response?.data) {
+          if (error.response?.data && typeof error.response.data === 'object') {
             throw new ApiClientError(error.response.data, error.response.status);
           }
 
