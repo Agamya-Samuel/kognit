@@ -211,23 +211,52 @@ export class PaymentsRepository extends BaseRepository<Payment> {
      }
    }
 
-   async getRevenueBreakdown(): Promise<{ type: string; amount: number }[]> {
+   async getRevenueBreakdown(): Promise<{ courseId: number; total: number }[]> {
      try {
        const result = await this.db
          .select({
-           type: payments.type,
+           courseId: payments.courseId,
            total: sql`COALESCE(SUM(${payments.amount}), 0)`,
          })
          .from(payments)
          .where(eq(payments.status, 'paid'))
-         .groupBy(payments.type);
+         .groupBy(payments.courseId);
 
        return result.map(row => ({
-         type: row.type,
-         amount: Number(row.total) || 0,
+         courseId: row.courseId,
+         total: Number(row.total) || 0,
        }));
      } catch (error) {
        this.handleError(error, 'getRevenueBreakdown');
+       return [];
+     }
+   }
+
+   async getInstructorDailyStats(instructorId: number, startDate: Date): Promise<{ date: string; totalRevenue: number; uniqueUsers: number }[]> {
+     try {
+       const result = await this.db
+         .select({
+           date: sql`DATE(${payments.createdAt})`,
+           totalRevenue: sql`COALESCE(SUM(${payments.amount}), 0)`,
+           uniqueUsers: sql`COUNT(DISTINCT ${payments.studentId})`,
+         })
+         .from(payments)
+         .innerJoin(courses, eq(payments.courseId, courses.id))
+         .where(and(
+           gte(payments.createdAt, startDate),
+           eq(payments.status, 'paid'),
+           eq(courses.instructorId, instructorId)
+         ))
+         .groupBy(sql`DATE(${payments.createdAt})`)
+         .orderBy(sql`DATE(${payments.createdAt})`);
+
+       return result.map(row => ({
+         date: String(row.date),
+         totalRevenue: Number(row.totalRevenue) || 0,
+         uniqueUsers: Number(row.uniqueUsers) || 0,
+       }));
+     } catch (error) {
+       this.handleError(error, 'getInstructorDailyStats');
        return [];
      }
    }
