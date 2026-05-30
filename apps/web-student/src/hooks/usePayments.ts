@@ -34,7 +34,11 @@ export function usePaymentHistory(filters?: PaymentFilters) {
   return useQuery({
     queryKey: ['payments', 'history', filters],
     queryFn: async (): Promise<PaymentHistory> => {
-      return paymentsService.getHistory(filters) as unknown as PaymentHistory;
+      const result = await (paymentsService.getHistory(filters) as Promise<PaymentHistory & { payments?: unknown[] }>);
+      if (result && typeof result === 'object' && 'payments' in result && Array.isArray(result.payments)) {
+        return result as PaymentHistory;
+      }
+      return { payments: [], total: 0, page: 1, limit: 10 } as PaymentHistory;
     },
     staleTime: 2 * 60 * 1000,
   });

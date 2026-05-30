@@ -18,7 +18,25 @@ export function useCourses(filters: CourseFilters = {}) {
       if (search) params.search = search;
       if (pricingType && pricingType !== 'all') params.pricingType = pricingType;
 
-      return coursesService.list(params) as unknown as CoursesListResponse;
+      const result = await (coursesService.list(params) as Promise<{ data: Course[] }>);
+      if (result && typeof result === 'object' && 'data' in result && Array.isArray(result.data)) {
+        return {
+          courses: result.data as Course[],
+          total: (result.data as Course[]).length,
+          page,
+          limit,
+          hasNext: false,
+          hasPrev: false,
+        } as CoursesListResponse;
+      }
+      return {
+        courses: [],
+        total: 0,
+        page: 1,
+        limit: 20,
+        hasNext: false,
+        hasPrev: false,
+      } as CoursesListResponse;
     },
     staleTime: 5 * 60 * 1000,
   });

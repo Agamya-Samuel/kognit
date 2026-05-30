@@ -17,7 +17,11 @@ export default function WatchHistoryPage() {
   const { data, isLoading, error, refetch } = useQuery<WatchHistoryResponse>({
     queryKey: ['watch-history', page, limit],
     queryFn: async () => {
-      return progressService.getWatchHistory(page * limit, limit);
+      const result = await progressService.getWatchHistory(page * limit, limit) as WatchHistoryResponse & { items?: unknown[] };
+      if (result && typeof result === 'object' && Array.isArray((result as { items?: unknown[] }).items)) {
+        return result as WatchHistoryResponse;
+      }
+      return { items: [], total: 0, offset: 0, limit } as WatchHistoryResponse;
     },
   });
 
