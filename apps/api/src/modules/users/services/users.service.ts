@@ -83,6 +83,9 @@ export class UsersService {
           pinCode,
           country,
           affiliatedInstituteId,
+          resumeUrl: null,
+          skills: [],
+          placementStatus: null,
         });
 
         // Mark onboarding as completed if this is the first time setting profile data

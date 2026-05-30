@@ -40,6 +40,7 @@ export class EmailVerificationService {
       tokenHash: codeHash,
       expiresAt,
       verified: false,
+      purpose: 'email_verify',
     });
 
     this.logger.log(`Verification code generated for user ${userId}`);

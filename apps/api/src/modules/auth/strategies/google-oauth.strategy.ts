@@ -44,7 +44,6 @@ export class GoogleOAuthStrategy extends PassportStrategy(Strategy, 'google') {
         email,
         name,
         avatarUrl,
-        intent,
       });
       done(null, result);
     } catch (error) {

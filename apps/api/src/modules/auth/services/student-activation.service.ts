@@ -163,6 +163,10 @@ export class StudentActivationService {
         state,
         pinCode,
         country,
+        resumeUrl: null,
+        skills: [],
+        placementStatus: null,
+        affiliatedInstituteId: null,
       });
     }
 
