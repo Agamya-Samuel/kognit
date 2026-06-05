@@ -58,32 +58,22 @@ export default function AdminDashboardPage() {
 
       // Transform the API response to match the expected shape
       return {
-        totalUsers: metricsResponse.data.totalUsers || 0,
-        activeCourses: metricsResponse.data.activeCourses || 0,
-        revenueMTD: metricsResponse.data.revenueMTD || 0,
-        activeNow: metricsResponse.data.activeNow || 0,
-        revenueData: chartResponse.data.map((item: any) => ({
-          month: item.month,
+        totalUsers: metricsResponse.totalUsers || 0,
+        activeCourses: metricsResponse.totalCourses || 0,
+        revenueMTD: metricsResponse.totalRevenue || 0,
+        activeNow: metricsResponse.activeUsers || 0,
+        revenueData: (chartResponse || []).map((item: any) => ({
+          month: item.name,
           revenue: item.revenue,
-          costs: item.costs
-        })) || [],
-        engagementData: chartResponse.data.map((item: any) => ({
-          date: item.date,
-          views: item.views,
-          interactions: item.interactions
-        })) || [],
-        recentActivity: metricsResponse.data.recentActivity?.map((activity: any) => ({
-          id: activity.id,
-          type: activity.type,
-          title: activity.title,
-          time: activity.time
-        })) || [],
-        pendingModeration: metricsResponse.data.pendingModeration?.map((item: any) => ({
-          id: item.id,
-          title: item.title,
-          instructor: item.instructor,
-          count: item.count
-        })) || []
+          costs: 0
+        })),
+        engagementData: (chartResponse || []).map((item: any) => ({
+          date: item.name,
+          views: item.users,
+          interactions: 0
+        })),
+        recentActivity: [],
+        pendingModeration: []
       };
     }
   });
