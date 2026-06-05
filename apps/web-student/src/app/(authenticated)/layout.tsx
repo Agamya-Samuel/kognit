@@ -40,16 +40,28 @@ const navItems: NavItem[] = [
 export default function AuthenticatedLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, logout, isLoading } = useAuth();
+  const { user, logout, isLoading, isAuthenticated } = useAuth();
 
   useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.replace('/auth/login');
+      return;
+    }
     if (!isLoading && user && user.onboardingCompleted === false) {
       const allowedPaths = ['/onboarding', '/auth/login', '/auth/logout'];
       if (!allowedPaths.includes(pathname)) {
         router.push('/onboarding');
       }
     }
-  }, [isLoading, user, pathname, router]);
+  }, [isLoading, isAuthenticated, user, pathname, router]);
+
+  if (isLoading || !isAuthenticated) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-r-transparent" />
+      </div>
+    );
+  }
 
   const activeLabel = navItems.find((item) => pathname === item.href || pathname?.startsWith(item.href + '/'))?.label || 'Dashboard';
 
