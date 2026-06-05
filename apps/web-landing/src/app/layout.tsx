@@ -20,9 +20,9 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'EduTech - Master Tech Skills with Expert Mentors',
+  title: 'EduTech - Learn Tech Skills with Live Expert Mentorship',
   description:
-    'Transform your career with live, interactive courses. Gain practical skills in Fullstack, Data Science, Android, and more — guided by industry professionals.',
+    'Transform your career through live, interactive courses in Fullstack Development, Data Science, Mobile, and more. Join 25,000+ learners guided by industry professionals.',
   keywords: [
     'online learning',
     'live classes',
@@ -42,15 +42,15 @@ export const metadata: Metadata = {
     locale: 'en_IN',
     url: '/',
     siteName: 'EduTech',
-    title: 'EduTech - Master Tech Skills with Expert Mentors',
+    title: 'EduTech - Learn Tech Skills with Live Expert Mentorship',
     description:
-      'Transform your career with live, interactive courses. Gain practical skills guided by industry professionals.',
+      'Transform your career through live, interactive courses guided by industry professionals.',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'EduTech - Master Tech Skills with Expert Mentors',
+    title: 'EduTech - Learn Tech Skills with Live Expert Mentorship',
     description:
-      'Transform your career with live, interactive courses. Gain practical skills guided by industry professionals.',
+      'Transform your career through live, interactive courses guided by industry professionals.',
   },
   robots: {
     index: true,
@@ -65,7 +65,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${jakarta.variable} ${mono.variable} font-sans antialiased`}>
+      <body
+        className={`${inter.variable} ${jakarta.variable} ${mono.variable} font-sans antialiased`}
+      >
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
