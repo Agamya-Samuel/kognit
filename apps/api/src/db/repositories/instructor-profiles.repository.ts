@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository, PaginatedResult } from './base.repository';
 import { instructorProfiles } from '../schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, count } from 'drizzle-orm';
 import type { InstructorProfile } from '../schema';
 
 @Injectable()
@@ -66,12 +66,12 @@ export class InstructorProfilesRepository extends BaseRepository<InstructorProfi
           .orderBy(desc(instructorProfiles.createdAt))
           .limit(limit)
           .offset(offset),
-        this.db.select({ count: instructorProfiles.id }).from(instructorProfiles).where(whereClause),
+        this.db.select({ count: count(instructorProfiles.id) }).from(instructorProfiles).where(whereClause),
       ]);
 
       return {
         data,
-        total: totalResult.length,
+        total: totalResult[0]?.count ?? 0,
         limit,
         offset,
       };
@@ -123,10 +123,10 @@ export class InstructorProfilesRepository extends BaseRepository<InstructorProfi
   async countAllApproved(): Promise<number> {
     try {
       const result = await this.db
-        .select({ count: instructorProfiles.id })
+        .select({ count: count(instructorProfiles.id) })
         .from(instructorProfiles)
         .where(eq(instructorProfiles.approvalStatus, 'approved'));
-      return result.length;
+      return result[0]?.count ?? 0;
     } catch (error) {
       this.handleError(error, 'countAllApproved');
       return 0;
@@ -136,10 +136,10 @@ export class InstructorProfilesRepository extends BaseRepository<InstructorProfi
   async countAllPending(): Promise<number> {
     try {
       const result = await this.db
-        .select({ count: instructorProfiles.id })
+        .select({ count: count(instructorProfiles.id) })
         .from(instructorProfiles)
         .where(eq(instructorProfiles.approvalStatus, 'pending'));
-      return result.length;
+      return result[0]?.count ?? 0;
     } catch (error) {
       this.handleError(error, 'countAllPending');
       return 0;

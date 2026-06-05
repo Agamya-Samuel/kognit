@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository, PaginatedResult } from './base.repository';
 import { users } from '../schema';
-import { eq, and, desc, or, gte } from 'drizzle-orm';
+import { eq, and, desc, or, gte, count, ilike } from 'drizzle-orm';
 import type { User } from '../schema';
 
 @Injectable()
@@ -40,17 +40,26 @@ export class UsersRepository extends BaseRepository<User> {
     }
   }
 
-  async findMany(options: { offset?: number; limit?: number; role?: string } = {}): Promise<PaginatedResult<User>> {
+  async findMany(options: { offset?: number; limit?: number; role?: string; search?: string } = {}): Promise<PaginatedResult<User>> {
     const defaultLimit = 10;
     const defaultOffset = 0;
     try {
       const offset = options.offset ?? defaultOffset;
       const limit = options.limit ?? defaultLimit;
       const role = options.role;
+      const search = options.search;
 
       const conditions = [];
       if (role) {
         conditions.push(eq(users.role, role as any));
+      }
+      if (search) {
+        conditions.push(
+          or(
+            ilike(users.name, `%${search}%`),
+            ilike(users.email, `%${search}%`),
+          ),
+        );
       }
 
       const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
@@ -63,12 +72,12 @@ export class UsersRepository extends BaseRepository<User> {
           .orderBy(desc(users.createdAt))
           .limit(limit)
           .offset(offset),
-        this.db.select({ count: users.id }).from(users).where(whereClause),
+        this.db.select({ count: count(users.id) }).from(users).where(whereClause),
       ]);
 
       return {
         data,
-        total: totalResult.length,
+        total: totalResult[0]?.count ?? 0,
         limit,
         offset,
       };
@@ -132,8 +141,8 @@ export class UsersRepository extends BaseRepository<User> {
 
       const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-      const result = await this.db.select({ count: users.id }).from(users).where(whereClause);
-      return result.length;
+      const result = await this.db.select({ count: count(users.id) }).from(users).where(whereClause);
+      return result[0]?.count ?? 0;
     } catch (error) {
       this.handleError(error, 'count');
       return 0;
@@ -143,10 +152,10 @@ export class UsersRepository extends BaseRepository<User> {
   async countAfterDate(date: Date): Promise<number> {
     try {
       const result = await this.db
-        .select({ count: users.id })
+        .select({ count: count(users.id) })
         .from(users)
         .where(gte(users.createdAt, date));
-      return result.length;
+      return result[0]?.count ?? 0;
     } catch (error) {
       this.handleError(error, 'countAfterDate');
       return 0;

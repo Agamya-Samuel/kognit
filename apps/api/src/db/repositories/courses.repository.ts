@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository, PaginatedResult } from './base.repository';
 import { courses } from '../schema';
-import { eq, and, desc, like, or, not } from 'drizzle-orm';
+import { eq, and, desc, like, or, not, count } from 'drizzle-orm';
 import type { Course } from '../schema';
 
 @Injectable()
@@ -72,12 +72,12 @@ export class CoursesRepository extends BaseRepository<Course> {
           .orderBy(desc(courses.createdAt))
           .limit(limit)
           .offset(offset),
-        this.db.select({ count: courses.id }).from(courses).where(whereClause),
+        this.db.select({ count: count(courses.id) }).from(courses).where(whereClause),
       ]);
 
       return {
         data,
-        total: totalResult.length,
+        total: totalResult[0]?.count ?? 0,
         limit,
         offset,
       };
@@ -162,8 +162,8 @@ export class CoursesRepository extends BaseRepository<Course> {
 
        const whereClause = and(...conditions);
 
-       const result = await this.db.select({ count: courses.id }).from(courses).where(whereClause);
-       return result.length;
+        const result = await this.db.select({ count: count(courses.id) }).from(courses).where(whereClause);
+        return result[0]?.count ?? 0;
      } catch (error) {
        this.handleError(error, 'count');
        return 0;
