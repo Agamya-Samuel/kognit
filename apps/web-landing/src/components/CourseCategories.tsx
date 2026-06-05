@@ -136,7 +136,7 @@ export function CourseCategories() {
                       className="text-[hsl(var(--primary))]"
                     />
                   </div>
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="outline" className="px-2.5 py-0.5">
                     {cat.count} courses
                   </Badge>
                 </div>
