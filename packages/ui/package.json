@@ -12,13 +12,19 @@
       "require": "./dist/index.cjs"
     },
     "./tokens": {
-      "style": "./dist/tokens/index.css"
+      "style": "./dist/tokens/index.css",
+      "import": "./dist/tokens/index.css",
+      "default": "./dist/tokens/index.css"
     },
     "./tailwind-theme": {
-      "style": "./dist/tokens/tailwind.css"
+      "style": "./dist/tokens/tailwind.css",
+      "import": "./dist/tokens/tailwind.css",
+      "default": "./dist/tokens/tailwind.css"
     },
     "./globals.css": {
-      "style": "./dist/globals.css"
+      "style": "./dist/globals.css",
+      "import": "./dist/globals.css",
+      "default": "./dist/globals.css"
     }
   },
   "scripts": {
