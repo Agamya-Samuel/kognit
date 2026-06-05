@@ -4,13 +4,13 @@ import { Testimonials } from '@/components/Testimonials';
 
 vi.mock('lucide-react', () => {
   const S = () => null;
-  return { Star: S, Award: S, Users: S, BookOpen: S };
+  return { Star: S, Award: S, Users: S, BookOpen: S, Quote: S };
 });
 
 describe('Testimonials', () => {
   it('renders section heading', () => {
     render(<Testimonials />);
-    expect(screen.getByText(/Hear From Our/i)).toBeInTheDocument();
+    expect(screen.getByText(/Hear from our/i)).toBeInTheDocument();
   });
 
   it('renders testimonial names', () => {

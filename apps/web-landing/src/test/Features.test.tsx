@@ -4,13 +4,13 @@ import { Features } from '@/components/Features';
 
 vi.mock('lucide-react', () => {
   const S = () => null;
-  return { Video: S, Code2: S, Users: S };
+  return { Video: S, Code2: S, Users: S, ArrowUpRight: S };
 });
 
 describe('Features', () => {
   it('renders section heading', () => {
     render(<Features />);
-    expect(screen.getByText('Everything you need to succeed')).toBeInTheDocument();
+    expect(screen.getByText(/Everything you need to/i)).toBeInTheDocument();
   });
 
   it('renders all three feature cards', () => {
@@ -20,8 +20,8 @@ describe('Features', () => {
     expect(screen.getByText('Expert Mentorship & Community')).toBeInTheDocument();
   });
 
-  it('renders the Features badge', () => {
+  it('renders the badge', () => {
     render(<Features />);
-    expect(screen.getByText('Features')).toBeInTheDocument();
+    expect(screen.getByText('Why EduTech')).toBeInTheDocument();
   });
 });

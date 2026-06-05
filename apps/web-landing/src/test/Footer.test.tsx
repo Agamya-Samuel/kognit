@@ -7,14 +7,15 @@ vi.mock('lucide-react', () => {
   const S = () => null;
   return {
     Github: S, Twitter: S, Linkedin: S, GraduationCap: S,
-    Mail: S, MapPin: S, Phone: S, Heart: S,
+    Mail: S, MapPin: S, Phone: S, Heart: S, ArrowUpRight: S,
   };
 });
 
 describe('Footer', () => {
   it('renders brand name', () => {
     render(React.createElement(Footer));
-    expect(screen.getByText('EduTech')).toBeInTheDocument();
+    expect(screen.getByText('Edu')).toBeInTheDocument();
+    expect(screen.getByText('Tech')).toBeInTheDocument();
   });
 
   it('renders contact email', () => {

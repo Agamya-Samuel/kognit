@@ -4,13 +4,13 @@ import { HowItWorks } from '@/components/HowItWorks';
 
 vi.mock('lucide-react', () => {
   const S = () => null;
-  return { UserPlus: S, BookOpen: S, GraduationCap: S, ArrowRight: S };
+  return { UserPlus: S, BookOpen: S, GraduationCap: S, ArrowRight: S, Sparkles: S };
 });
 
 describe('HowItWorks', () => {
   it('renders section heading', () => {
     render(<HowItWorks />);
-    expect(screen.getByText(/Your Path to/i)).toBeInTheDocument();
+    expect(screen.getByText(/Your path to/i)).toBeInTheDocument();
   });
 
   it('renders all three steps', () => {

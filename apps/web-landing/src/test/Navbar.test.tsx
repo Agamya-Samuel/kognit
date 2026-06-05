@@ -4,7 +4,7 @@ import { Navbar } from '@/components/Navbar';
 
 vi.mock('lucide-react', () => {
   const S = () => null;
-  return { Menu: S, X: S, Sun: S, Moon: S, GraduationCap: S };
+  return { Menu: S, X: S, Sun: S, Moon: S, GraduationCap: S, ArrowRight: S };
 });
 vi.mock('@/components/ThemeProvider', () => ({
   useTheme: () => ({ theme: 'light', toggleTheme: vi.fn() }),
@@ -13,7 +13,8 @@ vi.mock('@/components/ThemeProvider', () => ({
 describe('Navbar', () => {
   it('renders brand name', () => {
     render(<Navbar />);
-    expect(screen.getByText('EduTech')).toBeInTheDocument();
+    expect(screen.getByText('Edu')).toBeInTheDocument();
+    expect(screen.getByText('Tech')).toBeInTheDocument();
   });
 
   it('renders desktop navigation links', () => {

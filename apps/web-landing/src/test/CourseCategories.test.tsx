@@ -4,14 +4,16 @@ import { CourseCategories } from '@/components/CourseCategories';
 
 vi.mock('lucide-react', () => {
   const S = () => null;
-  return { Monitor: S, Briefcase: S, Palette: S, Database: S,
-    Smartphone: S, BarChart3: S, ArrowRight: S, TrendingUp: S };
+  return {
+    Monitor: S, Briefcase: S, Palette: S, Database: S,
+    Smartphone: S, BarChart3: S, ArrowRight: S, TrendingUp: S, Users: S,
+  };
 });
 
 describe('CourseCategories', () => {
   it('renders section heading', () => {
     render(<CourseCategories />);
-    expect(screen.getByText(/Explore Our/i)).toBeInTheDocument();
+    expect(screen.getByText(/Explore our/i)).toBeInTheDocument();
   });
 
   it('renders category names', () => {
