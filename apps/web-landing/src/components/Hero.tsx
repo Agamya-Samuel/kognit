@@ -59,7 +59,10 @@ export function Hero() {
 
             {/* Headline */}
             <h1 className="animate-fade-in-up delay-100 font-heading text-4xl font-extrabold leading-[1.08] tracking-tight text-balance sm:text-5xl lg:text-[3.5rem] xl:text-6xl">
-              Launch Your Tech Career with{' '}
+              Launch Your
+              <br />
+              Career with
+              <br />
               <TypingEffect words={['Fullstack', 'Data Science', 'Android', 'AI & ML']} />
             </h1>
 
