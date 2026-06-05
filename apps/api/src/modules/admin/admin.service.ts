@@ -95,6 +95,7 @@ export class AdminService {
       limit,
       offset,
       role: query.role,
+      search: query.search,
     });
 
     return {
