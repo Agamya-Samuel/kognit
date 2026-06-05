@@ -48,15 +48,10 @@ export default function UsersPage() {
       if (roleFilter !== 'all') params.role = roleFilter;
       if (search) params.search = search;
 
-      const { data } = await api.get<{ success: boolean; data: UsersResponse }>(
-        '/admin/users',
-        { params },
-      );
-      const result = (data as any)?.data ?? data;
+      const result = await api.get<UsersResponse>('/admin/users', params);
       setUsers(result?.users ?? []);
       setTotal(result?.total ?? 0);
     } catch {
-      // Use empty state on error
       setUsers([]);
       setTotal(0);
     } finally {
