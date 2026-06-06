@@ -69,7 +69,15 @@ export const adminService = {
      return getApiClient().get<any>(`/admin/institutions/${id}`);
    },
 
-   async importStudents(institutionId: number, students: { name: string; email: string }[]) {
-     return getApiClient().post<{ successCount: number; failureCount: number; errors: { row: number; email: string; reason: string }[] }>(`/admin/institutions/${institutionId}/students/import`, { students });
-   },
- };
+  async importStudents(institutionId: number, students: { name: string; email: string }[]) {
+    return getApiClient().post<{ successCount: number; failureCount: number; errors: { row: number; email: string; reason: string }[] }>(`/admin/institutions/${institutionId}/students/import`, { students });
+  },
+
+  async getSettings() {
+    return getApiClient().get<Record<string, string>>('/admin/settings');
+  },
+
+  async updateSettings(settings: Record<string, string>) {
+    return getApiClient().patch<void>('/admin/settings', settings);
+  },
+};
