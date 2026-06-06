@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -18,6 +18,14 @@ import { activationPasswordSchema, activationProfileSchema } from '@edutech/vali
 type Step = 'validate' | 'password' | 'profile';
 
 export default function ActivationPage() {
+  return (
+    <Suspense fallback={<div className="container mx-auto max-w-2xl py-8"><div className="flex justify-center py-8"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div></div>}>
+      <ActivationContent />
+    </Suspense>
+  );
+}
+
+function ActivationContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token') || '';
