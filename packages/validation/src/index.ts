@@ -104,6 +104,62 @@ export const updateUserSchema = z.object({
   avatarUrl: z.string().url().max(500).optional(),
 });
 
+// ─── Phone Number Schemas ───────────────────────────────────────────────────
+
+const e164Regex = /^\+[1-9]\d{1,14}$/;
+
+export const mobileSchema = z.string()
+  .min(1, 'Mobile number is required')
+  .regex(e164Regex, 'Please enter a valid mobile number (e.g., +1234567890)');
+
+export const mobileOptionalSchema = z.string()
+  .regex(e164Regex, 'Please enter a valid mobile number (e.g., +1234567890)')
+  .or(z.literal(''))
+  .or(z.undefined())
+  .optional();
+
+// ─── Activation Schemas ────────────────────────────────────────────────────────
+
+export const activationPasswordSchema = z
+  .object({
+    password: passwordPolicy,
+    confirmPassword: z.string().min(1, 'Please confirm your password'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
+
+export const activationProfileSchema = z.object({
+  mobile: mobileSchema,
+  address: z.string().min(1, 'Street address is required').max(500),
+  city: z.string().min(1, 'City is required').max(100),
+  state: z.string().min(1, 'State is required').max(100),
+  pinCode: z.string().min(1, 'PIN code is required').max(20),
+  country: z.string().min(1, 'Country is required').max(100),
+});
+
+// ─── Onboarding Schemas ───────────────────────────────────────────────────────
+
+export const onboardingSchema = z.object({
+  mobile: mobileSchema,
+  address: z.string().min(1, 'Street address is required').max(500),
+  city: z.string().min(1, 'City is required').max(100),
+  state: z.string().min(1, 'State is required').max(100),
+  pinCode: z.string().min(1, 'PIN code is required').max(20),
+  country: z.string().min(1, 'Country is required').max(100),
+});
+
+// ─── Instructor Profile Schemas ──────────────────────────────────────────────
+
+export const instructorProfileSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters').max(255),
+  email: z.email('Please enter a valid email address'),
+  bio: z.string().max(2000).optional().default(''),
+  expertise: z.string().max(500).optional().default(''),
+  mobile: mobileOptionalSchema,
+});
+
 // ─── Course Schemas ───────────────────────────────────────────────────────────
 
 export const createCourseSchema = z.object({
@@ -202,6 +258,10 @@ export type CompleteRegistrationInput = z.infer<typeof completeRegistrationSchem
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
+export type ActivationPasswordInput = z.infer<typeof activationPasswordSchema>;
+export type ActivationProfileInput = z.infer<typeof activationProfileSchema>;
+export type OnboardingInput = z.infer<typeof onboardingSchema>;
+export type InstructorProfileInput = z.infer<typeof instructorProfileSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 export type RefreshTokenInput = z.infer<typeof refreshTokenSchema>;
 export type CreateCourseInput = z.infer<typeof createCourseSchema>;
