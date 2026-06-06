@@ -6,6 +6,7 @@ import {
   Card, CardContent, CardHeader, CardTitle, CardDescription, 
   Button, Input, Label, Avatar, Switch, Separator, Badge
 } from '@edutech/ui';
+import { PhoneInput } from '@edutech/ui';
 import { Settings, Shield, LogOut, Save, AlertTriangle, Trash2 } from 'lucide-react';
 import { useAuth } from '@edutech/shared-components';
 import { usersService } from '@edutech/api-client';
@@ -22,6 +23,7 @@ export default function ProfilePage() {
     email: '',
     grade: '',
     institution: '',
+    mobile: '',
   });
   const [error, setError] = useState<string | null>(null);
   useNotifications({ isRead: false });
@@ -51,8 +53,9 @@ export default function ProfilePage() {
       setFormData({
         name: profile.name,
         email: profile.email,
-        grade: profile.grade || '',
-        institution: profile.institution || '',
+        grade: (profile as any).grade || '',
+        institution: (profile as any).institution || '',
+        mobile: (profile as any).mobile || '',
       });
     } catch (err) {
       setError('Failed to load profile');
@@ -230,6 +233,16 @@ export default function ProfilePage() {
                     disabled
                   />
                   <p className="text-xs text-muted-foreground">Email cannot be changed</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="mobile">Mobile Number</Label>
+                  <PhoneInput
+                    id="mobile"
+                    value={formData.mobile}
+                    onChange={(value) => setFormData({ ...formData, mobile: value || '' })}
+                    disabled={!isEditing}
+                    placeholder="Enter phone number"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="grade">Grade/Year</Label>

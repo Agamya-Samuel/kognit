@@ -20,6 +20,7 @@
   "dependencies": {
     "@edutech/api-client": "*",
     "@edutech/types": "*",
+    "@hookform/resolvers": "^5.4.0",
     "@tanstack/react-query": "^5.100.9",
     "axios": "^1.16.0",
     "clsx": "^2.1.1",
@@ -29,8 +30,10 @@
     "posthog-js": "^1.373.5",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
+    "react-hook-form": "^7.77.0",
     "socket.io-client": "^4.8.3",
-    "tailwind-merge": "^3.6.0"
+    "tailwind-merge": "^3.6.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.3",
