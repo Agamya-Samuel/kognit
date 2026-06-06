@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { io, Socket } from 'socket.io-client';
 import { chatService } from '@edutech/api-client';
-import type { ChatMessage, ChatChannel, ChatChannelMember, TypingUser } from '@edutech/types';
+import type { ChatMessage, TypingUser } from '@edutech/types';
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL;
 let socketInstance: Socket | null = null;
@@ -18,12 +18,6 @@ function getSocket(): Socket {
   return socketInstance;
 }
 
-interface PaginatedMessages {
-  data: ChatMessage[];
-  total: number;
-  limit: number;
-  offset: number;
-}
 
 export function useChannelMessages(channelId: number | null, limit = 50, offset = 0) {
   return useQuery({

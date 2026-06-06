@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { progressService } from '@edutech/api-client';
-import type { LectureProgress, UpdateProgressResponse } from '@/types/courses';
+import type { LectureProgress, UpdateProgressResponse } from '@edutech/types';
 
 interface UseProgressTrackingOptions {
   lectureId: number;

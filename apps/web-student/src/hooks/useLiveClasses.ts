@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 import { liveClassesService } from '@edutech/api-client';
-import type { CalendarEvent, CalendarDay } from '@edutech/types';
 
 export function useStudentCalendar(startDate: string, endDate: string) {
   return useQuery({

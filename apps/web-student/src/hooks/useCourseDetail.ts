@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { coursesService } from '@edutech/api-client';
-import type { CourseWithCurriculum, InstructorProfile } from '@/types/courses';
+import type { CourseWithCurriculum } from '@/types/courses';
 
 export function useCourseWithCurriculum(id: number | string) {
   return useQuery({

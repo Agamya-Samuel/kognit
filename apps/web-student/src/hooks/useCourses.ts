@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { coursesService } from '@edutech/api-client';
-import type { CourseFilters, CoursesListResponse } from '@/types/courses';
+import type { CoursesListResponse, Course } from '@/types/courses';
 
-export function useCourses(filters: CourseFilters = {}) {
+export function useCourses(filters: any = {}) {
   const { domain, search, pricingType, minPrice, maxPrice, page = 1, limit = 20, sort } = filters;
 
   return useQuery({
@@ -18,11 +18,11 @@ export function useCourses(filters: CourseFilters = {}) {
       if (search) params.search = search;
       if (pricingType && pricingType !== 'all') params.pricingType = pricingType;
 
-      const result = await (coursesService.list(params) as Promise<{ data: Course[] }>);
-      if (result && typeof result === 'object' && 'data' in result && Array.isArray(result.data)) {
+      const courses = await coursesService.list(params);
+      if (Array.isArray(courses)) {
         return {
-          courses: result.data as Course[],
-          total: (result.data as Course[]).length,
+          courses: courses as Course[],
+          total: (courses as Course[]).length,
           page,
           limit,
           hasNext: false,

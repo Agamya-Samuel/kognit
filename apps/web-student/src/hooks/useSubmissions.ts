@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { submissionsService } from '@edutech/api-client';
-import type { Submission, SubmissionFilters } from '@edutech/types';
+import type { Submission, LateSubmissionStatus, SubmissionFilters } from '@edutech/types';
 
 export function useMySubmissions(filters?: SubmissionFilters) {
   return useQuery({
@@ -28,15 +28,16 @@ export function useSubmitAssignment() {
     async submit(assignmentId: number, content: string): Promise<{
       success: boolean;
       submission: Submission | null;
+      lateStatus: LateSubmissionStatus | null;
       error: string | null;
     }> {
       try {
-        const submission = await submissionsService.submit(assignmentId, { content });
+        const result = await submissionsService.submit(assignmentId, { content });
         queryClient.invalidateQueries({ queryKey: ['submissions'] });
-        return { success: true, submission, error: null };
+        return { success: true, submission: result.submission, lateStatus: result.lateStatus, error: null };
       } catch (err: any) {
         const msg = err.message || 'Failed to submit assignment';
-        return { success: false, submission: null, error: msg };
+        return { success: false, submission: null, lateStatus: null, error: msg };
       }
     },
 
