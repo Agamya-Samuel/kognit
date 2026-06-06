@@ -40,12 +40,12 @@ export function StatCard({ title, value, change, icon: Icon, iconClassName, clas
   }
 
   return (
-    <div className={cn("rounded-lg border bg-card p-6", className)}>
+    <div className={cn("rounded-lg border bg-card p-6 shadow-sm transition-shadow hover:shadow-md", className)}>
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-muted-foreground">{title}</p>
         {Icon && (
           <div className={cn("rounded-md bg-primary/10 p-2", iconClassName)}>
-            <Icon className="h-4 w-4 text-primary" />
+            <Icon className="h-4 w-4" />
           </div>
         )}
       </div>

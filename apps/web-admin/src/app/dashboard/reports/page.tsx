@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@edutech/ui';
-import { Users, BookOpen, Award, TrendingUp, Calendar, DollarSign } from 'lucide-react';
+import { Users, BookOpen, Award, TrendingUp, Calendar, DollarSign, AlertCircle } from 'lucide-react';
 import { adminService } from '@edutech/api-client';
 
 interface DashboardMetrics {
@@ -68,32 +68,39 @@ export default function ReportsPage() {
     other: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       setLoading(true);
+      setError(null);
       try {
-        // Fetch dashboard metrics
-        const metricsResult = await adminService.getDashboardMetrics();
+        const [
+          metricsResult,
+          chartResult,
+          demographicsResult,
+          courseStatsResult,
+          revenueBreakdownResult,
+        ] = await Promise.all([
+          adminService.getDashboardMetrics(),
+          adminService.getChartData(),
+          adminService.getDemographics(),
+          adminService.getCourseStats(),
+          adminService.getRevenueBreakdown(),
+        ]);
+
         setMetrics(metricsResult);
-
-        // Fetch chart data (last 30 days)
-        const chartResult = await adminService.getChartData();
         setChartData(chartResult);
-
-        // Fetch user demographics
-        const demographicsResult = await adminService.getDemographics();
-        setDemographics(demographicsResult);
-
-        // Fetch course stats
-        const courseStatsResult = await adminService.getCourseStats();
+        setDemographics({
+          students: demographicsResult?.students ?? 0,
+          instructors: demographicsResult?.instructors ?? 0,
+          admins: demographicsResult?.admins ?? 0,
+        });
         setCourseStats(courseStatsResult);
-
-        // Fetch revenue breakdown
-        const revenueBreakdownResult = await adminService.getRevenueBreakdown();
         setRevenueBreakdown(revenueBreakdownResult);
-      } catch (error) {
-        console.error('Failed to fetch dashboard data:', error);
+      } catch (err) {
+        console.error('Failed to fetch dashboard data:', err);
+        setError('Failed to load reports data. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -113,26 +120,40 @@ export default function ReportsPage() {
     return new Intl.NumberFormat('en-US').format(num);
   };
 
-  const MetricCard = ({ title, value, icon: Icon, subtitle, trend }: {
+  const MetricCard = ({ title, value, icon: Icon, subtitle }: {
     title: string;
     value: string | number;
-    icon: any;
+    icon: React.ComponentType<{ className?: string }>;
     subtitle?: string;
-    trend?: 'up' | 'down' | 'neutral';
   }) => (
     <Card>
       <CardContent className="pt-6">
         <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-muted-foreground">{title}</p>
+            <p className="text-2xl font-bold text-card-foreground">{value}</p>
             {subtitle && (
-              <p className="text-xs text-gray-500 mt-1">{subtitle}</p>
+              <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
             )}
           </div>
-          <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+          <div className="h-12 w-12 shrink-0 rounded-lg bg-primary/10 flex items-center justify-center">
             <Icon className="h-6 w-6 text-primary" />
           </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const MetricCardSkeleton = () => (
+    <Card>
+      <CardContent className="pt-6">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <div className="h-4 w-24 rounded bg-muted animate-pulse" />
+            <div className="h-8 w-16 rounded bg-muted animate-pulse" />
+            <div className="h-3 w-28 rounded bg-muted animate-pulse" />
+          </div>
+          <div className="h-12 w-12 rounded-lg bg-muted animate-pulse" />
         </div>
       </CardContent>
     </Card>
@@ -142,84 +163,130 @@ export default function ReportsPage() {
     if (loading) {
       return (
         <div className="h-64 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        </div>
+      );
+    }
+
+    const data = chartData.slice(-7);
+    const maxUsers = Math.max(1, ...data.map((d) => d.users));
+    const maxRevenue = Math.max(1, ...data.map((d) => d.revenue));
+
+    if (data.length === 0) {
+      return (
+        <div className="h-64 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+          <TrendingUp className="h-8 w-8 opacity-40" />
+          <p className="text-sm">No chart data available</p>
         </div>
       );
     }
 
     return (
       <div className="h-64">
-        {/* Simple bar chart implementation */}
         <div className="flex items-end justify-between h-full px-4">
-          {chartData.slice(-7).map((data, index) => (
+          {data.map((item, index) => (
             <div key={index} className="flex flex-col items-center flex-1">
               <div className="flex items-end justify-center w-full gap-1 mb-2">
-                <div 
-                  className="w-3 bg-primary rounded-t"
-                  style={{ height: `${(data.users / Math.max(...chartData.map(d => d.users))) * 80}%` }}
+                <div
+                  className="w-3 bg-primary rounded-t min-h-[2px] transition-all"
+                  style={{ height: `${(item.users / maxUsers) * 80}%` }}
                 />
-                <div 
-                  className="w-3 bg-green-500 rounded-t"
-                  style={{ height: `${(data.revenue / Math.max(...chartData.map(d => d.revenue))) * 80}%` }}
+                <div
+                  className="w-3 bg-emerald-500 rounded-t min-h-[2px] transition-all"
+                  style={{ height: `${(item.revenue / maxRevenue) * 80}%` }}
                 />
               </div>
-              <span className="text-xs text-gray-500">
-                {new Date(data.name).toLocaleDateString('en-US', { weekday: 'short' })}
+              <span className="text-xs text-muted-foreground">
+                {new Date(item.name).toLocaleDateString('en-US', { weekday: 'short' })}
               </span>
             </div>
           ))}
         </div>
         <div className="flex justify-center gap-4 mt-4">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-primary rounded"></div>
-            <span className="text-xs text-gray-600">Users</span>
+            <div className="w-3 h-3 bg-primary rounded" />
+            <span className="text-xs text-muted-foreground">Users</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-green-500 rounded"></div>
-            <span className="text-xs text-gray-600">Revenue</span>
+            <div className="w-3 h-3 bg-emerald-500 rounded" />
+            <span className="text-xs text-muted-foreground">Revenue</span>
           </div>
         </div>
       </div>
     );
   };
 
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">
+            Analytics & Reports
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Monitor platform performance and user engagement
+          </p>
+        </div>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center justify-center gap-3 py-12 text-muted-foreground">
+              <AlertCircle className="h-10 w-10 text-destructive opacity-60" />
+              <p className="text-sm font-medium">{error}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-2xl font-bold text-foreground">
           Analytics & Reports
         </h1>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-sm text-muted-foreground">
           Monitor platform performance and user engagement
         </p>
       </div>
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard
-          title="Total Users"
-          value={formatNumber(metrics.totalUsers)}
-          icon={Users}
-          subtitle="+12% from last month"
-        />
-        <MetricCard
-          title="Total Courses"
-          value={formatNumber(metrics.totalCourses)}
-          icon={BookOpen}
-          subtitle="+8 new this month"
-        />
-        <MetricCard
-          title="Total Revenue"
-          value={formatCurrency(metrics.totalRevenue)}
-          icon={DollarSign}
-          subtitle="+24% from last month"
-        />
-        <MetricCard
-          title="Active Users"
-          value={formatNumber(metrics.activeUsers)}
-          icon={TrendingUp}
-          subtitle="+5% from last week"
-        />
+        {loading ? (
+          <>
+            <MetricCardSkeleton />
+            <MetricCardSkeleton />
+            <MetricCardSkeleton />
+            <MetricCardSkeleton />
+          </>
+        ) : (
+          <>
+            <MetricCard
+              title="Total Users"
+              value={formatNumber(metrics.totalUsers)}
+              icon={Users}
+              subtitle="+12% from last month"
+            />
+            <MetricCard
+              title="Total Courses"
+              value={formatNumber(metrics.totalCourses)}
+              icon={BookOpen}
+              subtitle="+8 new this month"
+            />
+            <MetricCard
+              title="Total Revenue"
+              value={formatCurrency(metrics.totalRevenue)}
+              icon={DollarSign}
+              subtitle="+24% from last month"
+            />
+            <MetricCard
+              title="Active Users"
+              value={formatNumber(metrics.activeUsers)}
+              icon={TrendingUp}
+              subtitle="+5% from last week"
+            />
+          </>
+        )}
       </div>
 
       {/* Charts Section */}
@@ -228,7 +295,7 @@ export default function ReportsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
+              <TrendingUp className="h-5 w-5 text-muted-foreground" />
               User Growth (Last 7 Days)
             </CardTitle>
           </CardHeader>
@@ -241,76 +308,76 @@ export default function ReportsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
+              <Calendar className="h-5 w-5 text-muted-foreground" />
               Recent Activity
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800">
+              <div className="flex items-center justify-between py-2 border-b border-border">
                 <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
-                    <Users className="h-4 w-4 text-green-600" />
+                  <div className="h-8 w-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                    <Users className="h-4 w-4 text-emerald-600" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    <p className="text-sm font-medium text-card-foreground">
                       New users registered
                     </p>
-                    <p className="text-xs text-gray-500">Today</p>
+                    <p className="text-xs text-muted-foreground">Today</p>
                   </div>
                 </div>
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                <span className="text-sm font-medium text-card-foreground tabular-nums">
                   +{metrics.newUsersThisMonth}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800">
+              <div className="flex items-center justify-between py-2 border-b border-border">
                 <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                  <div className="h-8 w-8 rounded-full bg-blue-500/10 flex items-center justify-center">
                     <BookOpen className="h-4 w-4 text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    <p className="text-sm font-medium text-card-foreground">
                       Courses completed
                     </p>
-                    <p className="text-xs text-gray-500">This month</p>
+                    <p className="text-xs text-muted-foreground">This month</p>
                   </div>
                 </div>
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                <span className="text-sm font-medium text-card-foreground tabular-nums">
                   {metrics.completedCourses}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800">
+              <div className="flex items-center justify-between py-2 border-b border-border">
                 <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-full bg-yellow-100 flex items-center justify-center">
-                    <Award className="h-4 w-4 text-yellow-600" />
+                  <div className="h-8 w-8 rounded-full bg-amber-500/10 flex items-center justify-center">
+                    <Award className="h-4 w-4 text-amber-600" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    <p className="text-sm font-medium text-card-foreground">
                       Pending approvals
                     </p>
-                    <p className="text-xs text-gray-500">Requires attention</p>
+                    <p className="text-xs text-muted-foreground">Requires attention</p>
                   </div>
                 </div>
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                <span className="text-sm font-medium text-card-foreground tabular-nums">
                   {metrics.pendingApprovals}
                 </span>
               </div>
 
               <div className="flex items-center justify-between py-2">
                 <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center">
+                  <div className="h-8 w-8 rounded-full bg-purple-500/10 flex items-center justify-center">
                     <Users className="h-4 w-4 text-purple-600" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    <p className="text-sm font-medium text-card-foreground">
                       New instructors
                     </p>
-                    <p className="text-xs text-gray-500">This month</p>
+                    <p className="text-xs text-muted-foreground">This month</p>
                   </div>
                 </div>
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                <span className="text-sm font-medium text-card-foreground tabular-nums">
                   +{metrics.totalInstructors}
                 </span>
               </div>
@@ -327,24 +394,18 @@ export default function ReportsPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Students</span>
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {demographics.students.toLocaleString()}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Instructors</span>
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {demographics.instructors}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Admins</span>
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {demographics.admins}
-                </span>
-              </div>
+              {[
+                { label: 'Students', value: demographics.students },
+                { label: 'Instructors', value: demographics.instructors },
+                { label: 'Admins', value: demographics.admins },
+              ].map((item) => (
+                <div key={item.label} className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">{item.label}</span>
+                  <span className="text-sm font-medium text-card-foreground tabular-nums">
+                    {item.value.toLocaleString()}
+                  </span>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -355,24 +416,18 @@ export default function ReportsPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Active Courses</span>
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {courseStats.active.toLocaleString()}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Draft Courses</span>
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {courseStats.draft.toLocaleString()}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Archived Courses</span>
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {courseStats.archived.toLocaleString()}
-                </span>
-              </div>
+              {[
+                { label: 'Active Courses', value: courseStats.active },
+                { label: 'Draft Courses', value: courseStats.draft },
+                { label: 'Archived Courses', value: courseStats.archived },
+              ].map((item) => (
+                <div key={item.label} className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">{item.label}</span>
+                  <span className="text-sm font-medium text-card-foreground tabular-nums">
+                    {item.value.toLocaleString()}
+                  </span>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -383,24 +438,18 @@ export default function ReportsPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Course Sales</span>
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {formatCurrency(revenueBreakdown.course_sales)}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Subscriptions</span>
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {formatCurrency(revenueBreakdown.subscriptions)}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Other</span>
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {formatCurrency(revenueBreakdown.other)}
-                </span>
-              </div>
+              {[
+                { label: 'Course Sales', value: revenueBreakdown.course_sales },
+                { label: 'Subscriptions', value: revenueBreakdown.subscriptions },
+                { label: 'Other', value: revenueBreakdown.other },
+              ].map((item) => (
+                <div key={item.label} className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">{item.label}</span>
+                  <span className="text-sm font-medium text-card-foreground tabular-nums">
+                    {formatCurrency(item.value)}
+                  </span>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
