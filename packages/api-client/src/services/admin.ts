@@ -29,8 +29,20 @@ export const adminService = {
     return getApiClient().patch<void>(`/admin/courses/${id}/suspend`, { reason });
   },
 
-  async getUsers(filters?: Record<string, unknown>) {
-    return getApiClient().get<any[]>('/admin/users', filters);
+  async getUsers(filters?: Record<string, unknown>): Promise<{ users: any[]; total: number; page: number; limit: number }> {
+    return getApiClient().get<{ users: any[]; total: number; page: number; limit: number }>('/admin/users', filters);
+  },
+
+  async toggleUserActive(id: number) {
+    return getApiClient().patch<void>(`/admin/users/${id}/toggle-active`);
+  },
+
+  async updateUserRole(id: number, role: string) {
+    return getApiClient().patch<void>(`/admin/users/${id}/role`, { role });
+  },
+
+  async deleteUser(id: number) {
+    return getApiClient().delete<void>(`/admin/users/${id}`);
   },
 
   async getAssignments(filters?: Record<string, unknown>) {
@@ -79,5 +91,17 @@ export const adminService = {
 
   async updateSettings(settings: Record<string, string>) {
     return getApiClient().patch<void>('/admin/settings', settings);
+  },
+
+  async getNotificationConfig() {
+    return getApiClient().get<any>('/admin/notifications/config');
+  },
+
+  async getUserNotificationPreferences(userId: number) {
+    return getApiClient().get<any>(`/admin/notifications/users/${userId}/preferences`);
+  },
+
+  async updateUserNotificationPreferences(userId: number, preferences: Record<string, unknown>) {
+    return getApiClient().patch<any>(`/admin/notifications/users/${userId}/preferences`, preferences);
   },
 };
