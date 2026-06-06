@@ -1,6 +1,6 @@
 "use client"
 
-import { Clock, CheckCircle2, XCircle } from "lucide-react"
+import { Clock, CheckCircle2, XCircle, Activity } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@edutech/ui"
 
 export interface ActivityItem {
@@ -24,7 +24,13 @@ export function ActivityList({ activities, title = "Recent Activity", className 
           <CardTitle>{title}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">No recent activity</p>
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <div className="rounded-full bg-muted p-3 mb-3">
+              <Activity className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <p className="text-sm font-medium text-foreground">No recent activity</p>
+            <p className="text-xs text-muted-foreground mt-1">Your activity will appear here once you get started.</p>
+          </div>
         </CardContent>
       </Card>
     )
@@ -33,13 +39,24 @@ export function ActivityList({ activities, title = "Recent Activity", className 
   const getStatusIcon = (status?: ActivityItem["status"]) => {
     switch (status) {
       case "success":
-        return <CheckCircle2 className="h-4 w-4 text-success" />
+        return <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
       case "error":
-        return <XCircle className="h-4 w-4 text-destructive" />
+        return <XCircle className="h-4 w-4 text-rose-600 dark:text-rose-400" />
       case "info":
         return <Clock className="h-4 w-4 text-muted-foreground" />
       default:
         return <Clock className="h-4 w-4 text-muted-foreground" />
+    }
+  }
+
+  const getStatusBg = (status?: ActivityItem["status"]) => {
+    switch (status) {
+      case "success":
+        return "bg-emerald-500/10"
+      case "error":
+        return "bg-rose-500/10"
+      default:
+        return "bg-muted"
     }
   }
 
@@ -55,10 +72,12 @@ export function ActivityList({ activities, title = "Recent Activity", className 
               key={activity.id}
               className="flex items-start gap-3 border-b border-border pb-3 last:border-0 last:pb-0"
             >
-              <div className="mt-0.5">{getStatusIcon(activity.status)}</div>
-              <div className="flex-1">
-                <p className="text-sm text-foreground">{activity.message}</p>
-                <p className="text-xs text-muted-foreground">{activity.time}</p>
+              <div className={`rounded-full p-1.5 mt-0.5 ${getStatusBg(activity.status)}`}>
+                {getStatusIcon(activity.status)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground">{activity.message}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{activity.time}</p>
               </div>
             </div>
           ))}
