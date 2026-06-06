@@ -56,17 +56,39 @@ export class NotificationDispatcherService {
     return true;
   }
 
-  shouldDeliverSms(type: string, _prefs: any): boolean {
+  shouldDeliverSms(type: string, prefs: any): boolean {
+    if (SYSTEM_TYPES.includes(type)) return false;
+    if (!prefs) return false;
+    const t = type.toLowerCase();
+    if (t.includes('enrollment') || t === 'enrolled' || t === 'course_enrolled') return prefs.smsEnrollments ?? false;
+    if (t.includes('assignment') || t.includes('graded') || t.includes('submission')) return prefs.smsSubmissions ?? false;
+    if (t.includes('reminder') || t.includes('live_class') || t.includes('class_')) return prefs.smsReminders ?? false;
+    return false;
+  }
+
+  shouldDeliverPush(type: string, prefs: any): boolean {
+    if (SYSTEM_TYPES.includes(type)) return true;
+    if (!prefs) return true;
+    const t = type.toLowerCase();
+    if (t.includes('enrollment') || t === 'enrolled' || t === 'course_enrolled') return prefs.pushEnrollments ?? true;
+    if (t.includes('assignment') || t.includes('graded') || t.includes('submission')) return prefs.pushSubmissions ?? true;
+    if (t.includes('reminder') || t.includes('live_class') || t.includes('class_')) return prefs.pushReminders ?? true;
     return true;
+  }
+
+  getFrequencyDelay(prefs: any, channel: 'email' | 'sms'): number | null {
+    if (!prefs) return null;
+    const freq = channel === 'email' ? prefs.emailFrequency : prefs.smsFrequency;
+    if (!freq || freq === 'immediate') return null;
+    if (freq === 'daily') return 60 * 60 * 1000;
+    if (freq === 'weekly') return 7 * 24 * 60 * 60 * 1000;
+    return null;
   }
 
   async dispatch(params: DispatchParams): Promise<{ notificationId: number; jobId?: string }> {
     const prefs = await this.preferencesRepository.findByUserId(params.userId);
 
-    const shouldDeliverPush = SYSTEM_TYPES.includes(params.type) || !prefs
-      ? true
-      : this.checkPushPref(params.type, prefs);
-
+    const shouldDeliverPush = this.shouldDeliverPush(params.type, prefs);
     const shouldDeliverEmail = this.shouldDeliverEmail(params.type, prefs);
     const shouldDeliverSms = this.shouldDeliverSms(params.type, prefs);
 
@@ -83,8 +105,6 @@ export class NotificationDispatcherService {
     });
 
     const result: { notificationId: number; jobId?: string } = { notificationId: notification.id };
-    let jobId: string | undefined;
-
     const channels = params.channels ?? ['in_app'];
 
     const includesEmail = channels.includes('email');
@@ -92,6 +112,9 @@ export class NotificationDispatcherService {
 
     if (includesEmail && shouldDeliverEmail && params.userEmail) {
       try {
+        const freqDelay = this.getFrequencyDelay(prefs, 'email');
+        const effectiveDelay = params.delay ?? freqDelay ?? 0;
+
         const job = await this.emailQueue.add('send', {
           to: params.userEmail,
           subject: params.title,
@@ -99,15 +122,14 @@ export class NotificationDispatcherService {
           templateData: params.templateData,
           notificationId: notification.id,
         }, {
-          delay: params.delay,
+          delay: effectiveDelay,
           priority: params.priority ?? 5,
           attempts: 3,
           backoff: { type: 'exponential', delay: 2000 },
         });
-        jobId = job?.id;
-        if (jobId) {
-          await this.notificationsRepo.updateJobId(notification.id, jobId);
-          result.jobId = jobId;
+        if (job?.id) {
+          await this.notificationsRepo.updateJobId(notification.id, job.id);
+          result.jobId = job.id;
         }
       } catch (error) {
         this.logger.error(`Failed to enqueue email for notification ${notification.id}: ${error}`);
@@ -116,12 +138,15 @@ export class NotificationDispatcherService {
 
     if (includesSms && shouldDeliverSms && params.userPhone) {
       try {
+        const freqDelay = this.getFrequencyDelay(prefs, 'sms');
+        const effectiveDelay = params.delay ?? freqDelay ?? 0;
+
         await this.smsQueue.add('send', {
           to: params.userPhone,
           body: params.body,
           notificationId: notification.id,
         }, {
-          delay: params.delay,
+          delay: effectiveDelay,
           priority: params.priority ?? 5,
           attempts: 3,
           backoff: { type: 'exponential', delay: 2000 },
@@ -152,13 +177,5 @@ export class NotificationDispatcherService {
     );
 
     return results.filter((r) => r.status === 'fulfilled' && r.value.notificationId > 0).length;
-  }
-
-  private checkPushPref(type: string, prefs: any): boolean {
-    const t = type.toLowerCase();
-    if (t.includes('enrollment') || t === 'enrolled' || t === 'course_enrolled') return prefs.pushEnrollments ?? true;
-    if (t.includes('assignment') || t.includes('graded') || t.includes('submission')) return prefs.pushSubmissions ?? true;
-    if (t.includes('reminder') || t.includes('live_class') || t.includes('class_')) return prefs.pushReminders ?? true;
-    return true;
   }
 }
