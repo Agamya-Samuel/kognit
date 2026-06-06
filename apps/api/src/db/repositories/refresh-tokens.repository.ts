@@ -43,9 +43,27 @@ export class RefreshTokensRepository extends BaseRepository<RefreshToken> {
       return await this.db
         .select()
         .from(refreshTokens)
-        .where(and(eq(refreshTokens.userId, userId), eq(refreshTokens.isRevoked, false)));
+        .where(
+          and(
+            eq(refreshTokens.userId, userId),
+            eq(refreshTokens.isRevoked, false),
+            sql`${refreshTokens.expiresAt} > now()`,
+          ),
+        );
     } catch (error) {
       this.handleError(error, 'findActiveByUserId');
+      return [];
+    }
+  }
+
+  async findByFamily(family: string): Promise<RefreshToken[]> {
+    try {
+      return await this.db
+        .select()
+        .from(refreshTokens)
+        .where(eq(refreshTokens.family, family));
+    } catch (error) {
+      this.handleError(error, 'findByFamily');
       return [];
     }
   }
