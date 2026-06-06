@@ -232,10 +232,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password.');
     }
 
-    // Reset failed attempts on successful login
     await this.lockoutService.resetAttempts(email);
 
-    // Generate tokens
+    await this.tokenService.revokeAllUserTokens(user.id);
+
     const tokens = await this.tokenService.generateTokenPair(user);
 
     this.logger.log(`User logged in: ${user.id} (${email})`);
@@ -303,7 +303,6 @@ export class AuthService {
    * Implements token rotation and theft detection.
    */
   async refreshTokens(userId: number, rawRefreshToken: string): Promise<TokenPayload> {
-    // Verify the refresh token JWT is valid
     let decoded: JwtPayload;
     try {
       decoded = this.jwtService.verify(rawRefreshToken, {
@@ -317,7 +316,6 @@ export class AuthService {
       throw new UnauthorizedException('Token does not belong to this user.');
     }
 
-    // Check if user is still active
     const user = await this.usersRepo.findById(userId);
     if (!user) {
       throw new UnauthorizedException('User not found.');
@@ -326,53 +324,53 @@ export class AuthService {
       throw new ForbiddenException('Account has been deactivated.');
     }
 
-    // Check deactivated_users set in Redis
     const isDeactivated = await this.cacheService.get<boolean>('deactivated_users', String(userId));
     if (isDeactivated) {
       throw new ForbiddenException('Account has been deactivated.');
     }
 
-    // Find active tokens and check for the submitted one
-    const activeTokens = await this.refreshTokensRepo.findActiveByUserId(userId);
     let matchedToken: any = null;
+    let tokenWasRevoked = false;
 
-    for (const token of activeTokens) {
-      const match = await this.passwordService.compare(rawRefreshToken, token.tokenHash);
-      if (match) {
-        matchedToken = token;
-        break;
+    if (decoded.family) {
+      const familyTokens = await this.refreshTokensRepo.findByFamily(decoded.family);
+
+      for (const token of familyTokens) {
+        const match = await this.passwordService.compare(rawRefreshToken, token.tokenHash);
+        if (match) {
+          matchedToken = token;
+          tokenWasRevoked = token.isRevoked;
+          break;
+        }
+      }
+
+      if (matchedToken && tokenWasRevoked) {
+        await this.tokenService.revokeTokenFamily(decoded.family);
+        this.logger.warn(`Token reuse/theft detected for user ${userId}. Family ${decoded.family} revoked.`);
+        throw new UnauthorizedException(
+          'Token reuse detected. All sessions have been terminated for security. Please log in again.',
+        );
+      }
+    } else {
+      const activeTokens = await this.refreshTokensRepo.findActiveByUserId(userId);
+
+      for (const token of activeTokens) {
+        const match = await this.passwordService.compare(rawRefreshToken, token.tokenHash);
+        if (match) {
+          matchedToken = token;
+          break;
+        }
       }
     }
 
     if (!matchedToken) {
-      // Token not found among active tokens — could be:
-      // 1. Already revoked (normal rotation) → just reject
-      // 2. Token reuse (theft!) → revoke entire family
-
-      // Check if any token with this user exists but is revoked
-      // For theft detection, we revoke the entire family
-      // We need to find the family of the original token.
-      // Since we can't find it directly, we check if ANY token for this user was recently revoked.
-
-      // Simple approach: if the JWT is valid but the token isn't in active tokens,
-      // it was likely revoked during rotation. This is reuse → revoke family.
-      // However, we don't know the family. Let's check all tokens including revoked.
-
-      // For now, we take a conservative approach:
-      // If JWT is valid but token not active, it's reuse. Revoke ALL user tokens.
-      await this.tokenService.revokeAllUserTokens(userId);
-      this.logger.warn(`Possible token theft detected for user ${userId}. All tokens revoked.`);
-
-      throw new UnauthorizedException(
-        'Token reuse detected. All sessions have been terminated for security. Please log in again.',
-      );
+      throw new UnauthorizedException('Invalid or expired refresh token.');
     }
 
-    // Revoke the old refresh token (rotation)
     await this.refreshTokensRepo.revoke(matchedToken.id);
 
-    // Issue new token pair in the same family
-    const newTokens = await this.tokenService.generateTokenPair(user, matchedToken.family);
+    const family = matchedToken.family || decoded.family;
+    const newTokens = await this.tokenService.generateTokenPair(user, family);
 
     this.logger.log(`Tokens refreshed for user ${userId}`);
 
