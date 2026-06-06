@@ -3,8 +3,9 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { RoomEvent, Track } from 'livekit-client';
 import type { Room, ConnectionQuality } from 'livekit-client';
-
-// ─── Types ──────────────────────────────────────────────────────────────────
+import { liveClassesService } from '@edutech/api-client';
+import type { LiveKitTokenResponse, LiveClassStatusResponse } from '@edutech/api-client';
+export type { LiveKitTokenResponse, LiveClassStatusResponse };
 
 export type LiveClassStatus = 'scheduled' | 'live' | 'ended';
 
@@ -17,23 +18,6 @@ export type ConnectionStatus =
   | 'reconnecting'
   | 'error';
 
-export interface LiveKitTokenResponse {
-  token: string;
-  identity: string;
-  roomName: string;
-  expiresIn: number;
-  livekitUrl: string;
-}
-
-export interface LiveClassStatusResponse {
-  liveClassId: number;
-  status: LiveClassStatus;
-  roomName: string;
-  participantCount?: number;
-  maxParticipants?: number;
-  recordingUrl?: string;
-}
-
 export interface ParticipantInfo {
   identity: string;
   name?: string;
@@ -44,32 +28,23 @@ export interface ParticipantInfo {
 }
 
 export interface UseLiveKitOptions {
-  /** Live class ID */
   liveClassId: number;
-  /** Whether the current user is an instructor */
   isInstructor: boolean;
-  /** Auto-connect when token is fetched (default: true) */
   autoConnect?: boolean;
-  /** Token expiry in seconds (student only, default: 3600) */
   expiresIn?: number;
 }
 
 export interface UseLiveKitReturn {
-  // Connection state
   connectionStatus: ConnectionStatus;
   error: string | null;
   token: string | null;
   livekitUrl: string | null;
   roomName: string | null;
   identity: string | null;
-
-  // Live class state
   liveClassStatus: LiveClassStatus | null;
   participantCount: number;
   maxParticipants: number | null;
   participants: ParticipantInfo[];
-
-  // Actions
   startClass: () => Promise<void>;
   joinClass: () => Promise<void>;
   endClass: (recordingUrl?: string) => Promise<void>;
@@ -77,19 +52,11 @@ export interface UseLiveKitReturn {
   refreshStatus: () => Promise<void>;
 }
 
-// ─── Constants ──────────────────────────────────────────────────────────────
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-
-// ─── Hook ───────────────────────────────────────────────────────────────────
-
 export function useLiveKit({
   liveClassId,
-  isInstructor: _isInstructor,
   autoConnect = true,
   expiresIn,
 }: UseLiveKitOptions): UseLiveKitReturn {
-  // ── State ──────────────────────────────────────────────────────────────
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('disconnected');
   const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -102,33 +69,11 @@ export function useLiveKit({
   const [maxParticipants, setMaxParticipants] = useState<number | null>(null);
   const [participants, setParticipants] = useState<ParticipantInfo[]>([]);
 
-  // ── Refs ───────────────────────────────────────────────────────────────
   const roomRef = useRef<Room | null>(null);
 
-  // ── Helper: get auth token ─────────────────────────────────────────────
-  const getAuthToken = useCallback((): string | null => {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem('token');
-  }, []);
-
-  // ── Fetch live class status ────────────────────────────────────────────
   const refreshStatus = useCallback(async () => {
     try {
-      const authToken = getAuthToken();
-      const response = await fetch(
-        `${API_BASE_URL}/api/v1/live/status/${liveClassId}`,
-        {
-          headers: authToken
-            ? { Authorization: `Bearer ${authToken}` }
-            : {},
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch status: ${response.status}`);
-      }
-
-      const data: LiveClassStatusResponse = await response.json();
+      const data = await liveClassesService.getStatus(liveClassId);
       setLiveClassStatus(data.status);
       setRoomName(data.roomName);
       setParticipantCount(data.participantCount ?? 0);
@@ -137,36 +82,14 @@ export function useLiveKit({
       const message = err instanceof Error ? err.message : 'Failed to fetch live class status';
       setError(message);
     }
-  }, [liveClassId, getAuthToken]);
+  }, [liveClassId]);
 
-  // ── Start class (instructor) ───────────────────────────────────────────
   const startClass = useCallback(async () => {
     try {
       setError(null);
       setConnectionStatus('connecting');
 
-      const authToken = getAuthToken();
-      if (!authToken) {
-        throw new Error('Not authenticated');
-      }
-
-      const response = await fetch(`${API_BASE_URL}/api/v1/live/start`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ liveClassId }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.message || `Failed to start class (${response.status})`,
-        );
-      }
-
-      const data: LiveKitTokenResponse = await response.json();
+      const data = await liveClassesService.startClass(liveClassId);
       setToken(data.token);
       setLivekitUrl(data.livekitUrl);
       setRoomName(data.roomName);
@@ -181,41 +104,14 @@ export function useLiveKit({
       setError(message);
       setConnectionStatus('error');
     }
-  }, [liveClassId, getAuthToken, autoConnect]);
+  }, [liveClassId, autoConnect]);
 
-  // ── Join class (student) ───────────────────────────────────────────────
   const joinClass = useCallback(async () => {
     try {
       setError(null);
       setConnectionStatus('connecting');
 
-      const authToken = getAuthToken();
-      if (!authToken) {
-        throw new Error('Not authenticated');
-      }
-
-      const body: { liveClassId: number; expiresIn?: number } = { liveClassId };
-      if (expiresIn) {
-        body.expiresIn = expiresIn;
-      }
-
-      const response = await fetch(`${API_BASE_URL}/api/v1/live/join`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.message || `Failed to join class (${response.status})`,
-        );
-      }
-
-      const data: LiveKitTokenResponse = await response.json();
+      const data = await liveClassesService.joinClass(liveClassId, expiresIn);
       setToken(data.token);
       setLivekitUrl(data.livekitUrl);
       setRoomName(data.roomName);
@@ -229,41 +125,15 @@ export function useLiveKit({
       setError(message);
       setConnectionStatus('error');
     }
-  }, [liveClassId, expiresIn, getAuthToken, autoConnect]);
+  }, [liveClassId, expiresIn, autoConnect]);
 
-  // ── End class (instructor) ─────────────────────────────────────────────
   const endClass = useCallback(async (recordingUrl?: string) => {
     try {
       setError(null);
 
-      const authToken = getAuthToken();
-      if (!authToken) {
-        throw new Error('Not authenticated');
-      }
-
-      // Disconnect from room first
       disconnectFromRoom();
 
-      const body: { liveClassId: number; recordingUrl?: string } = { liveClassId };
-      if (recordingUrl) {
-        body.recordingUrl = recordingUrl;
-      }
-
-      const response = await fetch(`${API_BASE_URL}/api/v1/live/end`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.message || `Failed to end class (${response.status})`,
-        );
-      }
+      await liveClassesService.endClass(liveClassId, recordingUrl);
 
       setLiveClassStatus('ended');
       setConnectionStatus('disconnected');
@@ -271,12 +141,10 @@ export function useLiveKit({
       const message = err instanceof Error ? err.message : 'Failed to end class';
       setError(message);
     }
-  }, [liveClassId, getAuthToken]);
+  }, [liveClassId]);
 
-  // ── Connect to LiveKit room ────────────────────────────────────────────
   const connectToRoom = useCallback(async (url: string, accessToken: string) => {
     try {
-      // Dynamic import to avoid SSR issues
       const { Room } = await import('livekit-client');
 
       const room = new Room({
@@ -291,7 +159,6 @@ export function useLiveKit({
         },
       });
 
-      // Set up event listeners
       room.on(
         RoomEvent.ParticipantConnected,
         () => {
@@ -330,7 +197,6 @@ export function useLiveKit({
         updateParticipants(room);
       });
 
-      // Connect
       await room.connect(url, accessToken);
       roomRef.current = room;
     } catch (err) {
@@ -340,11 +206,9 @@ export function useLiveKit({
     }
   }, []);
 
-  // ── Update participants list ───────────────────────────────────────────
   const updateParticipants = useCallback((room: Room) => {
     const allParticipants: ParticipantInfo[] = [];
 
-    // Local participant
     const local = room.localParticipant;
     const localMic = local.getTrackPublication(Track.Source.Microphone);
     allParticipants.push({
@@ -356,7 +220,6 @@ export function useLiveKit({
       role: local.identity.startsWith('instructor-') ? 'instructor' : 'student',
     });
 
-    // Remote participants
     room.remoteParticipants.forEach((participant) => {
       const remoteMic = participant.getTrackPublication(Track.Source.Microphone);
       allParticipants.push({
@@ -375,7 +238,6 @@ export function useLiveKit({
     setParticipantCount(allParticipants.length);
   }, []);
 
-  // ── Disconnect from room ───────────────────────────────────────────────
   const disconnectFromRoom = useCallback(() => {
     if (roomRef.current) {
       roomRef.current.disconnect();
@@ -390,7 +252,6 @@ export function useLiveKit({
     disconnectFromRoom();
   }, [disconnectFromRoom]);
 
-  // ── Cleanup on unmount ─────────────────────────────────────────────────
   useEffect(() => {
     return () => {
       if (roomRef.current) {
@@ -418,4 +279,3 @@ export function useLiveKit({
     refreshStatus,
   };
 }
-
