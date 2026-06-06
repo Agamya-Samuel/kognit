@@ -28,11 +28,19 @@ export class NotificationsController {
   @ApiResponse({ status: 200, description: 'Notifications retrieved successfully' })
   async getNotifications(
     @CurrentUser() user: { sub: number },
-  ): Promise<{ success: true; data: PaginatedResult<Notification> }> {
+  ): Promise<{ success: true; data: any }> {
     const notifications = await this.notificationsService.getNotifications(user.sub);
+    const mappedData = {
+      ...notifications,
+      data: notifications.data.map((n) => ({
+        ...n,
+        read: n.isRead,
+        message: n.body,
+      })),
+    };
     return {
       success: true,
-      data: notifications,
+      data: mappedData,
     };
   }
 
@@ -60,7 +68,7 @@ export class NotificationsController {
   async markAsRead(
     @CurrentUser() user: { sub: number },
     @Param('id') id: string,
-  ): Promise<{ success: true; data: Notification | null }> {
+  ): Promise<{ success: true; data: any }> {
     const notificationId = parseInt(id, 10);
     const notification = await this.notificationsService.markAsRead(
       notificationId,
@@ -68,7 +76,7 @@ export class NotificationsController {
     );
     return {
       success: true,
-      data: notification,
+      data: notification ? { ...notification, read: notification.isRead, message: notification.body } : notification,
     };
   }
 

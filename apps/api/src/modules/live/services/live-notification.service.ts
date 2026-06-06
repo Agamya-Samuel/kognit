@@ -1,12 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 import { NotificationsRepository } from '../../../db/repositories/notifications.repository';
 import { LiveClassesRepository } from '../../../db/repositories/live-classes.repository';
 import { EnrollmentsRepository } from '../../../db/repositories/enrollments.repository';
 import { LecturesRepository } from '../../../db/repositories/lectures.repository';
 import { SectionsRepository } from '../../../db/repositories/sections.repository';
 import type { LiveClass } from '../../../db/schema';
-
-// ─── Types ──────────────────────────────────────────────────────────────────
 
 export interface NotificationPayload {
   liveClassId: number;
@@ -15,62 +15,53 @@ export interface NotificationPayload {
   body: string;
 }
 
-export interface ScheduledNotification {
-  id: string;
-  liveClassId: number;
-  type: NotificationPayload['type'];
-  triggerAt: Date;
-  processed: boolean;
-}
-
-// ─── Live Notification Service ───────────────────────────────────────────────
-
 @Injectable()
 export class LiveNotificationService {
   private readonly logger = new Logger(LiveNotificationService.name);
 
-  // In-memory queue for scheduled notifications.
-  // In production, use a proper job queue (BullMQ, etc.)
-  private scheduledNotifications: Map<string, ScheduledNotification> = new Map();
-  private intervalHandle: ReturnType<typeof setInterval> | null = null;
+  private scheduledJobIds: Map<string, string> = new Map();
 
   constructor(
+    @InjectQueue('scheduled-notifications') private scheduledQueue: Queue,
     private readonly notificationsRepo: NotificationsRepository,
     private readonly liveClassesRepo: LiveClassesRepository,
     private readonly enrollmentsRepo: EnrollmentsRepository,
     private readonly lecturesRepo: LecturesRepository,
     private readonly sectionsRepo: SectionsRepository,
-  ) {
-    // Start the notification checker (runs every minute)
-    this.startNotificationChecker();
-  }
+  ) {}
 
-  /**
-   * Schedule notifications when a new class is created.
-   * Auto-notify enrolled students (1hr before, 15min before).
-   */
   async scheduleClassNotifications(liveClass: LiveClass): Promise<void> {
     const scheduledTime = new Date(liveClass.scheduledAt);
     const now = new Date();
 
-    // 1 hour before notification
-    const oneHourBefore = new Date(scheduledTime.getTime() - 60 * 60 * 1000);
-    if (oneHourBefore > now) {
-      this.addScheduledNotification({
-        liveClassId: liveClass.id,
-        type: 'class_reminder_1hr',
-        triggerAt: oneHourBefore,
-      });
-    }
+    const reminderTypes: Array<'class_reminder_1hr' | 'class_reminder_15min'> = [
+      'class_reminder_1hr',
+      'class_reminder_15min',
+    ];
 
-    // 15 minutes before notification
-    const fifteenMinBefore = new Date(scheduledTime.getTime() - 15 * 60 * 1000);
-    if (fifteenMinBefore > now) {
-      this.addScheduledNotification({
-        liveClassId: liveClass.id,
-        type: 'class_reminder_15min',
-        triggerAt: fifteenMinBefore,
-      });
+    for (const reminderType of reminderTypes) {
+      const offsetMs = reminderType === 'class_reminder_1hr' ? 60 * 60 * 1000 : 15 * 60 * 1000;
+      const triggerAt = new Date(scheduledTime.getTime() - offsetMs);
+      const delay = triggerAt.getTime() - Date.now();
+
+      if (delay > 0) {
+        const job = await this.scheduledQueue.add(
+          'send-reminder',
+          {
+            liveClassId: liveClass.id,
+            type: reminderType,
+          },
+          {
+            delay,
+            jobId: `${liveClass.id}-${reminderType}`,
+            removeOnComplete: true,
+            removeOnFail: 20,
+            attempts: 2,
+            backoff: { type: 'exponential', delay: 5000 },
+          },
+        );
+        this.scheduledJobIds.set(`${liveClass.id}-${reminderType}`, job.id!);
+      }
     }
 
     this.logger.log(
@@ -78,9 +69,6 @@ export class LiveNotificationService {
     );
   }
 
-  /**
-   * Notify enrolled students that a new class has been scheduled.
-   */
   async notifyClassScheduled(liveClass: LiveClass): Promise<number> {
     const studentIds = await this.getEnrolledStudentIds(liveClass);
 
@@ -107,15 +95,11 @@ export class LiveNotificationService {
 
     this.logger.log(`Notified ${notified} students about scheduled class ${liveClass.id}`);
 
-    // Schedule reminder notifications
     await this.scheduleClassNotifications(liveClass);
 
     return notified;
   }
 
-  /**
-   * Notify enrolled students that a class has been cancelled.
-   */
   async notifyClassCancelled(liveClass: LiveClass): Promise<number> {
     const studentIds = await this.getEnrolledStudentIds(liveClass);
 
@@ -140,16 +124,12 @@ export class LiveNotificationService {
       }
     }
 
-    // Cancel scheduled reminders
-    this.cancelScheduledNotifications(liveClass.id);
+    await this.cancelScheduledNotifications(liveClass.id);
 
     this.logger.log(`Notified ${notified} students about cancelled class ${liveClass.id}`);
     return notified;
   }
 
-  /**
-   * Notify enrolled students that a class has started.
-   */
   async notifyClassStarted(liveClass: LiveClass): Promise<number> {
     const studentIds = await this.getEnrolledStudentIds(liveClass);
 
@@ -178,9 +158,6 @@ export class LiveNotificationService {
     return notified;
   }
 
-  /**
-   * Notify enrolled students that a recording is ready.
-   */
   async notifyRecordingReady(liveClass: LiveClass): Promise<number> {
     const studentIds = await this.getEnrolledStudentIds(liveClass);
 
@@ -209,9 +186,6 @@ export class LiveNotificationService {
     return notified;
   }
 
-  /**
-   * Send a reminder notification to enrolled students.
-   */
   async sendReminder(liveClassId: number, type: 'class_reminder_1hr' | 'class_reminder_15min'): Promise<number> {
     const liveClass = await this.liveClassesRepo.findById(liveClassId);
     if (!liveClass) {
@@ -268,55 +242,19 @@ export class LiveNotificationService {
     return enrollments.data.map(e => e.studentId);
   }
 
-  private addScheduledNotification(payload: {
-    liveClassId: number;
-    type: NotificationPayload['type'];
-    triggerAt: Date;
-  }): void {
-    const id = `${payload.liveClassId}-${payload.type}-${payload.triggerAt.getTime()}`;
-    this.scheduledNotifications.set(id, {
-      id,
-      ...payload,
-      processed: false,
-    });
-  }
-
-  private cancelScheduledNotifications(liveClassId: number): void {
-    for (const [key, notification] of this.scheduledNotifications) {
-      if (notification.liveClassId === liveClassId) {
-        this.scheduledNotifications.delete(key);
-      }
-    }
-  }
-
-  private startNotificationChecker(): void {
-    // Check every 60 seconds for due notifications
-    this.intervalHandle = setInterval(() => {
-      this.processDueNotifications();
-    }, 60 * 1000);
-  }
-
-  private async processDueNotifications(): Promise<void> {
-    const now = new Date();
-
-    for (const [key, notification] of this.scheduledNotifications) {
-      if (notification.processed) continue;
-      if (notification.triggerAt <= now) {
+  private async cancelScheduledNotifications(liveClassId: number): Promise<void> {
+    for (const [key, jobId] of this.scheduledJobIds) {
+      if (key.startsWith(`${liveClassId}-`)) {
         try {
-          await this.sendReminder(notification.liveClassId, notification.type as any);
-          notification.processed = true;
-          this.scheduledNotifications.delete(key);
+          await this.scheduledQueue.remove(jobId);
         } catch (error) {
-          this.logger.error(`Failed to process notification ${key}:`, error);
+          this.logger.warn(`Failed to remove scheduled job ${jobId}:`, error);
         }
+        this.scheduledJobIds.delete(key);
       }
     }
   }
 
-  /**
-   * Format date in IST (Asia/Kolkata).
-   * IST is UTC+5:30 and does not observe DST.
-   */
   private formatDateIST(date: Date | string): string {
     const d = new Date(date);
     const istOffsetMs = 5.5 * 60 * 60 * 1000;
@@ -329,9 +267,6 @@ export class LiveNotificationService {
     return `${day} ${month} ${year}`;
   }
 
-  /**
-   * Format time in IST.
-   */
   private formatTimeIST(date: Date | string): string {
     const d = new Date(date);
     const istOffsetMs = 5.5 * 60 * 60 * 1000;
@@ -344,14 +279,5 @@ export class LiveNotificationService {
     const displayMinutes = String(minutes).padStart(2, '0');
 
     return `${displayHours}:${displayMinutes} ${ampm} IST`;
-  }
-
-  /**
-   * Clean up on module destroy.
-   */
-  onModuleDestroy(): void {
-    if (this.intervalHandle) {
-      clearInterval(this.intervalHandle);
-    }
   }
 }

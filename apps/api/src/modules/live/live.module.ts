@@ -2,23 +2,20 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { DRIZZLE_DB } from '../../db/database.module';
 
-// Repositories
 import { LiveClassesRepository } from '../../db/repositories/live-classes.repository';
 import { EnrollmentsRepository } from '../../db/repositories/enrollments.repository';
 import { LecturesRepository } from '../../db/repositories/lectures.repository';
 import { SectionsRepository } from '../../db/repositories/sections.repository';
 import { NotificationsRepository } from '../../db/repositories/notifications.repository';
 
-// Services
 import { LiveKitService } from './services/livekit.service';
 import { ScheduleService } from './services/schedule.service';
 import { RecordingService } from './services/recording.service';
 import { LiveNotificationService } from './services/live-notification.service';
 
-// Modules
 import { MediaModule } from '../media/media.module';
+import { QueueModule } from '../../queue/queue.module';
 
-// Controllers
 import { LiveController } from './live.controller';
 
 const repositories = [
@@ -50,7 +47,7 @@ const repositories = [
 ];
 
 @Module({
-  imports: [ConfigModule, MediaModule],
+  imports: [ConfigModule, MediaModule, QueueModule],
   controllers: [LiveController],
   providers: [
     ...repositories,
