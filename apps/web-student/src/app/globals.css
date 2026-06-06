@@ -1,10 +1,14 @@
 @import "tailwindcss";
+
+/* Design System Tokens */
 @import '@edutech/ui/tokens';
 @import '@edutech/ui/tailwind-theme';
 
+/* Source scanning for shared components and UI package */
 @source "../../../../packages/shared-components/src";
 @source "../../../../packages/ui/src";
 
+/* Base layer styles */
 @layer base {
   * {
     @apply border-border;

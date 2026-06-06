@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { DashboardShell, useAuth } from '@edutech/shared-components';
+import type { LucideIcon } from 'lucide-react';
 import {
   LayoutDashboard,
   BookOpen,
@@ -14,21 +15,23 @@ import {
   MessageCircle,
   Bell,
   User,
+  Compass,
+  FileCheck,
 } from 'lucide-react';
 import { BottomTabBar } from '@/components/BottomTabBar';
 
 interface NavItem {
   href: string;
   label: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: LucideIcon;
 }
 
 const navItems: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/my-courses', label: 'My Courses', icon: BookOpen },
-  { href: '/courses', label: 'Course Catalog', icon: BookOpen },
+  { href: '/courses', label: 'Course Catalog', icon: Compass },
   { href: '/assignments', label: 'Assignments', icon: ClipboardList },
-  { href: '/submissions', label: 'My Submissions', icon: ClipboardList },
+  { href: '/submissions', label: 'My Submissions', icon: FileCheck },
   { href: '/dashboard/history', label: 'Watch History', icon: Clock },
   { href: '/dashboard/payments', label: 'Payment History', icon: CreditCard },
   { href: '/certificates', label: 'Certificates', icon: Award },
@@ -69,6 +72,8 @@ export default function AuthenticatedLayout({ children }: { children: ReactNode 
     <>
       <DashboardShell
         brand={{ name: 'EduTech' }}
+        platform="Student"
+        platformColor="bg-purple-500"
         navItems={navItems}
         user={{ name: 'Student' }}
         headerTitle={activeLabel}
