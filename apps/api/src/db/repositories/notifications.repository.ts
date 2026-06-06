@@ -68,7 +68,17 @@ export class NotificationsRepository extends BaseRepository<Notification> {
     }
   }
 
-  async create(data: Omit<Notification, 'id' | 'createdAt'>): Promise<Notification> {
+  async create(data: {
+    userId: number;
+    type: string;
+    title: string;
+    body?: string | null;
+    isRead?: boolean;
+    deliveredVia?: 'in_app' | 'email' | 'both';
+    emailSentAt?: Date | null;
+    jobId?: string | null;
+    smsSentAt?: Date | null;
+  }): Promise<Notification> {
     try {
       const result = await this.db.insert(notifications).values(data).returning();
       return result[0];
@@ -108,6 +118,18 @@ export class NotificationsRepository extends BaseRepository<Notification> {
 
   async findByUser(userId: number, options: { offset?: number; limit?: number } = {}): Promise<PaginatedResult<Notification>> {
     return this.findMany({ ...options, userId });
+  }
+
+  async updateJobId(id: number, jobId: string): Promise<void> {
+    await this.db.update(notifications).set({ jobId }).where(eq(notifications.id, id));
+  }
+
+  async updateEmailSentAt(id: number): Promise<void> {
+    await this.db.update(notifications).set({ emailSentAt: new Date() }).where(eq(notifications.id, id));
+  }
+
+  async updateSmsSentAt(id: number): Promise<void> {
+    await this.db.update(notifications).set({ smsSentAt: new Date() }).where(eq(notifications.id, id));
   }
 
   async count(filters?: { userId?: number; isRead?: boolean }): Promise<number> {

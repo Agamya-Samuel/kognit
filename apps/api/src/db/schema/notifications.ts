@@ -12,6 +12,8 @@ export const notifications = pgTable('notifications', {
   isRead: boolean('is_read').notNull().default(false),
   deliveredVia: notificationDelivery('delivered_via').notNull().default('in_app'),
   emailSentAt: timestamp('email_sent_at'),
+  jobId: varchar('job_id', { length: 255 }),
+  smsSentAt: timestamp('sms_sent_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 }, (table) => [
   index('notifications_user_id_idx').on(table.userId),
