@@ -15,13 +15,18 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { Roles } from '../auth/decorators/auth.decorators';
 import { AdminService } from './admin.service';
+import { NotificationPreferencesDto, AdminNotificationConfigDto } from '../notifications/dto/notification-preferences.dto';
+import { NotificationsService } from '../notifications/services/notifications.service';
 
 @ApiTags('Admin')
 @ApiBearerAuth()
 @Controller('admin')
 @Roles('admin')
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(
+    private readonly adminService: AdminService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   @Get('users')
   @ApiResponse({ status: 200, description: 'Paginated user list' })
@@ -229,6 +234,39 @@ export class AdminController {
     @ApiOperation({ summary: 'Update platform settings' })
     async updateSettings(@Body() settingsData: any) {
         return this.adminService.updateSettings(settingsData);
+    }
+
+    // ─── Notification Configuration ────────────────────────────────────
+
+    @Get('notifications/config')
+    @ApiResponse({ status: 200, description: 'Notification config defaults' })
+    @ApiOperation({ summary: 'Get notification configuration defaults' })
+    async getNotificationConfig() {
+        const defaults = await this.notificationsService.getPreferences(0);
+        return { success: true, data: defaults };
+    }
+
+    @Patch('notifications/users/:userId/preferences')
+    @ApiParam({ name: 'userId', description: 'Target user ID' })
+    @ApiResponse({ status: 200, description: 'User notification preferences updated' })
+    @ApiOperation({ summary: 'Update a specific user notification preferences' })
+    async updateUserNotificationPreferences(
+        @Param('userId', ParseIntPipe) userId: number,
+        @Body() body: NotificationPreferencesDto,
+    ) {
+        const updated = await this.notificationsService.updatePreferences(userId, body);
+        return { success: true, data: updated };
+    }
+
+    @Get('notifications/users/:userId/preferences')
+    @ApiParam({ name: 'userId', description: 'Target user ID' })
+    @ApiResponse({ status: 200, description: 'User notification preferences' })
+    @ApiOperation({ summary: 'Get a specific user notification preferences' })
+    async getUserNotificationPreferences(
+        @Param('userId', ParseIntPipe) userId: number,
+    ) {
+        const preferences = await this.notificationsService.getPreferences(userId);
+        return { success: true, data: preferences };
     }
 
     // ─── Institution Management ──────────────────────────────────────────
