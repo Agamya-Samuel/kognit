@@ -1,4 +1,5 @@
 import { getApiClient } from '../index';
+import type { CourseWithCurriculum } from '@edutech/types';
 
 export interface Enrollment {
   id: number;
@@ -7,15 +8,25 @@ export interface Enrollment {
   instructorName: string;
   enrolledAt: string;
   accessType: 'purchased' | 'free';
-  progress: number; // percentage
+  progress: number;
+}
+
+export interface EnrolledCourse extends CourseWithCurriculum {
+  enrolledAt: string;
+  accessType: 'purchased' | 'free';
+  progress?: number;
 }
 
 export const enrollmentsService = {
-  /**
-   * Get current user's enrollments
-   * @returns List of enrollments
-   */
-  getMyEnrollments(): Promise<Enrollment[]> {
-    return getApiClient().get<Enrollment[]>('/enrollments/me');
+  getMyEnrollments(): Promise<EnrolledCourse[]> {
+    return getApiClient().get<EnrolledCourse[]>('/enrollments/me');
+  },
+
+  getEnrolledCourse(courseId: number | string): Promise<EnrolledCourse | null> {
+    return getApiClient().get<EnrolledCourse>(`/enrollments/me/course/${courseId}`);
+  },
+
+  getCourseProgress(courseId: number | string): Promise<{ progress: number; completedLectures: number; totalLectures: number }> {
+    return getApiClient().get(`/progress/course/${courseId}`);
   },
 };

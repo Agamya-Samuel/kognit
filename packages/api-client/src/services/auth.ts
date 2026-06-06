@@ -254,4 +254,14 @@ export const authService = {
       country,
     });
   },
+
+  async getMe() {
+    return getApiClient().get('/auth/me');
+  },
+
+  getGoogleAuthUrl(redirectUrl: string, portal: string): string {
+    const client = getApiClient().getAxiosInstance();
+    const baseURL = client.defaults.baseURL || '';
+    return `${baseURL}/auth/google?redirect=${encodeURIComponent(redirectUrl)}&portal=${portal}`;
+  },
 };

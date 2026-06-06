@@ -10,6 +10,15 @@ export interface UserProfile {
   isActive: boolean;
   grade?: string;
   institution?: string;
+  studentProfile?: {
+    mobile?: string;
+    address?: string;
+    city?: string;
+    state?: string;
+    pinCode?: string;
+    country?: string;
+    affiliatedInstituteId?: number | null;
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -19,22 +28,23 @@ export interface UpdateUserProfileDto {
   institution?: string;
   grade?: string;
   email?: string;
+  mobile?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  pinCode?: string;
+  country?: string;
 }
 
 export const usersService = {
-  /**
-   * Get current user profile
-   * @returns User profile data
-   */
   getProfile(): Promise<UserProfile> {
     return getApiClient().get<UserProfile>('/users/profile');
   },
 
-  /**
-   * Update current user profile
-   * @param data - Profile data to update
-   * @returns Updated user profile
-   */
+  getMe(): Promise<UserProfile> {
+    return getApiClient().get<UserProfile>('/auth/me');
+  },
+
   updateProfile(data: UpdateUserProfileDto): Promise<UserProfile> {
     return getApiClient().patch<UserProfile>('/users/profile', data);
   },
