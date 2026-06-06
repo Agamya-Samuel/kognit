@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { type Section } from '@/types/courses';
+import { type SectionWithLectures } from '@edutech/types';
 
 interface CurriculumAccordionProps {
-  sections: Section[];
+  sections: SectionWithLectures[];
 }
 
 export function CurriculumAccordion({ sections }: CurriculumAccordionProps) {
@@ -31,7 +31,7 @@ export function CurriculumAccordion({ sections }: CurriculumAccordionProps) {
     return `${minutes}m`;
   };
 
-  const getLectureIcon = (type: Section['lectures'][0]['type']) => {
+  const getLectureIcon = (type: SectionWithLectures['lectures'][0]['type']) => {
     switch (type) {
       case 'video':
         return '🎬';

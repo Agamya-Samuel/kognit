@@ -14,7 +14,6 @@ interface SortDropdownProps {
 
 const sortOptions: SortOption[] = [
   { label: 'Newest', value: 'newest' },
-  { label: 'Oldest', value: 'oldest' },
   { label: 'Most Popular', value: 'popular' },
   { label: 'Highest Rated', value: 'rating' },
   { label: 'Price: Low to High', value: 'price_asc' },

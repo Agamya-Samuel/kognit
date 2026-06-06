@@ -9,9 +9,8 @@ import {
   useFlagMessage,
   useEditMessage,
   useMarkAsRead,
-  type ChatMessage,
-  type TypingUser,
 } from '@/hooks/useChat';
+import type { ChatMessage, TypingUser } from '@edutech/types';
 
 // ─── Props ───────────────────────────────────────────────────────────────────
 

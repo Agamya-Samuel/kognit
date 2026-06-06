@@ -16,12 +16,13 @@ export interface TabItem {
 export function BottomTabBar() {
   const pathname = usePathname();
   const { data: unreadCount } = useUnreadCount();
+  const unreadCountValue = (unreadCount as any)?.count || 0;
 
   const tabs: TabItem[] = [
     { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
     { href: '/my-courses', label: 'My Courses', icon: BookOpen },
     { href: '/community', label: 'Community', icon: MessageCircle },
-    { href: '/notifications', label: 'Notifications', icon: Bell, badge: unreadCount ?? 0 },
+    { href: '/notifications', label: 'Notifications', icon: Bell, badge: unreadCountValue },
     { href: '/profile', label: 'Profile', icon: User },
   ];
 
