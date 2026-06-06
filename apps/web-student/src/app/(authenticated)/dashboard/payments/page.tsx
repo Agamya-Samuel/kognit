@@ -3,15 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePaymentHistory } from '@/hooks/usePayments';
-import { ArrowRight, CreditCard, CheckCircle, XCircle, Clock, RotateCcw } from 'lucide-react';
+import { CreditCard } from 'lucide-react';
 import { EmptyState, ErrorState, StatusBadge } from '@edutech/shared-components';
-
-const STATUS_CONFIG = {
-  pending: { label: 'Pending', variant: 'warning' as const },
-  paid: { label: 'Paid', variant: 'success' as const },
-  failed: { label: 'Failed', variant: 'error' as const },
-  refunded: { label: 'Refunded', variant: 'neutral' as const },
-} as const;
 
 export default function PaymentHistoryPage() {
   const router = useRouter();

@@ -4,18 +4,18 @@ import { useState, useEffect } from 'react';
 import { StudentDashboard } from '@edutech/shared-components';
 import { useAuth } from '@edutech/shared-components';
 import { useMyEnrollments } from '@/hooks/useEnrollments';
-import { useCourseProgress } from '@/hooks/useEnrollments';
-import { useProgressTracking } from '@/hooks/useProgressTracking';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useMyCertificates } from '@/hooks/useCertificates';
 import { useWatchSummary } from '@/hooks/useWatchSummary';
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  useAuth();
   const { data: enrollments, isLoading: enrollmentsLoading } = useMyEnrollments();
-  const { data: notifications, isLoading: notificationsLoading } = useNotifications({ isRead: false });
+  const { data: notifications } = useNotifications({ isRead: false });
   const { data: certificates, isLoading: certificatesLoading } = useMyCertificates();
-  const { data: watchTime, isLoading: watchTimeLoading } = useWatchSummary();
+  const { watchTime, isLoading: watchTimeLoading } = useWatchSummary();
+  
+  const enrollmentsData = enrollments as any[];
   
   // Calculate metrics from enrollments and other data
   const [metrics, setMetrics] = useState({
@@ -25,26 +25,25 @@ export default function DashboardPage() {
     certificates: 0,
   });
   
-  const [recentActivity, setRecentActivity] = useState([]);
-  const [inProgressCourses, setInProgressCourses] = useState([]);
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const [inProgressCourses, setInProgressCourses] = useState<any[]>([]);
   
   useEffect(() => {
-    if (Array.isArray(enrollments)) {
-      const enrolledCourses = enrollments.length;
-      const completedCourses = enrollments.filter(e => e.progress === 100).length;
+    if (Array.isArray(enrollmentsData)) {
+      const enrolledCourses = enrollmentsData.length;
+      const completedCourses = enrollmentsData.filter((e: any) => e.progress === 100).length;
       
-      // Calculate total watch time from progress tracking
-      let totalWatchTime = 0;
-      const inProgress = [];
-      const activity = [];
+      // Calculate progress from enrollments
+      const inProgress: any[] = [];
+      const activity: any[] = [];
       
-      enrollments.forEach(enrollment => {
+      enrollmentsData.forEach((enrollment: any) => {
         // Add to in progress if not completed
-        if (enrollment.progress > 0 && enrollment.progress < 100) {
+        if ((enrollment.progress ?? 0) > 0 && (enrollment.progress ?? 0) < 100) {
           inProgress.push({
-            id: enrollment.courseId.toString(),
-            title: enrollment.courseTitle,
-            instructor: enrollment.instructorName,
+            id: enrollment.courseId?.toString() || enrollment.id?.toString(),
+            title: enrollment.courseTitle || enrollment.title,
+            instructor: enrollment.instructorName || enrollment.instructor?.name,
             progress: enrollment.progress,
             lastWatched: 'Recently', // Would ideally come from progress tracking
           });
@@ -53,7 +52,7 @@ export default function DashboardPage() {
         // Add to recent activity based on enrollment date
         activity.push({
           id: enrollment.id.toString(),
-          message: `Enrolled in "${enrollment.courseTitle}"`,
+          message: `Enrolled in "${enrollment.courseTitle || enrollment.title}"`,
           time: new Date(enrollment.enrolledAt).toLocaleDateString(undefined, { 
             year: 'numeric', month: 'short', day: 'numeric' 
           }),
@@ -64,7 +63,7 @@ export default function DashboardPage() {
         if (enrollment.progress === 100) {
           activity.push({
             id: `${enrollment.id}-completed`,
-            message: `Completed "${enrollment.courseTitle}"`,
+            message: `Completed "${enrollment.courseTitle || enrollment.title}"`,
             time: new Date(enrollment.enrolledAt).toLocaleDateString(undefined, { 
               year: 'numeric', month: 'short', day: 'numeric' 
             }),
@@ -75,12 +74,12 @@ export default function DashboardPage() {
       
       // Sort activity by date (newest first) and take top 3
       const sortedActivity = activity
-        .sort((a, b) => new Date(b.time) - new Date(a.time))
+        .sort((a: any, b: any) => new Date(b.time).getTime() - new Date(a.time).getTime())
         .slice(0, 3);
       
       // Get unread notifications for activity
       const notificationActivity = (notifications || [])
-        .map(notif => ({
+        .map((notif: any) => ({
           id: notif.id.toString(),
           message: notif.title,
           time: new Date(notif.createdAt).toLocaleDateString(undefined, { 
@@ -100,7 +99,7 @@ export default function DashboardPage() {
       setRecentActivity([...sortedActivity, ...notificationActivity].slice(0, 3));
       setInProgressCourses(inProgress.slice(0, 2)); // Show top 2 in progress
     }
-  }, [enrollments, notifications, certificates, watchTime]);
+  }, [enrollmentsData, notifications, certificates, watchTime]);
    
     if (enrollmentsLoading || certificatesLoading || watchTimeLoading) {
       return (

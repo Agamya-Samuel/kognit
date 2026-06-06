@@ -1,14 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { useNotifications, useMarkAsRead, useMarkAllAsRead, useUnreadCount } from '@/hooks/useNotifications';
-import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Tabs, TabsList, TabsTrigger, TabsContent, Skeleton, Avatar, AvatarFallback } from '@edutech/ui';
-import { Bell, CheckCircle2, CheckCircle, FileText, Award, Clock, Star, Trash2, CheckCheck } from 'lucide-react';
+import { useNotifications, useMarkAllAsRead, useUnreadCount } from '@/hooks/useNotifications';
+import { Card, CardContent, Button, Badge, Tabs, TabsList, TabsTrigger, Skeleton } from '@edutech/ui';
+import { Bell, CheckCircle2, CheckCircle, FileText, Award, Clock, Star, CheckCheck } from 'lucide-react';
 import { EmptyState } from '@edutech/shared-components';
 
 const notificationIcons: Record<string, React.ReactNode> = {
   assignment_due: <Clock className="h-5 w-5 text-amber-500" />,
-  'assignment graded': <CheckCircle2 className="h-5 w-5 text-green-500" />,
+  assignment_graded: <CheckCircle2 className="h-5 w-5 text-green-500" />,
   live_class_soon: <Star className="h-5 w-5 text-blue-500" />,
   live_class_started: <Star className="h-5 w-5 text-purple-500" />,
   certificate_issued: <Award className="h-5 w-5 text-amber-500" />,
@@ -18,10 +18,11 @@ const notificationIcons: Record<string, React.ReactNode> = {
 
 export default function NotificationsPage() {
   const [activeTab, setActiveTab] = useState<'all' | 'unread'>('unread');
-  const { data: notifications, isLoading } = useNotifications(activeTab === 'unread');
+  const { data: notifications, isLoading } = useNotifications({ isRead: activeTab === 'unread' ? false : undefined });
   const { data: unreadCount } = useUnreadCount();
-  const markAsRead = useMarkAsRead();
   const markAllAsRead = useMarkAllAsRead();
+
+  const unreadCountValue = (unreadCount as any)?.count || 0;
 
   const notificationsToDisplay = activeTab === 'unread'
     ? notifications?.filter((n) => !n.read) ?? []
@@ -49,10 +50,10 @@ export default function NotificationsPage() {
             <h1 className="text-3xl font-bold tracking-tight mb-2">Notifications</h1>
             <p className="text-muted-foreground">
               Stay updated with your learning progress
-              {unreadCount && unreadCount > 0 && ` • ${unreadCount} unread`}
+              {unreadCountValue > 0 && ` • ${unreadCountValue} unread`}
             </p>
           </div>
-          {unreadCount && unreadCount > 0 && (
+          {unreadCountValue > 0 && (
             <Button variant="ghost" size="sm" onClick={() => markAllAsRead.mutate()} className="gap-2">
               <CheckCheck className="h-4 w-4" />
               Mark all read
@@ -63,7 +64,7 @@ export default function NotificationsPage() {
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'all' | 'unread')} className="mb-6">
           <TabsList>
             <TabsTrigger value="unread">
-              Unread {unreadCount && unreadCount > 0 && `(${unreadCount})`}
+              Unread {unreadCountValue > 0 && `(${unreadCountValue})`}
             </TabsTrigger>
             <TabsTrigger value="all">All</TabsTrigger>
           </TabsList>

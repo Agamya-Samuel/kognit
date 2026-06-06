@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { Clock, CheckCircle, Play, BookOpen, ArrowRight } from 'lucide-react';
+import { Clock, CheckCircle, Play, BookOpen } from 'lucide-react';
 import { progressService } from '@edutech/api-client';
-import type { WatchHistoryResponse } from '@/types/courses';
+import type { WatchHistoryResponse } from '@edutech/types';
 import { EmptyState, ErrorState, StatusBadge } from '@edutech/shared-components';
 import { Progress } from '@edutech/ui';
 
