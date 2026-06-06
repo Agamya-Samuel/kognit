@@ -106,7 +106,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       platformColor="bg-emerald-500"
       navGroups={navGroups}
       footerLinks={footerLinks}
-      user={user ? { name: user.name, email: user.email } : { name: 'Instructor' }}
+      user={user ? { name: user.name, email: user.email, avatarUrl: user.avatarUrl, role: user.role || 'Instructor' } : { name: 'Instructor', role: 'Instructor' }}
       headerTitle={pageTitle}
       breadcrumb={{ items: getBreadcrumbItems() }}
       onLogout={() => {

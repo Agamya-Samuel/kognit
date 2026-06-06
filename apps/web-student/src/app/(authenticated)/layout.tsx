@@ -75,7 +75,7 @@ export default function AuthenticatedLayout({ children }: { children: ReactNode 
         platform="Student"
         platformColor="bg-purple-500"
         navItems={navItems}
-        user={{ name: 'Student' }}
+        user={user ? { name: user.name, email: user.email, avatarUrl: user.avatarUrl, role: user.role || 'Student' } : { name: 'Student', role: 'Student' }}
         headerTitle={activeLabel}
         onLogout={() => {
           logout();
