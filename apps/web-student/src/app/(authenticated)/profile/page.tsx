@@ -12,7 +12,6 @@ import { useAuth } from '@edutech/shared-components';
 import { usersService } from '@edutech/api-client';
 import { useNotifications } from '@/hooks/useNotifications';
 import { notificationsService } from '@edutech/api-client';
-import { authService } from '@edutech/api-client';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -36,14 +35,12 @@ export default function ProfilePage() {
   });
   const [isSavingPreferences, setIsSavingPreferences] = useState(false);
   
-  const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false);
-  const [isLoadingTwoFactor, setIsLoadingTwoFactor] = useState(false);
+
 
   useEffect(() => {
     if (user?.id) {
       loadUserProfile();
       loadNotificationPreferences();
-      loadTwoFactorStatus();
     }
   }, [user?.id]);
 
@@ -77,18 +74,6 @@ export default function ProfilePage() {
     }
   };
 
-  const loadTwoFactorStatus = async () => {
-    try {
-      setIsLoadingTwoFactor(true);
-      setIsTwoFactorEnabled(false);
-    } catch (err) {
-      console.error('Failed to load 2FA status:', err);
-      setIsTwoFactorEnabled(false);
-    } finally {
-      setIsLoadingTwoFactor(false);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -119,24 +104,6 @@ export default function ProfilePage() {
       alert('Failed to save preferences. Please try again.');
     } finally {
       setIsSavingPreferences(false);
-    }
-  };
-
-  const handleToggleTwoFactor = async () => {
-    try {
-      setIsLoadingTwoFactor(true);
-      if (isTwoFactorEnabled) {
-        await authService.disableTwoFactor('');
-        setIsTwoFactorEnabled(false);
-      } else {
-        await authService.enableTwoFactor();
-        setIsTwoFactorEnabled(true);
-      }
-    } catch (err) {
-      console.error('Failed to toggle 2FA:', err);
-      alert('Failed to update 2FA settings. Please try again.');
-    } finally {
-      setIsLoadingTwoFactor(false);
     }
   };
 
@@ -348,18 +315,12 @@ export default function ProfilePage() {
           <CardDescription>Manage your account security</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Button variant="outline" className="w-full justify-start gap-2" onClick={handleToggleTwoFactor}>
+          <Button variant="outline" className="w-full justify-start gap-2" disabled>
             <Shield className="h-4 w-4" />
             Two-Factor Authentication
-            <Badge 
-              variant={isTwoFactorEnabled ? 'success' : 'secondary'} 
-              className="ml-auto"
-            >
-              {isTwoFactorEnabled ? 'Enabled' : 'Disabled'}
+            <Badge variant="secondary" className="ml-auto">
+              Coming Soon
             </Badge>
-            {isLoadingTwoFactor && (
-              <span className="ml-2 animate-spin h-4 w-4" />
-            )}
           </Button>
         </CardContent>
       </Card>

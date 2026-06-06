@@ -29,11 +29,13 @@ export function useNotifications(filters: NotificationFilters = {}) {
         if (!result) {
           return [];
         }
-        const resultObj = result as unknown as { data?: Notification[] };
-        if (resultObj.data && Array.isArray(resultObj.data)) {
-          return resultObj.data;
+        if (Array.isArray(result)) {
+          return result as unknown as Notification[];
         }
-        return result as unknown as Notification[];
+        if (result && typeof result === 'object' && 'data' in result && Array.isArray((result as any).data)) {
+          return (result as any).data;
+        }
+        return [];
       } catch (error) {
         console.error('[useNotifications] API error:', error);
         return [];
