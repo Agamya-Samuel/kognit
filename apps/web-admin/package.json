@@ -22,6 +22,7 @@
     "@edutech/shared-components": "*",
     "@edutech/types": "*",
     "@edutech/ui": "*",
+    "@hookform/resolvers": "^5.4.0",
     "@tanstack/react-query": "^5.100.9",
     "axios": "^1.16.0",
     "clsx": "^2.1.1",
@@ -30,8 +31,10 @@
     "next": "^16.2.6",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
+    "react-hook-form": "^7.77.0",
     "recharts": "^3.8.1",
-    "tailwind-merge": "^3.6.0"
+    "tailwind-merge": "^3.6.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",

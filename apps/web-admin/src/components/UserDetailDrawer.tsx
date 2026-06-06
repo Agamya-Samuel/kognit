@@ -1,7 +1,10 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+
 import { Button, Separator } from '@edutech/ui';
-import { X, Shield, Trash2, Mail, Calendar, CheckCircle2 } from 'lucide-react';
+import { PhoneInput } from '@edutech/ui';
+import { X, Shield, Trash2, Mail, Calendar, CheckCircle2, Phone } from 'lucide-react';
 
 interface User {
   id: number;
@@ -13,6 +16,7 @@ interface User {
   avatarUrl: string | null;
   createdAt: string;
   updatedAt: string;
+  mobile?: string | null;
   approvalStatus?: string;
   onboardingCompleted?: boolean;
   affiliatedInstituteId?: number | null;
@@ -28,12 +32,27 @@ interface UserDetailDrawerProps {
   onRoleChange: (role: string) => void;
   onToggleActive: () => void;
   onDelete: () => void;
+  onMobileChange?: (mobile: string) => void;
 }
 
 const ROLES = ['student', 'instructor', 'admin', 'institution_admin'];
 
-export function UserDetailDrawer({ user, open, onClose, onRoleChange, onToggleActive, onDelete }: UserDetailDrawerProps) {
+export function UserDetailDrawer({ user, open, onClose, onRoleChange, onToggleActive, onDelete, onMobileChange }: UserDetailDrawerProps) {
   if (!open || !user) return null;
+
+  const [mobile, setMobile] = useState('');
+
+  useEffect(() => {
+    if (user) {
+      setMobile(user.mobile || '');
+    }
+  }, [user]);
+
+  const handleMobileChange = (value?: string) => {
+    const mobileValue = value || '';
+    setMobile(mobileValue);
+    onMobileChange?.(mobileValue);
+  };
 
   const roleColor = (role: string) => {
     switch (role) {
@@ -134,6 +153,12 @@ export function UserDetailDrawer({ user, open, onClose, onRoleChange, onToggleAc
               <span className="text-gray-600 dark:text-gray-400">{user.email}</span>
             </div>
             <div className="flex items-center gap-2 text-sm">
+              <Phone className="h-4 w-4 text-gray-400" />
+              <span className="text-gray-600 dark:text-gray-400">
+                {user.mobile || 'No mobile number'}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
               <Calendar className="h-4 w-4 text-gray-400" />
               <span className="text-gray-600 dark:text-gray-400">
                 Joined {new Date(user.createdAt).toLocaleDateString()}
@@ -163,6 +188,20 @@ export function UserDetailDrawer({ user, open, onClose, onRoleChange, onToggleAc
                 </button>
               ))}
             </div>
+          </div>
+
+          <Separator />
+
+          {/* Mobile Number */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Mobile Number
+            </label>
+            <PhoneInput
+              value={mobile}
+              onChange={handleMobileChange}
+              placeholder="Enter phone number"
+            />
           </div>
 
           <Separator />
