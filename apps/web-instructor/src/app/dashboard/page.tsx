@@ -37,8 +37,9 @@ export default function DashboardPage() {
   };
 
   const safeNumber = (val: number | undefined | null): number => (typeof val === 'number' ? val : 0);
+  const safeChartData = Array.isArray(chartData) ? chartData : [];
 
-  const revenueData = chartData?.map((item: any) => ({
+  const revenueData = safeChartData.map((item: any) => ({
     month: item.name,
     revenue: item.revenue,
     costs: Math.round(item.revenue * 0.7)
@@ -51,7 +52,7 @@ export default function DashboardPage() {
     { month: 'Jun', revenue: 85000, costs: 48000 },
   ];
 
-  const engagementData = chartData?.map((item: any) => ({
+  const engagementData = safeChartData.map((item: any) => ({
     date: item.name,
     views: item.users,
     interactions: Math.round(item.users * 0.75)
