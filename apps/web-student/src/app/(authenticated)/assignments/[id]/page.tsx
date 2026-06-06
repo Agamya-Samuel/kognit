@@ -50,7 +50,7 @@ export default function AssignmentDetailPage({ params }: { params: { id: string 
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="mx-auto max-w-3xl">
-          <ErrorState message={assignmentError} onRetry={refetch} />
+          <ErrorState message={assignmentError.message || 'Failed to load assignment'} onRetry={refetch} />
         </div>
       </div>
     );

@@ -27,7 +27,7 @@ export default function QuizPage({ params }: { params: { id: string } }) {
 
   const handleStart = () => {
     setHasStarted(true);
-    setTimeLeft(questions.length * 60); // 1 minute per question
+    setTimeLeft((questions?.length ?? 0) * 60); // 1 minute per question
   };
 
   const handleAnswerSelect = (questionIndex: number, optionIndex: number) => {
@@ -39,6 +39,7 @@ export default function QuizPage({ params }: { params: { id: string } }) {
   };
 
   const handleSubmit = async () => {
+    if (!questions) return;
     const answers = questions.map((q, idx) => ({
       questionId: q.id,
       selectedOption: selectedAnswers[idx] ?? -1,
@@ -52,7 +53,7 @@ export default function QuizPage({ params }: { params: { id: string } }) {
     }
   };
 
-  const allAnswered = questions.every((_, idx) => selectedAnswers[idx] !== undefined);
+  const allAnswered = questions?.every((_, idx) => selectedAnswers[idx] !== undefined) ?? false;
 
   if (assignmentLoading || questionsLoading) {
     return (
@@ -70,13 +71,13 @@ export default function QuizPage({ params }: { params: { id: string } }) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="mx-auto max-w-3xl">
-          <ErrorState message={assignmentError || questionsError || 'Failed to load quiz'} />
+          <ErrorState message={(assignmentError?.message || questionsError?.message || 'Failed to load quiz')} />
         </div>
       </div>
     );
   }
 
-  if (!assignment || questions.length === 0) {
+  if (!assignment || !questions || questions.length === 0) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="mx-auto max-w-3xl">
