@@ -1,4 +1,4 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
@@ -18,7 +18,7 @@ export interface TokenPayload {
 }
 
 @Injectable()
-export class TokenService {
+export class TokenService implements OnModuleInit {
   private readonly logger = new Logger(TokenService.name);
 
   constructor(
@@ -27,9 +27,17 @@ export class TokenService {
     private readonly refreshTokensRepo: RefreshTokensRepository,
   ) {}
 
-  /**
-   * Generate a JWT access token
-   */
+  async onModuleInit() {
+    try {
+      const deleted = await this.refreshTokensRepo.deleteExpired();
+      if (deleted > 0) {
+        this.logger.log(`Startup cleanup: deleted ${deleted} expired refresh tokens`);
+      }
+    } catch (error) {
+      this.logger.warn(`Startup token cleanup failed: ${error.message}`);
+    }
+  }
+
   generateAccessToken(user: { id: number; email: string; role: string }): string {
     const payload: JwtPayload = {
       sub: user.id,
@@ -43,12 +51,16 @@ export class TokenService {
   /**
    * Generate a JWT refresh token (raw plaintext for returning to client)
    */
-  generateRefreshTokenRaw(user: { id: number; email: string; role: string }): string {
+  generateRefreshTokenRaw(user: { id: number; email: string; role: string }, family?: string): string {
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
       role: user.role,
     };
+
+    if (family) {
+      payload.family = family;
+    }
 
     return this.jwtService.sign(payload, {
       secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
@@ -61,25 +73,21 @@ export class TokenService {
    */
   async generateTokenPair(user: { id: number; email: string; role: string }, existingFamily?: string): Promise<TokenPayload> {
     const accessToken = this.generateAccessToken(user);
-    const refreshTokenRaw = this.generateRefreshTokenRaw(user);
 
-    // Hash the refresh token for DB storage (bcrypt 10 rounds for token hashes)
-    const tokenHash = await bcrypt.hash(refreshTokenRaw, 10);
-
-    // Family ties all tokens in a rotation chain together for reuse detection
     const family = existingFamily || crypto.randomBytes(30).toString('hex');
 
-    // Parse expiry from config (e.g., "30d" → 30 days in seconds)
+    const refreshTokenRaw = this.generateRefreshTokenRaw(user, family);
+
+    const tokenHash = await bcrypt.hash(refreshTokenRaw, 10);
+
     const refreshExpiryMs = this.parseExpiryToMs(this.configService.get<string>('JWT_REFRESH_EXPIRY') || '30d');
     const expiresAt = new Date(Date.now() + refreshExpiryMs);
 
-    // Decode the access token to get its expiry
     const decodedAccess = this.jwtService.decode(accessToken) as { exp?: number };
     const expiresIn = decodedAccess.exp
       ? decodedAccess.exp - Math.floor(Date.now() / 1000)
-      : 900; // default 15 min
+      : 900;
 
-    // Persist refresh token
     await this.refreshTokensRepo.create({
       userId: user.id,
       tokenHash,
