@@ -42,7 +42,7 @@ export default function SubmissionsPage() {
               <SelectContent>
                 <SelectItem value="all">All Assignments</SelectItem>
                 {[...new Set(submissions.map((s) => s.assignment?.id).filter(Boolean))].map((id) => (
-                  <SelectItem key={id} value={id.toString()}>
+                  <SelectItem key={id as number} value={(id as number).toString()}>
                     {submissions.find((s) => s.assignment?.id === id)?.assignment?.title}
                   </SelectItem>
                 ))}

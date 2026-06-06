@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useMyCertificates } from '@/hooks/useCertificates';
-import { Card, CardContent, CardHeader, CardTitle, Badge, Button, Skeleton } from '@edutech/ui';
-import { Award, ExternalLink, Download, Share2, Copy, CheckCircle2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, Button, Skeleton } from '@edutech/ui';
+import { Award, ExternalLink } from 'lucide-react';
 
 export default function CertificatesPage() {
   const [page, setPage] = useState(1);

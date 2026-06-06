@@ -3,7 +3,7 @@
 import { useVerifyCertificate } from '@/hooks/useCertificates';
 import { useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Skeleton } from '@edutech/ui';
-import { Award, CheckCircle2, ExternalLink, Copy, Download, Share2 } from 'lucide-react';
+import { Award, CheckCircle2, Copy, Download, Share2 } from 'lucide-react';
 import { EmptyState } from '@edutech/shared-components';
 
 export default function CertificateDetailPage() {

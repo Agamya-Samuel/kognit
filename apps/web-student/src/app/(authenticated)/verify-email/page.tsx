@@ -26,7 +26,6 @@ export default function VerifyEmailPage() {
   const {
     isLoading,
     error,
-    success,
     resendCooldown,
     requestCode,
     verifyCode,

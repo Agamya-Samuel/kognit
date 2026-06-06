@@ -2,7 +2,7 @@
 
 import { useVerifyCertificate } from '@/hooks/useCertificates';
 import { useParams } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle, Badge, Skeleton } from '@edutech/ui';
+import { Card, CardContent, CardHeader, CardTitle, Skeleton } from '@edutech/ui';
 import { CheckCircle2, XCircle, Award } from 'lucide-react';
 
 export default function VerifyCertificatePage() {

@@ -68,7 +68,7 @@ export function CheckoutButton({
       const order = await createOrder.mutateAsync(courseId);
 
       // Open Razorpay checkout modal
-      const options: RazorpayOptions = {
+      const options: any = {
         key: order.key,
         amount: order.amount * 100, // amount is in paise from backend (already in paise)
         currency: order.currency,
