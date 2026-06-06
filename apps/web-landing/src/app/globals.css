@@ -1,6 +1,6 @@
 @import 'tailwindcss';
-@import '@edutech/ui/tokens';
-@import '@edutech/ui/tailwind-theme';
+@import '../../../../packages/ui/dist/tokens/index.css';
+@import '../../../../packages/ui/dist/tokens/tailwind.css';
 
 @layer base {
   * {
