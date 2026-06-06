@@ -9,7 +9,7 @@ import { Textarea } from '@edutech/ui';
 import { Avatar } from '@edutech/ui';
 import { Switch } from '@edutech/ui';
 import { User, Lock, Mail, Camera, Save, Bell } from 'lucide-react';
-import { useAuth } from '@/lib/auth-context';
+import { useAuth } from '@edutech/shared-components';
 
 export default function SettingsPage() {
   const { user } = useAuth();

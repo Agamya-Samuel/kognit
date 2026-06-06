@@ -9,11 +9,11 @@ import { RevenueChart, EnrollmentChart, EngagementChart, ProgressChart } from '@
 export default function AnalyticsPage() {
   const { data: metrics, isLoading } = useDashboardMetrics();
 
-  const metricsData = metrics || {
-    totalStudents: 0,
-    activeCourses: 0,
-    totalRevenue: 0,
-    upcomingClasses: 0,
+  const metricsData = {
+    totalStudents: metrics?.totalStudents ?? 0,
+    activeCourses: metrics?.activeCourses ?? 0,
+    totalRevenue: metrics?.totalRevenue ?? 0,
+    upcomingClasses: metrics?.upcomingClasses ?? 0,
   };
 
   const revenueData = [
