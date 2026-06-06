@@ -5,6 +5,21 @@ export type { ButtonProps } from './components/Button';
 export { Input } from './components/Input';
 export type { InputProps } from './components/Input';
 
+export { PhoneInput } from './components/PhoneInput';
+export type { PhoneInputFieldProps, PhoneInputValue, PhoneInputCountry } from './components/PhoneInput';
+
+export {
+  Command,
+  CommandDialog,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandShortcut,
+  CommandSeparator,
+} from './components/command';
+
 export {
   Card,
   CardHeader,
