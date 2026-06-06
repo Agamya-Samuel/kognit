@@ -13,6 +13,7 @@ import {
   BarChart3,
   Settings,
   Building2,
+  Bell,
 } from 'lucide-react';
 
 const navItems = [
@@ -22,6 +23,7 @@ const navItems = [
   { href: '/dashboard/instructors', label: 'Instructors', icon: GraduationCap },
   { href: '/dashboard/courses', label: 'Courses', icon: BookOpen },
   { href: '/dashboard/reports', label: 'Reports', icon: BarChart3 },
+  { href: '/dashboard/notifications', label: 'Notifications', icon: Bell },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },
 ];
 

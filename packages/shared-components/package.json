@@ -21,6 +21,7 @@
     "clean": "rm -rf dist node_modules"
   },
   "dependencies": {
+    "@edutech/api-client": "*",
     "@edutech/types": "*",
     "@edutech/ui": "*"
   },

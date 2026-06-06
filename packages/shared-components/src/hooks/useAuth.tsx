@@ -2,11 +2,10 @@
 
 import * as React from 'react';
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import axios from 'axios';
+import { authService } from '@edutech/api-client';
+import type { LoginResponse } from '@edutech/api-client';
+import { isApiError } from '@edutech/api-client';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL;
-
-// Custom error class for auth-specific errors
 export class AuthError extends Error {
   constructor(
     message: string,
@@ -59,7 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (storedAccessToken && storedRefreshToken) {
       setAccessToken(storedAccessToken);
       setRefreshToken(storedRefreshToken);
-      fetchProfile(storedAccessToken);
+      fetchProfile();
     } else {
       setIsLoading(false);
     }
@@ -77,63 +76,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   }, []);
 
-  const fetchProfile = useCallback(async (token: string) => {
+  const fetchProfile = useCallback(async () => {
     try {
-      const response = await axios.get(`${API_BASE}/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const profile = await authService.getMe();
       if (mountedRef.current) {
-        setUser(response.data);
+        setUser(profile as unknown as User);
         setIsLoading(false);
       }
-    } catch (error: any) {
+    } catch {
       if (!mountedRef.current) return;
-      
-      if (error.response?.status === 401) {
-        const storedRefreshToken = localStorage.getItem('refreshToken');
-        if (storedRefreshToken) {
-          try {
-            const refreshResponse = await axios.post(`${API_BASE}/auth/refresh`, {
-              refreshToken: storedRefreshToken,
-            });
-            const { data } = refreshResponse.data;
-            localStorage.setItem('accessToken', data.accessToken);
-            localStorage.setItem('refreshToken', data.refreshToken);
-            if (mountedRef.current) {
-              setAccessToken(data.accessToken);
-              setRefreshToken(data.refreshToken);
-              fetchProfile(data.accessToken);
-            }
-            return;
-          } catch {
-            if (mountedRef.current) {
-              clearAuth();
-            }
-          }
-        } else {
-          clearAuth();
-        }
-      } else if (!mountedRef.current) {
-        clearAuth();
-      }
+      clearAuth();
       setIsLoading(false);
     }
   }, [clearAuth]);
 
   const login = async (email: string, password: string, portal?: string) => {
     try {
-      const response = await axios.post(`${API_BASE}/auth/login`, { email, password, portal });
-      const { user: authUser, tokens } = response.data;
+      const response = await authService.login(email, password, portal);
+      const authResponse = response as unknown as LoginResponse;
 
-      localStorage.setItem('accessToken', tokens.accessToken);
-      localStorage.setItem('refreshToken', tokens.refreshToken);
-      setAccessToken(tokens.accessToken);
-      setRefreshToken(tokens.refreshToken);
-      setUser(authUser);
-    } catch (error: any) {
-      if (error.response) {
-        const message = error.response.data?.error?.message || 'Login failed';
-        throw new AuthError(message, 'LOGIN_FAILED', error.response.status);
+      localStorage.setItem('accessToken', authResponse.tokens.accessToken);
+      localStorage.setItem('refreshToken', authResponse.tokens.refreshToken);
+      setAccessToken(authResponse.tokens.accessToken);
+      setRefreshToken(authResponse.tokens.refreshToken);
+      setUser(authResponse.user as unknown as User);
+    } catch (error: unknown) {
+      if (isApiError(error)) {
+        throw new AuthError(error.message, 'LOGIN_FAILED', error.status);
       }
       throw new AuthError('Network error. Please check your connection.', 'NETWORK_ERROR');
     }
@@ -149,7 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('refreshToken', refresh);
       setAccessToken(access);
       setRefreshToken(refresh);
-      fetchProfile(access);
+      fetchProfile();
     },
     [fetchProfile]
   );
@@ -158,15 +127,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const storedRefreshToken = localStorage.getItem('refreshToken');
     if (storedRefreshToken) {
       try {
-        const response = await axios.post(`${API_BASE}/auth/refresh`, {
-          refreshToken: storedRefreshToken,
-        });
-        const { data } = response.data;
-        localStorage.setItem('accessToken', data.accessToken);
-        localStorage.setItem('refreshToken', data.refreshToken);
-        setAccessToken(data.accessToken);
-        setRefreshToken(data.refreshToken);
-        await fetchProfile(data.accessToken);
+        const response = await authService.refreshToken(storedRefreshToken);
+        localStorage.setItem('accessToken', response.accessToken);
+        localStorage.setItem('refreshToken', response.refreshToken);
+        setAccessToken(response.accessToken);
+        setRefreshToken(response.refreshToken);
+        await fetchProfile();
       } catch {
         clearAuth();
         throw new AuthError('Session expired. Please login again.', 'TOKEN_EXPIRED', 401);
