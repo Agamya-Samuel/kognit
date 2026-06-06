@@ -46,7 +46,7 @@ export const adminService = {
   },
 
   async getAssignments(filters?: Record<string, unknown>) {
-    return getApiClient().get<any[]>('/admin/assignments', filters);
+    return getApiClient().get<{ assignments: any[]; total: number; page: number; limit: number }>('/admin/assignments', filters);
   },
 
   async deleteAssignment(id: number) {

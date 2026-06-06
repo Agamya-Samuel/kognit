@@ -16,13 +16,14 @@ import { passwordPolicy } from '@edutech/validation';
 
 export interface ResetPasswordFormProps extends Omit<React.ComponentProps<'div'>, 'onSubmit'> {
   token: string | null;
-  onSubmit: (token: string, password: string, confirmPassword: string) => void | Promise<void>;
+  onSubmit: (email: string, token: string, password: string, confirmPassword: string) => void | Promise<void>;
   onBackClick?: () => void;
   isLoading?: boolean;
 }
 
 const resetFormSchema = z
   .object({
+    email: z.string().email('Please enter a valid email address'),
     password: passwordPolicy,
     confirmPassword: z.string(),
   })
@@ -48,7 +49,7 @@ export const ResetPasswordForm = React.forwardRef<HTMLDivElement, ResetPasswordF
     const handleFormSubmit = async (data: FormData) => {
       if (!token) return;
       try {
-        await onSubmit(token, data.password, data.confirmPassword);
+        await onSubmit(data.email, token, data.password, data.confirmPassword);
         setIsSuccess(true);
       } catch {
         // Error handled by parent
@@ -94,6 +95,10 @@ export const ResetPasswordForm = React.forwardRef<HTMLDivElement, ResetPasswordF
                       </div>
                     </Field>
                   )}
+                  <Field>
+                    <FieldLabel htmlFor="email">Email Address</FieldLabel>
+                    <Input id="email" type="email" {...register('email')} error={errors.email?.message} />
+                  </Field>
                   <Field>
                     <FieldLabel htmlFor="password">New Password</FieldLabel>
                     <Input id="password" type="password" {...register('password')} error={errors.password?.message} />

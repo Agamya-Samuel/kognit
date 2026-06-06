@@ -21,8 +21,8 @@ function ResetPasswordContent() {
   return (
     <ResetPasswordForm
       token={token}
-      onSubmit={async (token, password, confirmPassword) => {
-        await (authService as any).resetPassword('', token, password, confirmPassword);
+      onSubmit={async (email, token, password, confirmPassword) => {
+        await authService.resetPassword(email, token, password, confirmPassword);
       }}
       onBackClick={() => router.push('/auth/login')}
     />
