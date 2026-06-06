@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { type SectionWithLectures } from '@edutech/types';
+import { Video, Radio, PenLine, FileText, HelpCircle, File, Lock, ChevronRight } from 'lucide-react';
 
 interface CurriculumAccordionProps {
   sections: SectionWithLectures[];
@@ -32,19 +33,20 @@ export function CurriculumAccordion({ sections }: CurriculumAccordionProps) {
   };
 
   const getLectureIcon = (type: SectionWithLectures['lectures'][0]['type']) => {
+    const iconClass = 'h-4 w-4 text-muted-foreground';
     switch (type) {
       case 'video':
-        return '🎬';
+        return <Video className={iconClass} />;
       case 'live':
-        return '📡';
+        return <Radio className={iconClass} />;
       case 'text':
-        return '📝';
+        return <PenLine className={iconClass} />;
       case 'assignment':
-        return '📋';
+        return <FileText className={iconClass} />;
       case 'quiz':
-        return '❓';
+        return <HelpCircle className={iconClass} />;
       default:
-        return '📄';
+        return <File className={iconClass} />;
     }
   };
 
@@ -60,13 +62,11 @@ export function CurriculumAccordion({ sections }: CurriculumAccordionProps) {
             className="flex w-full items-center justify-between border-b bg-muted/50 px-4 py-4 text-left transition-colors hover:bg-muted"
           >
             <div className="flex items-center gap-3">
-              <span
-                className={`text-muted-foreground transition-transform ${
+              <ChevronRight
+                className={`h-4 w-4 text-muted-foreground transition-transform ${
                   expandedSections.has(section.id) ? 'rotate-90' : ''
                 }`}
-              >
-                ▶
-              </span>
+              />
               <span className="font-semibold">{section.title}</span>
               <span className="text-sm text-muted-foreground">
                 {section.lectures.length} lectures
@@ -81,7 +81,7 @@ export function CurriculumAccordion({ sections }: CurriculumAccordionProps) {
                   key={lecture.id}
                   className="flex items-center gap-4 px-4 py-3 hover:bg-muted/50"
                 >
-                  <span className="text-lg">{getLectureIcon(lecture.type)}</span>
+                  <span className="flex h-6 w-6 items-center justify-center">{getLectureIcon(lecture.type)}</span>
                   <div className="flex-1">
                     <h4 className="font-medium">{lecture.title}</h4>
                     {lecture.description && (
@@ -102,8 +102,8 @@ export function CurriculumAccordion({ sections }: CurriculumAccordionProps) {
                       </span>
                     )}
                     {!lecture.isFreePreview && (
-                      <span className="text-muted-foreground" title="Enroll to access">
-                        🔒
+                      <span title="Enroll to access">
+                        <Lock className="h-4 w-4 text-muted-foreground" />
                       </span>
                     )}
                   </div>
