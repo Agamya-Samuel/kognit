@@ -10,9 +10,10 @@ import { Progress } from '@edutech/ui';
 export default function MyCoursesPage() {
   const [activeTab, setActiveTab] = useState<'in-progress' | 'completed'>('in-progress');
   const { data: enrollments, isLoading } = useMyEnrollments();
+  const safeEnrollments = Array.isArray(enrollments) ? enrollments : [];
 
-  const inProgressCourses = enrollments?.filter((course) => (course.progress ?? 0) < 100) ?? [];
-  const completedCourses = enrollments?.filter((course) => (course.progress ?? 0) >= 100) ?? [];
+  const inProgressCourses = safeEnrollments.filter((course) => (course.progress ?? 0) < 100);
+  const completedCourses = safeEnrollments.filter((course) => (course.progress ?? 0) >= 100);
 
   const coursesToDisplay = activeTab === 'in-progress' ? inProgressCourses : completedCourses;
 
