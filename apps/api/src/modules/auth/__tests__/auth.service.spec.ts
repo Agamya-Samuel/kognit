@@ -12,6 +12,7 @@ import { UsersRepository } from '../../../db/repositories/users.repository';
 import { EmailVerificationsRepository } from '../../../db/repositories/email-verifications.repository';
 import { RefreshTokensRepository } from '../../../db/repositories/refresh-tokens.repository';
 import { UserAuthProvidersRepository } from '../../../db/repositories/user-auth-providers.repository';
+import { StudentProfilesRepository } from '../../../db/repositories/student-profiles.repository';
 import { CacheService } from '../../../common/services/cache.service';
 import { createUser } from '../../../test/factories';
 
@@ -52,6 +53,7 @@ function createMockRefreshTokensRepo(overrides: Partial<Record<string, jest.Mock
     findByTokenHash: jest.fn().mockResolvedValue(null),
     findActiveByTokenHash: jest.fn().mockResolvedValue(null),
     findActiveByUserId: jest.fn().mockResolvedValue([]),
+    findByFamily: jest.fn().mockResolvedValue([]),
     create: jest.fn(),
     revoke: jest.fn(),
     revokeAllByUserId: jest.fn().mockResolvedValue(0),
@@ -68,7 +70,7 @@ describe('AuthService', () => {
   let usersRepo: Record<string, jest.Mock>;
   let refreshTokensRepo: Record<string, jest.Mock>;
   let cacheService: Record<string, jest.Mock>;
-  let tokenService: { generateTokenPair: jest.Mock; revokeAllUserTokens: jest.Mock };
+  let tokenService: { generateTokenPair: jest.Mock; revokeAllUserTokens: jest.Mock; revokeTokenFamily: jest.Mock };
   let lockoutService: { assertNotLocked: jest.Mock; recordFailedAttempt: jest.Mock; resetAttempts: jest.Mock };
   let passwordService: { hash: jest.Mock; compare: jest.Mock };
   let emailVerificationService: { generateCode: jest.Mock; verifyCode: jest.Mock };
@@ -80,7 +82,7 @@ describe('AuthService', () => {
     usersRepo = createMockUsersRepo();
     refreshTokensRepo = createMockRefreshTokensRepo();
     cacheService = createMockCacheService();
-    tokenService = { generateTokenPair: jest.fn().mockResolvedValue(mockTokens), revokeAllUserTokens: jest.fn().mockResolvedValue(5) };
+    tokenService = { generateTokenPair: jest.fn().mockResolvedValue(mockTokens), revokeAllUserTokens: jest.fn().mockResolvedValue(5), revokeTokenFamily: jest.fn().mockResolvedValue(3) };
     lockoutService = { assertNotLocked: jest.fn(), recordFailedAttempt: jest.fn().mockResolvedValue({ isLocked: false }), resetAttempts: jest.fn() };
     passwordService = { hash: jest.fn().mockResolvedValue('$2b$12$hashed'), compare: jest.fn().mockResolvedValue(true) };
     emailVerificationService = { generateCode: jest.fn().mockResolvedValue('654321'), verifyCode: jest.fn() };
@@ -95,6 +97,7 @@ describe('AuthService', () => {
         { provide: EmailVerificationsRepository, useValue: {} },
         { provide: RefreshTokensRepository, useValue: refreshTokensRepo },
         { provide: UserAuthProvidersRepository, useValue: {} },
+        { provide: StudentProfilesRepository, useValue: { findByUserId: jest.fn().mockResolvedValue(null) } },
         { provide: PasswordService, useValue: passwordService },
         { provide: TokenService, useValue: tokenService },
         { provide: LockoutService, useValue: lockoutService },
@@ -265,12 +268,46 @@ describe('AuthService', () => {
       await expect(service.refreshTokens(1, 'token')).rejects.toThrow(ForbiddenException);
     });
 
-    it('should throw UnauthorizedException for token reuse (theft detection)', async () => {
-      jwtService.verify.mockReturnValue({ sub: 1, email: 'test@test.com', role: 'student' });
+    it('should throw UnauthorizedException for token reuse (theft detection outside grace period)', async () => {
+      jwtService.verify.mockReturnValue({ sub: 1, email: 'test@test.com', role: 'student', family: 'stolen-family' });
       usersRepo.findById.mockResolvedValue(createUser({ id: 1 }));
-      refreshTokensRepo.findActiveByUserId.mockResolvedValue([]);
+      // A revoked token in the same family, created more than 30s ago
+      const oldRevokedToken = {
+        id: 10, userId: 1, tokenHash: 'hash', family: 'stolen-family',
+        isRevoked: true, expiresAt: new Date(), createdAt: new Date(Date.now() - 120_000), // 2 min ago
+      };
+      refreshTokensRepo.findByFamily.mockResolvedValue([oldRevokedToken]);
+      passwordService.compare.mockResolvedValue(true);
+
       await expect(service.refreshTokens(1, 'stolen-token')).rejects.toThrow('Token reuse detected');
-      expect(tokenService.revokeAllUserTokens).toHaveBeenCalledWith(1);
+      expect(tokenService.revokeTokenFamily).toHaveBeenCalledWith('stolen-family');
+    });
+
+    it('should recover from concurrent refresh (race condition within grace period)', async () => {
+      const user = createUser({ id: 1 });
+      jwtService.verify.mockReturnValue({ sub: 1, email: 'test@test.com', role: 'student', family: 'race-family' });
+      usersRepo.findById.mockResolvedValue(user);
+
+      // Family has: one recently revoked token (old) + one just-created active token (new)
+      const revokedToken = {
+        id: 10, userId: 1, tokenHash: 'old-hash', family: 'race-family',
+        isRevoked: true, expiresAt: new Date(), createdAt: new Date(Date.now() - 5_000),
+      };
+      const activeToken = {
+        id: 20, userId: 1, tokenHash: 'new-hash', family: 'race-family',
+        isRevoked: false, expiresAt: new Date(), createdAt: new Date(), // just created
+      };
+      refreshTokensRepo.findByFamily.mockResolvedValue([revokedToken, activeToken]);
+
+      // First compare (revoked token) matches, second (active) does not
+      passwordService.compare.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
+      refreshTokensRepo.revoke.mockResolvedValue(activeToken);
+      tokenService.generateTokenPair.mockResolvedValue({ ...mockTokens, accessToken: 'race-recovery' });
+
+      const result = await service.refreshTokens(1, 'old-token');
+      expect(result.accessToken).toBe('race-recovery');
+      expect(tokenService.revokeTokenFamily).not.toHaveBeenCalled();
+      expect(tokenService.revokeAllUserTokens).not.toHaveBeenCalled();
     });
 
     it('should rotate tokens successfully', async () => {

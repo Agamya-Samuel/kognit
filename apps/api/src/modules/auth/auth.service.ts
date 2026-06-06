@@ -234,8 +234,6 @@ export class AuthService {
 
     await this.lockoutService.resetAttempts(email);
 
-    await this.tokenService.revokeAllUserTokens(user.id);
-
     const tokens = await this.tokenService.generateTokenPair(user);
 
     this.logger.log(`User logged in: ${user.id} (${email})`);
@@ -299,8 +297,20 @@ export class AuthService {
   // ─── Refresh Token ──────────────────────────────────────────────────────
 
   /**
+   * Grace period (in seconds) for concurrent refresh token requests.
+   * If a revoked token was rotated within this window, subsequent requests
+   * with the old token are treated as rotation race conditions, not theft.
+   */
+  private static readonly REFRESH_RACE_GRACE_SECONDS = 30;
+
+  /**
    * Refresh access token using refresh token.
-   * Implements token rotation and theft detection.
+   * Implements token rotation with family-based theft detection.
+   *
+   * Handles concurrent refresh gracefully: if multiple tabs/apps send the
+   * same (now-revoked) token within a short grace period after rotation,
+   * we treat it as a race condition and issue a new pair instead of
+   * revoking all sessions (which was causing mass logout on API restart).
    */
   async refreshTokens(userId: number, rawRefreshToken: string): Promise<TokenPayload> {
     let decoded: JwtPayload;
@@ -345,13 +355,48 @@ export class AuthService {
       }
 
       if (matchedToken && tokenWasRevoked) {
-        await this.tokenService.revokeTokenFamily(decoded.family);
-        this.logger.warn(`Token reuse/theft detected for user ${userId}. Family ${decoded.family} revoked.`);
+        // Token was found but is revoked. This could be:
+        //   (a) Rotation race condition — another tab/app just rotated this token
+        //   (b) Genuine token reuse/theft — someone is replaying an old token
+        //
+        // Distinguish by checking if the family's most recent token was created
+        // within the grace period. If yes → race condition. If no → theft.
+
+        const mostRecentToken = familyTokens[familyTokens.length - 1];
+        const secondsSinceRotation = (Date.now() - new Date(mostRecentToken.createdAt).getTime()) / 1000;
+
+        if (secondsSinceRotation <= AuthService.REFRESH_RACE_GRACE_SECONDS) {
+          // Race condition: another tab just rotated this token.
+          // Issue new tokens in the same family instead of nuking everything.
+          this.logger.debug(
+            `Concurrent refresh detected for user ${userId} (family ${decoded.family.slice(0, 8)}…). ` +
+            `Issuing new pair instead of revoking.`,
+          );
+
+          // Revoke the current active token in this family (it was issued to the racing request)
+          const activeInFamily = familyTokens.find((t) => !t.isRevoked);
+          if (activeInFamily) {
+            await this.refreshTokensRepo.revoke(activeInFamily.id);
+          }
+
+          const newTokens = await this.tokenService.generateTokenPair(user, decoded.family);
+          this.logger.log(`Tokens refreshed for user ${userId} (race-condition recovery)`);
+          return newTokens;
+        }
+
+        // Genuine theft: token was revoked outside the grace period.
+        // Revoke only this family (not ALL user tokens) to minimize blast radius.
+        const revokedCount = await this.tokenService.revokeTokenFamily(decoded.family);
+        this.logger.warn(
+          `Token reuse/theft detected for user ${userId}. ` +
+          `Family ${decoded.family.slice(0, 8)}… revoked (${revokedCount} tokens).`,
+        );
         throw new UnauthorizedException(
-          'Token reuse detected. All sessions have been terminated for security. Please log in again.',
+          'Token reuse detected. Session has been terminated for security. Please log in again.',
         );
       }
     } else {
+      // Legacy path: JWT doesn't contain family (tokens issued before family was embedded)
       const activeTokens = await this.refreshTokensRepo.findActiveByUserId(userId);
 
       for (const token of activeTokens) {
