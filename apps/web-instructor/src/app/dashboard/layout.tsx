@@ -102,6 +102,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
     <DashboardShell
       brand={{ name: 'EduTech' }}
+      platform="Instructor"
+      platformColor="bg-emerald-500"
       navGroups={navGroups}
       footerLinks={footerLinks}
       user={user ? { name: user.name, email: user.email } : { name: 'Instructor' }}

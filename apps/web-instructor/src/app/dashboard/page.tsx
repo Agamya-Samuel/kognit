@@ -1,8 +1,19 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { analyticsService, liveClassesService } from '@edutech/api-client';
-import { Users, BookOpen, DollarSign, Calendar, Clock, CheckCircle } from 'lucide-react';
+import {
+  Users,
+  BookOpen,
+  DollarSign,
+  Calendar,
+  Clock,
+  CheckCircle,
+  Plus,
+  Video,
+  BarChart3,
+  UsersRound,
+  Inbox,
+  CalendarCheck,
+} from 'lucide-react';
 import { StatCard, StatsRow } from '@/components/StatsRow';
 import { RevenueChart, EngagementChart } from '@/components/charts/Charts';
 import { Card, CardContent, CardHeader, CardTitle } from '@edutech/ui';
@@ -10,6 +21,7 @@ import { Button } from '@edutech/ui';
 import Link from 'next/link';
 import { useDashboardMetrics, useRecentActivity, useUpcomingClasses } from '@/hooks/useCourses';
 import { useInstructorChartData } from '@/hooks/useInstructorChartData';
+import { PageHeader } from '@/components/PageHeader';
 
 export default function DashboardPage() {
   const { data: metrics, isLoading: metricsLoading, error: metricsError } = useDashboardMetrics();
@@ -26,10 +38,10 @@ export default function DashboardPage() {
 
   const safeNumber = (val: number | undefined | null): number => (typeof val === 'number' ? val : 0);
 
-  const revenueData = chartData?.map((item) => ({
+  const revenueData = chartData?.map((item: any) => ({
     month: item.name,
     revenue: item.revenue,
-    costs: Math.round(item.revenue * 0.7) // Assuming costs are ~70% of revenue for demo
+    costs: Math.round(item.revenue * 0.7)
   })) || [
     { month: 'Jan', revenue: 45000, costs: 32000 },
     { month: 'Feb', revenue: 52000, costs: 35000 },
@@ -39,10 +51,10 @@ export default function DashboardPage() {
     { month: 'Jun', revenue: 85000, costs: 48000 },
   ];
 
-  const engagementData = chartData?.map((item) => ({
+  const engagementData = chartData?.map((item: any) => ({
     date: item.name,
     views: item.users,
-    interactions: Math.round(item.users * 0.75) // Assuming interactions are ~75% of users for demo
+    interactions: Math.round(item.users * 0.75)
   })) || [
     { date: 'Mon', views: 2400, interactions: 1800 },
     { date: 'Tue', views: 2100, interactions: 1600 },
@@ -55,10 +67,10 @@ export default function DashboardPage() {
 
   if (metricsLoading || activityLoading || classesLoading || chartLoading) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-[60vh]">
         <div className="text-center">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent" />
-          <p className="mt-4 text-muted-foreground">Loading...</p>
+          <p className="mt-4 text-sm text-muted-foreground">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -66,14 +78,25 @@ export default function DashboardPage() {
 
   if (metricsError) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <p className="text-destructive">Failed to load dashboard metrics. Please try again.</p>
+      <div className="flex items-center justify-center h-[60vh]">
+        <div className="text-center">
+          <div className="rounded-full bg-destructive/10 p-3 mx-auto mb-3">
+            <BarChart3 className="h-6 w-6 text-destructive" />
+          </div>
+          <p className="text-sm font-medium text-foreground">Failed to load metrics</p>
+          <p className="text-xs text-muted-foreground mt-1">Please try again later.</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+      <PageHeader
+        title="Welcome back!"
+        description="Here's an overview of your teaching activity."
+      />
+
       <StatsRow>
         <StatCard
           title="Total Revenue"
@@ -130,9 +153,9 @@ export default function DashboardPage() {
             <CardTitle>Recent Activity</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {recentActivity && recentActivity.length > 0 ? (
-                recentActivity.slice(0, 5).map((activity: any) => (
+            {recentActivity && recentActivity.length > 0 ? (
+              <div className="space-y-4">
+                {recentActivity.slice(0, 5).map((activity: any) => (
                   <div
                     key={activity.id}
                     className="flex items-start gap-3 border-b border-border pb-3 last:border-0 last:pb-0"
@@ -151,11 +174,19 @@ export default function DashboardPage() {
                       <p className="text-xs text-muted-foreground">{activity.time}</p>
                     </div>
                   </div>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground">No recent activity</p>
-              )}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <div className="rounded-full bg-muted p-3 mb-3">
+                  <Inbox className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <p className="text-sm font-medium text-foreground">No recent activity</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Student enrollments and completions will appear here.
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -164,9 +195,9 @@ export default function DashboardPage() {
             <CardTitle>Upcoming Classes</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {upcomingClasses && upcomingClasses.length > 0 ? (
-                upcomingClasses.slice(0, 4).map((classItem: any) => (
+            {upcomingClasses && upcomingClasses.length > 0 ? (
+              <div className="space-y-4">
+                {upcomingClasses.slice(0, 4).map((classItem: any) => (
                   <div
                     key={classItem.id}
                     className="rounded-lg border bg-card p-3"
@@ -186,10 +217,19 @@ export default function DashboardPage() {
                       </Link>
                     </div>
                   </div>
-                )) : (
-                  <p className="text-sm text-muted-foreground">No upcoming classes</p>
-                )}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <div className="rounded-full bg-muted p-3 mb-3">
+                  <CalendarCheck className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <p className="text-sm font-medium text-foreground">No upcoming classes</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Schedule a live class to see it here.
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -200,17 +240,29 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-3">
-            <Button variant="default" asChild>
-              <Link href="/dashboard/courses/create">Create Course</Link>
+            <Button variant="default" className="gap-2" asChild>
+              <Link href="/dashboard/courses/create">
+                <Plus className="h-4 w-4" />
+                Create Course
+              </Link>
             </Button>
-            <Button variant="outline" asChild>
-              <Link href="/dashboard/schedule">Schedule Class</Link>
+            <Button variant="outline" className="gap-2" asChild>
+              <Link href="/dashboard/schedule">
+                <Video className="h-4 w-4" />
+                Schedule Class
+              </Link>
             </Button>
-            <Button variant="outline" asChild>
-              <Link href="/dashboard/analytics">View Analytics</Link>
+            <Button variant="outline" className="gap-2" asChild>
+              <Link href="/dashboard/analytics">
+                <BarChart3 className="h-4 w-4" />
+                View Analytics
+              </Link>
             </Button>
-            <Button variant="outline" asChild>
-              <Link href="/dashboard/students">Manage Students</Link>
+            <Button variant="outline" className="gap-2" asChild>
+              <Link href="/dashboard/students">
+                <UsersRound className="h-4 w-4" />
+                Manage Students
+              </Link>
             </Button>
           </div>
         </CardContent>
