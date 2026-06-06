@@ -7,6 +7,7 @@ import { DatabaseModule } from './db/database.module';
 import { RedisModule } from './redis/redis.module';
 import { QueueModule } from './queue/queue.module';
 import { HealthController } from './health/health.controller';
+import { DevEmailPreviewController } from './email/dev-email-preview.controller';
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from './modules/auth/guards/roles.guard';
@@ -68,7 +69,7 @@ import { PlatformSettingsModule } from './modules/platform-settings/platform-set
     SocketModule,
     PlatformSettingsModule,
   ],
-  controllers: [HealthController],
+  controllers: [HealthController, DevEmailPreviewController],
   providers: [
     // Global guards: JWT auth + RBAC applied to all routes
     { provide: APP_GUARD, useClass: JwtAuthGuard },
