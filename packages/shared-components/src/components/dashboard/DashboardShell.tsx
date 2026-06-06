@@ -64,11 +64,9 @@ export function DashboardShell({
         <DashboardSiteHeader breadcrumb={breadcrumb}>
           {headerActions}
         </DashboardSiteHeader>
-        <div className="flex flex-1 flex-col px-4 md:px-6 lg:px-8">
-          <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 lg:py-8">
-              {children}
-            </div>
+        <div className="flex flex-1 flex-col px-4 py-6 md:px-6 lg:px-8 lg:py-8">
+          <div className="@container/main flex flex-1 flex-col">
+            {children}
           </div>
         </div>
       </SidebarInset>

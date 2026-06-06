@@ -1,4 +1,5 @@
 import { cn } from '@edutech/ui';
+import { BookOpen } from 'lucide-react';
 
 export interface CourseCardProps {
   title: string;
@@ -45,7 +46,7 @@ function CourseCard({
         </div>
       ) : (
         <div className="flex aspect-video items-center justify-center bg-muted">
-          <span className="text-4xl text-muted-foreground">📚</span>
+          <BookOpen className="h-10 w-10 text-muted-foreground" />
         </div>
       )}
 
