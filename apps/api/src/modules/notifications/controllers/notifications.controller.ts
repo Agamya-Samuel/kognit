@@ -102,7 +102,7 @@ export class NotificationsController {
   @ApiResponse({ status: 200, description: 'Notification preferences retrieved' })
   async getPreferences(
     @CurrentUser() user: { sub: number },
-  ): Promise<{ success: true; data: NotificationPreferencesDto }> {
+  ): Promise<{ success: true; data: Record<string, unknown> }> {
     const preferences = await this.notificationsService.getPreferences(user.sub);
     return {
       success: true,
@@ -118,7 +118,7 @@ export class NotificationsController {
   async updatePreferences(
     @CurrentUser() user: { sub: number },
     @Body() preferences: NotificationPreferencesDto,
-  ): Promise<{ success: true; data: NotificationPreferencesDto }> {
+  ): Promise<{ success: true; data: Record<string, unknown> }> {
     const updatedPreferences = await this.notificationsService.updatePreferences(
       user.sub,
       preferences,
