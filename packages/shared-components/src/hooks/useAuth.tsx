@@ -1,10 +1,22 @@
 'use client';
 
 import * as React from 'react';
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+
+// Custom error class for auth-specific errors
+export class AuthError extends Error {
+  constructor(
+    message: string,
+    public code: string = 'AUTH_ERROR',
+    public statusCode?: number
+  ) {
+    super(message);
+    this.name = 'AuthError';
+  }
+}
 
 export interface User {
   id: number;
@@ -27,6 +39,7 @@ export interface AuthContextType {
   logout: () => void;
   setTokens: (accessToken: string, refreshToken: string) => void;
   refreshTokens: () => Promise<void>;
+  clearAuth: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -36,8 +49,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const mountedRef = useRef(true);
 
   useEffect(() => {
+    mountedRef.current = true;
     const storedAccessToken = localStorage.getItem('accessToken');
     const storedRefreshToken = localStorage.getItem('refreshToken');
 
@@ -48,6 +63,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } else {
       setIsLoading(false);
     }
+
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  const clearAuth = useCallback(() => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    setAccessToken(null);
+    setRefreshToken(null);
+    setUser(null);
   }, []);
 
   const fetchProfile = useCallback(async (token: string) => {
@@ -55,55 +82,66 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const response = await axios.get(`${API_BASE}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setUser(response.data);
-    } catch {
-      const storedRefreshToken = localStorage.getItem('refreshToken');
-      if (storedRefreshToken) {
-        try {
-          const refreshResponse = await axios.post(`${API_BASE}/auth/refresh`, {
-            refreshToken: storedRefreshToken,
-          });
-          const { data } = refreshResponse.data;
-          localStorage.setItem('accessToken', data.accessToken);
-          localStorage.setItem('refreshToken', data.refreshToken);
-          setAccessToken(data.accessToken);
-          setRefreshToken(data.refreshToken);
-          fetchProfile(data.accessToken);
-        } catch {
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
-          setAccessToken(null);
-          setRefreshToken(null);
-        }
-      } else {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        setAccessToken(null);
-        setRefreshToken(null);
+      if (mountedRef.current) {
+        setUser(response.data);
+        setIsLoading(false);
       }
-    } finally {
+    } catch (error: any) {
+      if (!mountedRef.current) return;
+      
+      if (error.response?.status === 401) {
+        const storedRefreshToken = localStorage.getItem('refreshToken');
+        if (storedRefreshToken) {
+          try {
+            const refreshResponse = await axios.post(`${API_BASE}/auth/refresh`, {
+              refreshToken: storedRefreshToken,
+            });
+            const { data } = refreshResponse.data;
+            localStorage.setItem('accessToken', data.accessToken);
+            localStorage.setItem('refreshToken', data.refreshToken);
+            if (mountedRef.current) {
+              setAccessToken(data.accessToken);
+              setRefreshToken(data.refreshToken);
+              fetchProfile(data.accessToken);
+            }
+            return;
+          } catch {
+            if (mountedRef.current) {
+              clearAuth();
+            }
+          }
+        } else {
+          clearAuth();
+        }
+      } else if (!mountedRef.current) {
+        clearAuth();
+      }
       setIsLoading(false);
     }
-  }, []);
+  }, [clearAuth]);
 
   const login = async (email: string, password: string, portal?: string) => {
-    const response = await axios.post(`${API_BASE}/auth/login`, { email, password, portal });
-    const { user: authUser, tokens } = response.data;
+    try {
+      const response = await axios.post(`${API_BASE}/auth/login`, { email, password, portal });
+      const { user: authUser, tokens } = response.data;
 
-    localStorage.setItem('accessToken', tokens.accessToken);
-    localStorage.setItem('refreshToken', tokens.refreshToken);
-    setAccessToken(tokens.accessToken);
-    setRefreshToken(tokens.refreshToken);
-    setUser(authUser);
+      localStorage.setItem('accessToken', tokens.accessToken);
+      localStorage.setItem('refreshToken', tokens.refreshToken);
+      setAccessToken(tokens.accessToken);
+      setRefreshToken(tokens.refreshToken);
+      setUser(authUser);
+    } catch (error: any) {
+      if (error.response) {
+        const message = error.response.data?.error?.message || 'Login failed';
+        throw new AuthError(message, 'LOGIN_FAILED', error.response.status);
+      }
+      throw new AuthError('Network error. Please check your connection.', 'NETWORK_ERROR');
+    }
   };
 
   const logout = useCallback(() => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    setAccessToken(null);
-    setRefreshToken(null);
-    setUser(null);
-  }, []);
+    clearAuth();
+  }, [clearAuth]);
 
   const setTokens = useCallback(
     (access: string, refresh: string) => {
@@ -113,7 +151,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setRefreshToken(refresh);
       fetchProfile(access);
     },
-    [fetchProfile],
+    [fetchProfile]
   );
 
   const refreshTokens = useCallback(async () => {
@@ -130,34 +168,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setRefreshToken(data.refreshToken);
         await fetchProfile(data.accessToken);
       } catch {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        setAccessToken(null);
-        setRefreshToken(null);
-        setUser(null);
-        throw new Error('Failed to refresh token');
+        clearAuth();
+        throw new AuthError('Session expired. Please login again.', 'TOKEN_EXPIRED', 401);
       }
     } else {
-      throw new Error('No refresh token available');
+      clearAuth();
+      throw new AuthError('No session found. Please login.', 'NO_SESSION');
     }
-  }, [fetchProfile]);
+  }, [fetchProfile, clearAuth]);
 
   const value: AuthContextType = {
     user,
     accessToken,
     refreshToken,
-    isAuthenticated: !!accessToken,
+    isAuthenticated: !!accessToken && !!user,
     isLoading,
     login,
     logout,
     setTokens,
     refreshTokens,
+    clearAuth,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-export function useAuth() {
+export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');

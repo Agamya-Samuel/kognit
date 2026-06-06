@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -25,6 +26,7 @@ export interface LoginFormProps extends Omit<React.ComponentProps<'div'>, 'onSub
 
 export const LoginForm = React.forwardRef<HTMLDivElement, LoginFormProps>(
   ({ className, onSubmit, onForgotPassword, onSignUpClick, onAppleLogin, onGoogleLogin, isLoading, error, ...props }, ref) => {
+    const [serverError, setServerError] = useState<string>('');
     const {
       register,
       handleSubmit,
@@ -34,6 +36,15 @@ export const LoginForm = React.forwardRef<HTMLDivElement, LoginFormProps>(
     });
 
     const hasSocialLogin = onAppleLogin || onGoogleLogin;
+
+    const handleFormSubmit = async (data: LoginInput) => {
+      setServerError('');
+      try {
+        await onSubmit(data);
+      } catch (err: any) {
+        setServerError(err?.message || 'Login failed. Please try again.');
+      }
+    };
 
     return (
       <div className={cn('flex flex-col gap-6', className)} ref={ref} {...props}>
@@ -45,7 +56,12 @@ export const LoginForm = React.forwardRef<HTMLDivElement, LoginFormProps>(
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)}>
+            {serverError && (
+              <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 dark:border-red-900 dark:bg-red-950/30 dark:text-red-400">
+                {serverError}
+              </div>
+            )}
+            <form onSubmit={handleSubmit(handleFormSubmit)}>
               <FieldGroup>
                 {hasSocialLogin && (
                   <Field>
