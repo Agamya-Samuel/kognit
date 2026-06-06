@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Spinner } from '@edutech/ui';
 import { Search, ChevronLeft, ChevronRight, UserCog, Trash2, Shield } from 'lucide-react';
-import api from '@/lib/api';
+import { adminService } from '@edutech/api-client';
 import { UserDetailDrawer } from '@/components/UserDetailDrawer';
 import { PageHeader } from '@/components/PageHeader';
 import { EmptyState } from '@/components/EmptyState';
@@ -19,13 +19,6 @@ interface User {
   avatarUrl: string | null;
   createdAt: string;
   updatedAt: string;
-}
-
-interface UsersResponse {
-  users: User[];
-  total: number;
-  page: number;
-  limit: number;
 }
 
 const ROLES = ['all', 'student', 'instructor', 'admin', 'institution_admin'];
@@ -48,7 +41,7 @@ export default function UsersPage() {
       if (roleFilter !== 'all') params.role = roleFilter;
       if (search) params.search = search;
 
-      const result = await api.get<UsersResponse>('/admin/users', params);
+const result = await adminService.getUsers(params);
       setUsers(result?.users ?? []);
       setTotal(result?.total ?? 0);
     } catch {
@@ -67,7 +60,7 @@ export default function UsersPage() {
 
   const handleToggleActive = async (user: User) => {
     try {
-      await api.patch(`/admin/users/${user.id}/toggle-active`);
+      await adminService.toggleUserActive(user.id);
       fetchUsers();
       if (drawerOpen && selectedUser?.id === user.id) {
         setSelectedUser({ ...user, isActive: !user.isActive });
@@ -79,7 +72,7 @@ export default function UsersPage() {
 
   const handleUpdateRole = async (userId: number, role: string) => {
     try {
-      await api.patch(`/admin/users/${userId}/role`, { role });
+      await adminService.updateUserRole(userId, role);
       fetchUsers();
       if (drawerOpen && selectedUser?.id === userId) {
         setSelectedUser({ ...selectedUser!, role });
@@ -91,7 +84,7 @@ export default function UsersPage() {
 
   const handleDelete = async (userId: number) => {
     try {
-      await api.delete(`/admin/users/${userId}`);
+      await adminService.deleteUser(userId);
       setDrawerOpen(false);
       setSelectedUser(null);
       fetchUsers();
