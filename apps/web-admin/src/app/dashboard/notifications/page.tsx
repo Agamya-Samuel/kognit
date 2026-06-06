@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, Button, Switch, Separator, Badge } from '@edutech/ui';
+import { Card, CardContent, CardHeader, CardTitle, Button, Switch, Badge } from '@edutech/ui';
 import {
   Bell,
   Mail,
@@ -116,14 +116,14 @@ export default function NotificationsPage() {
   };
 
   const handleSave = async () => {
-    await updateConfig(settings as Record<string, unknown>);
+    await updateConfig(settings as unknown as Record<string, unknown>);
     setSaved(true);
   };
 
   const toggleAllChannel = (channel: Channel, value: boolean) => {
     const updated = { ...settings };
     for (const cat of Object.keys(CATEGORY_LABELS) as Category[]) {
-      updated[getConfigKey(channel, cat)] = value;
+      (updated as Record<string, unknown>)[getConfigKey(channel, cat) as string] = value;
     }
     setSettings(updated);
     setSaved(false);

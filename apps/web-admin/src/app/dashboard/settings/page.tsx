@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, Button, Input, Label, Switch, Separator, Textarea } from '@edutech/ui';
+import { Card, CardContent, CardHeader, CardTitle, Button, Input, Textarea } from '@edutech/ui';
 import { Settings, Bell, Shield, Users, Database, Save, Plus, Trash2 } from 'lucide-react';
 import { useAdminSettings } from '@/hooks/useAdminSettings';
 
@@ -64,7 +64,7 @@ function flattenSettingsForUpdate(settings: any): Record<string, string> {
 }
 
 export default function SettingsPage() {
-  const { data: flatSettings, isLoading, error, updateSettings, isUpdating } = useAdminSettings();
+  const { settings: flatSettings, isLoading, error, updateSettings, isUpdating } = useAdminSettings();
   const [settings, setSettings] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('platform');
 
@@ -138,7 +138,7 @@ export default function SettingsPage() {
                   </label>
                   <Input
                     value={settings.platform.name}
-                    onChange={(e) => setSettings(prev => ({ ...prev, platform: { ...prev.platform, name: e.target.value } }))}
+                    onChange={(e) => setSettings((prev: any) => ({ ...prev, platform: { ...prev.platform, name: e.target.value } }))}
                   />
                 </div>
                 <div>
@@ -149,7 +149,7 @@ export default function SettingsPage() {
                     className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                     rows={3}
                     value={settings.platform.description}
-                    onChange={(e) => setSettings(prev => ({ ...prev, platform: { ...prev.platform, description: e.target.value } }))}
+                    onChange={(e) => setSettings((prev: any) => ({ ...prev, platform: { ...prev.platform, description: e.target.value } }))}
                   />
                 </div>
                 <div>
@@ -159,7 +159,7 @@ export default function SettingsPage() {
                   <Input
                     type="email"
                     value={settings.platform.contactEmail}
-                    onChange={(e) => setSettings(prev => ({ ...prev, platform: { ...prev.platform, contactEmail: e.target.value } }))}
+                    onChange={(e) => setSettings((prev: any) => ({ ...prev, platform: { ...prev.platform, contactEmail: e.target.value } }))}
                   />
                 </div>
                 <div>
@@ -169,7 +169,7 @@ export default function SettingsPage() {
                   <Input
                     type="email"
                     value={settings.platform.supportEmail}
-                    onChange={(e) => setSettings(prev => ({ ...prev, platform: { ...prev.platform, supportEmail: e.target.value } }))}
+                    onChange={(e) => setSettings((prev: any) => ({ ...prev, platform: { ...prev.platform, supportEmail: e.target.value } }))}
                   />
                 </div>
               </CardContent>
@@ -193,7 +193,7 @@ export default function SettingsPage() {
                       <input
                         type="checkbox"
                         checked={settings.notifications.email}
-                        onChange={(e) => setSettings(prev => ({ ...prev, notifications: { ...prev.notifications, email: e.target.checked } }))}
+                        onChange={(e) => setSettings((prev: any) => ({ ...prev, notifications: { ...prev.notifications, email: e.target.checked } }))}
                         className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                       />
                     </label>
@@ -202,7 +202,7 @@ export default function SettingsPage() {
                       <input
                         type="checkbox"
                         checked={settings.notifications.push}
-                        onChange={(e) => setSettings(prev => ({ ...prev, notifications: { ...prev.notifications, push: e.target.checked } }))}
+                        onChange={(e) => setSettings((prev: any) => ({ ...prev, notifications: { ...prev.notifications, push: e.target.checked } }))}
                         className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                       />
                     </label>
@@ -211,7 +211,7 @@ export default function SettingsPage() {
                       <input
                         type="checkbox"
                         checked={settings.notifications.sms}
-                        onChange={(e) => setSettings(prev => ({ ...prev, notifications: { ...prev.notifications, sms: e.target.checked } }))}
+                        onChange={(e) => setSettings((prev: any) => ({ ...prev, notifications: { ...prev.notifications, sms: e.target.checked } }))}
                         className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                       />
                     </label>
@@ -223,7 +223,7 @@ export default function SettingsPage() {
                       {['immediate', 'daily', 'weekly'].map((frequency) => (
                         <button
                           key={frequency}
-                          onClick={() => setSettings(prev => ({ ...prev, notifications: { ...prev.notifications, frequency: frequency as any } }))}
+                          onClick={() => setSettings((prev: any) => ({ ...prev, notifications: { ...prev.notifications, frequency: frequency as any } }))}
                           className={`p-3 rounded-lg border text-center text-sm font-medium transition-colors ${
                             settings.notifications.frequency === frequency
                               ? 'border-primary bg-primary/10 text-primary'
@@ -263,7 +263,7 @@ export default function SettingsPage() {
                     <input
                       type="checkbox"
                       checked={settings.security.twoFactorAuth}
-                      onChange={(e) => setSettings(prev => ({ ...prev, security: { ...prev.security, twoFactorAuth: e.target.checked } }))}
+                      onChange={(e) => setSettings((prev: any) => ({ ...prev, security: { ...prev.security, twoFactorAuth: e.target.checked } }))}
                       className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                     />
                   </label>
@@ -274,7 +274,7 @@ export default function SettingsPage() {
                       <Input
                         type="number"
                         value={settings.security.sessionTimeout}
-                        onChange={(e) => setSettings(prev => ({ ...prev, security: { ...prev.security, sessionTimeout: parseInt(e.target.value) || 30 } }))}
+                        onChange={(e) => setSettings((prev: any) => ({ ...prev, security: { ...prev.security, sessionTimeout: parseInt(e.target.value) || 30 } }))}
                       />
                       <span className="text-sm text-gray-600 dark:text-gray-400">minutes</span>
                     </div>
@@ -290,7 +290,7 @@ export default function SettingsPage() {
                         <Input
                           type="number"
                           value={settings.security.passwordPolicy.minLength}
-                          onChange={(e) => setSettings(prev => ({ ...prev, security: { ...prev.security, passwordPolicy: { ...prev.security.passwordPolicy, minLength: parseInt(e.target.value) || 8 } } }))}
+                          onChange={(e) => setSettings((prev: any) => ({ ...prev, security: { ...prev.security, passwordPolicy: { ...prev.security.passwordPolicy, minLength: parseInt(e.target.value) || 8 } } }))}
                         />
                         <span className="w-24" />
                       </label>
@@ -302,7 +302,7 @@ export default function SettingsPage() {
                         <input
                           type="checkbox"
                           checked={settings.security.passwordPolicy.requireUppercase}
-                          onChange={(e) => setSettings(prev => ({ ...prev, security: { ...prev.security, passwordPolicy: { ...prev.security.passwordPolicy, requireUppercase: e.target.checked } } }))}
+                          onChange={(e) => setSettings((prev: any) => ({ ...prev, security: { ...prev.security, passwordPolicy: { ...prev.security.passwordPolicy, requireUppercase: e.target.checked } } }))}
                           className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                         />
                       </label>
@@ -314,7 +314,7 @@ export default function SettingsPage() {
                         <input
                           type="checkbox"
                           checked={settings.security.passwordPolicy.requireNumbers}
-                          onChange={(e) => setSettings(prev => ({ ...prev, security: { ...prev.security, passwordPolicy: { ...prev.security.passwordPolicy, requireNumbers: e.target.checked } } }))}
+                          onChange={(e) => setSettings((prev: any) => ({ ...prev, security: { ...prev.security, passwordPolicy: { ...prev.security.passwordPolicy, requireNumbers: e.target.checked } } }))}
                           className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                         />
                       </label>
@@ -326,7 +326,7 @@ export default function SettingsPage() {
                         <input
                           type="checkbox"
                           checked={settings.security.passwordPolicy.requireSpecialChars}
-                          onChange={(e) => setSettings(prev => ({ ...prev, security: { ...prev.security, passwordPolicy: { ...prev.security.passwordPolicy, requireSpecialChars: e.target.checked } } }))}
+                          onChange={(e) => setSettings((prev: any) => ({ ...prev, security: { ...prev.security, passwordPolicy: { ...prev.security.passwordPolicy, requireSpecialChars: e.target.checked } } }))}
                           className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                         />
                       </label>
@@ -356,7 +356,7 @@ export default function SettingsPage() {
                       <input
                         type="checkbox"
                         checked={settings.users.allowRegistration}
-                        onChange={(e) => setSettings(prev => ({ ...prev, users: { ...prev.users, allowRegistration: e.target.checked } }))}
+                        onChange={(e) => setSettings((prev: any) => ({ ...prev, users: { ...prev.users, allowRegistration: e.target.checked } }))}
                         className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                       />
                     </label>
@@ -367,7 +367,7 @@ export default function SettingsPage() {
                       <input
                         type="checkbox"
                         checked={settings.users.requireApproval}
-                        onChange={(e) => setSettings(prev => ({ ...prev, users: { ...prev.users, requireApproval: e.target.checked } }))}
+                        onChange={(e) => setSettings((prev: any) => ({ ...prev, users: { ...prev.users, requireApproval: e.target.checked } }))}
                         className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                       />
                     </label>
@@ -379,7 +379,7 @@ export default function SettingsPage() {
                       {['student', 'instructor', 'admin'].map((role) => (
                         <button
                           key={role}
-                          onClick={() => setSettings(prev => ({ ...prev, users: { ...prev.users, defaultRole: role as any } }))}
+                          onClick={() => setSettings((prev: any) => ({ ...prev, users: { ...prev.users, defaultRole: role as any } }))}
                           className={`p-3 rounded-lg border text-center text-sm font-medium transition-colors capitalize ${
                             settings.users.defaultRole === role
                               ? 'border-primary bg-primary/10 text-primary'
