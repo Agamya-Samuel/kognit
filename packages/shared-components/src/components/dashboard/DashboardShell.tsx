@@ -11,6 +11,10 @@ export interface DashboardShellProps {
     name: string
     logo?: ReactNode
   }
+  /** Short platform label shown in sidebar (e.g. "Admin", "Instructor", "Student") */
+  platform?: string
+  /** Platform accent color for the badge dot (e.g. "bg-blue-500", "bg-emerald-500") */
+  platformColor?: string
   navItems?: NavItem[]
   navGroups?: NavGroup[]
   footerLinks?: FooterLink[]
@@ -32,6 +36,8 @@ export interface DashboardShellProps {
 
 export function DashboardShell({
   brand,
+  platform,
+  platformColor,
   navItems,
   navGroups,
   footerLinks,
@@ -39,8 +45,6 @@ export function DashboardShell({
   headerTitle: _headerTitle,
   breadcrumb,
   onLogout,
-  onProfile,
-  onSettings,
   headerActions,
   children,
 }: DashboardShellProps) {
@@ -48,6 +52,8 @@ export function DashboardShell({
     <SidebarProvider>
       <AppSidebar
         brand={brand}
+        platform={platform}
+        platformColor={platformColor}
         navItems={navItems}
         navGroups={navGroups}
         footerLinks={footerLinks}
@@ -55,18 +61,12 @@ export function DashboardShell({
         onLogout={onLogout}
       />
       <SidebarInset>
-        <DashboardSiteHeader
-          breadcrumb={breadcrumb}
-          user={user}
-          onLogout={onLogout}
-          onProfile={onProfile}
-          onSettings={onSettings}
-        >
+        <DashboardSiteHeader breadcrumb={breadcrumb}>
           {headerActions}
         </DashboardSiteHeader>
-        <div className="flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col px-4 md:px-6 lg:px-8">
           <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 lg:py-8">
               {children}
             </div>
           </div>

@@ -11,47 +11,38 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@edutech/ui"
-import { UserMenu } from "./UserSection"
 
 interface DashboardSiteHeaderProps {
   breadcrumb?: {
     items: Array<{ label: string; href?: string }>
   }
-  user: {
-    name: string
-    email?: string
-    avatarUrl?: string
-  }
-  onLogout: () => void
-  onProfile?: () => void
-  onSettings?: () => void
   children?: React.ReactNode
 }
 
 export function DashboardSiteHeader({
   breadcrumb,
-  user,
-  onLogout,
-  onProfile,
-  onSettings,
   children,
 }: DashboardSiteHeaderProps) {
   return (
-    <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b transition-[width,height] duration-200 ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+    <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b border-border/60 bg-background/80 backdrop-blur-sm transition-[width,height] duration-200 ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
       <div className="flex items-center gap-2 px-4">
-        <SidebarTrigger className="-ml-1" />
-        <Separator orientation="vertical" className="mr-2 h-4" />
+        <SidebarTrigger className="-ml-1 hover:bg-accent/60 rounded-lg transition-colors" />
+        <Separator orientation="vertical" className="mr-2 h-4 opacity-40" />
         {breadcrumb && (
           <Breadcrumb>
             <BreadcrumbList>
               {breadcrumb.items.map((item, idx) => (
                 <React.Fragment key={idx}>
-                  {idx > 0 && <BreadcrumbSeparator />}
+                  {idx > 0 && <BreadcrumbSeparator className="opacity-40" />}
                   <BreadcrumbItem>
                     {item.href ? (
-                      <BreadcrumbLink href={item.href}>{item.label}</BreadcrumbLink>
+                      <BreadcrumbLink href={item.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                        {item.label}
+                      </BreadcrumbLink>
                     ) : (
-                      <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                      <BreadcrumbPage className="text-sm font-medium text-foreground">
+                        {item.label}
+                      </BreadcrumbPage>
                     )}
                   </BreadcrumbItem>
                 </React.Fragment>
@@ -60,14 +51,8 @@ export function DashboardSiteHeader({
           </Breadcrumb>
         )}
       </div>
-      <div className="ml-auto flex items-center gap-4 px-4">
+      <div className="ml-auto flex items-center gap-3 px-4">
         {children}
-        <UserMenu
-          user={user}
-          onLogout={onLogout}
-          onProfile={onProfile}
-          onSettings={onSettings}
-        />
       </div>
     </header>
   )
