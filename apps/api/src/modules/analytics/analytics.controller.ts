@@ -36,6 +36,25 @@ export class AnalyticsController {
     };
   }
 
+  @Get('instructor/charts')
+  @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: 'Instructor chart data' })
+  @ApiOperation({ summary: 'Get chart data for the current instructor' })
+  async getInstructorChartData(
+    @CurrentUser() user: { sub: number; role: string },
+    @Query('days') days?: string,
+  ) {
+    const data = await this.instructorAnalyticsService.getInstructorChartData(
+      user.sub,
+      days ? parseInt(days, 10) : 30,
+    );
+
+    return {
+      success: true,
+      data,
+    };
+  }
+
   @Get('track')
   @ApiBearerAuth()
   @ApiResponse({ status: 200, description: 'Event tracked successfully' })
