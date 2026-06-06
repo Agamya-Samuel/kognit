@@ -146,6 +146,8 @@ export {
 
 export { Progress } from './components/progress';
 
+export { ScrollArea, ScrollBar } from './components/scroll-area';
+
 export { Switch } from './components/switch';
 
 export {
