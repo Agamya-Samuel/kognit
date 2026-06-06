@@ -22,6 +22,7 @@ export interface DashboardShellProps {
     name: string
     email?: string
     avatarUrl?: string
+    role?: string
   }
   headerTitle: string
   breadcrumb?: {

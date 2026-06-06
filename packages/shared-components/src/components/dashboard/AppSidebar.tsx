@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { LogOut, ExternalLink } from "lucide-react"
+import { LogOut, ExternalLink, ChevronsUpDown } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -14,6 +14,13 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarRail,
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  Avatar,
 } from "@edutech/ui"
 import { NavSection, type NavItem, type NavGroup, type FooterLink } from "./NavSection"
 import Link from "next/link"
@@ -35,6 +42,7 @@ interface AppSidebarProps {
     name: string
     email?: string
     avatarUrl?: string
+    role?: string
   }
   onLogout: () => void
   variant?: "sidebar" | "floating" | "inset"
@@ -53,13 +61,6 @@ export function AppSidebar({
   variant = "inset",
   collapsible = "icon",
 }: AppSidebarProps) {
-  const initials = (user?.name || "U")
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2)
-
   return (
     <Sidebar variant={variant} collapsible={collapsible}>
       {/* Brand Header */}
@@ -139,47 +140,65 @@ export function AppSidebar({
         )}
       </SidebarContent>
 
-      {/* Footer: User + Logout */}
+      {/* Footer: User Avatar with Dropdown */}
       <SidebarFooter className="border-t border-sidebar-border/60 px-2 pt-3 pb-2 group-data-[collapsible=icon]:px-1 group-data-[collapsible=icon]:pt-2">
         {user && (
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton
-                size="lg"
-                className="gap-3 rounded-xl p-2.5 transition-colors group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-2"
-                tooltip={user.name}
-              >
-                <div className="relative flex aspect-square size-9 items-center justify-center rounded-xl bg-gradient-to-br from-sidebar-primary to-sidebar-primary/70 text-sidebar-primary-foreground shadow-sm ring-2 ring-sidebar-primary/10 group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:rounded-lg">
-                  <span className="text-xs font-bold tracking-wide">
-                    {initials}
-                  </span>
-                </div>
-                <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                  <span className="truncate font-semibold text-sidebar-foreground">
-                    {user.name}
-                  </span>
-                  {user.email && (
-                    <span className="truncate text-xs text-sidebar-foreground/50">
-                      {user.email}
-                    </span>
-                  )}
-                </div>
-              </SidebarMenuButton>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <SidebarMenuButton
+                    size="lg"
+                    className="gap-3 rounded-xl p-2.5 transition-colors group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-2"
+                    tooltip={user.name}
+                  >
+                    {/* Avatar — shows image when available, falls back to initials */}
+                    <Avatar
+                      src={user.avatarUrl ?? null}
+                      alt={user.name}
+                      fallback={user.name}
+                      size="sm"
+                      className="size-9 shrink-0 shadow-sm group-data-[collapsible=icon]:size-8"
+                    />
+                    {/* User info */}
+                    <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
+                      <span className="truncate font-semibold text-sidebar-foreground">
+                        {user.name}
+                      </span>
+                      <span className="truncate text-[11px] text-sidebar-foreground/50">
+                        {user.role || "Student"}
+                      </span>
+                    </div>
+                    {/* Expand/collapse indicator (like shadcn reference) */}
+                    <ChevronsUpDown className="size-4 text-sidebar-foreground/40 group-data-[collapsible=icon]:hidden" />
+                  </SidebarMenuButton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  side="top"
+                  align="start"
+                  className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+                >
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-semibold leading-none">{user.name}</p>
+                      {user.email && (
+                        <p className="text-xs text-muted-foreground">{user.email}</p>
+                      )}
+                      {user.role && (
+                        <p className="text-xs text-muted-foreground/70">{user.role}</p>
+                      )}
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={onLogout} className="cursor-pointer">
+                    <LogOut className="mr-2 size-4" />
+                    Log out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </SidebarMenuItem>
           </SidebarMenu>
         )}
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              onClick={onLogout}
-              className="rounded-xl text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors group-data-[collapsible=icon]:justify-center"
-              tooltip="Log out"
-            >
-              <LogOut className="size-4 shrink-0" />
-              <span>Log out</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
       </SidebarFooter>
 
       <SidebarRail />
