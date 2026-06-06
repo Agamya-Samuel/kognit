@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getApiClient } from '@edutech/api-client';
+import { authService, usersService } from '@edutech/api-client';
 import {
   Card,
   CardContent,
@@ -22,9 +22,8 @@ export default function OnboardingPage() {
   useEffect(() => {
     async function fetchProfile() {
       try {
-        const apiClient = getApiClient();
-        const response = await apiClient.get('/auth/me');
-        setProfile(response.data);
+        const response = await authService.getMe();
+        setProfile(response as any);
       } catch (err) {
         console.error('Failed to fetch profile:', err);
         setError('Failed to load profile. Please try again.');
@@ -58,8 +57,7 @@ export default function OnboardingPage() {
     }
 
     try {
-      const apiClient = getApiClient();
-      await apiClient.patch('/users/profile', data);
+      await usersService.updateProfile(data);
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to complete onboarding. Please try again.');

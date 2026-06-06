@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { LoginForm } from '@edutech/shared-components';
 import { useAuth } from '@edutech/shared-components';
+import { authService } from '@edutech/api-client';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -11,9 +12,8 @@ export default function LoginPage() {
   const [error, setError] = useState<string>();
 
   const handleGoogleLogin = () => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     const redirectUrl = `${window.location.origin}/auth/callback`;
-    window.location.href = `${apiUrl}/auth/google?redirect=${encodeURIComponent(redirectUrl)}&portal=instructor`;
+    window.location.href = authService.getGoogleAuthUrl(redirectUrl, 'instructor');
   };
 
   return (
