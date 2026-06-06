@@ -29,7 +29,7 @@ export default function DashboardPage() {
   const [inProgressCourses, setInProgressCourses] = useState([]);
   
   useEffect(() => {
-    if (enrollments) {
+    if (Array.isArray(enrollments)) {
       const enrolledCourses = enrollments.length;
       const completedCourses = enrollments.filter(e => e.progress === 100).length;
       
