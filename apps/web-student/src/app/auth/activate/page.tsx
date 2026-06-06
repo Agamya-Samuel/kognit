@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { authService } from '@edutech/api-client';
 import {
   Card,
@@ -10,7 +12,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@edutech/ui';
-import { Button, Input, Field, FieldGroup, FieldLabel, FieldDescription } from '@edutech/ui';
+import { Button, Input, PhoneInput, Field, FieldGroup, FieldLabel, FieldDescription } from '@edutech/ui';
+import { activationPasswordSchema, activationProfileSchema } from '@edutech/validation';
 
 type Step = 'validate' | 'password' | 'profile';
 
@@ -23,18 +26,27 @@ export default function ActivationPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // User info from token validation
   const [userInfo, setUserInfo] = useState<{ email: string; name: string; institutionName: string | null } | null>(null);
 
-  // Form data
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [mobile, setMobile] = useState('');
-  const [address, setAddress] = useState('');
-  const [city, setCity] = useState('');
-  const [state, setState] = useState('');
-  const [pinCode, setPinCode] = useState('');
-  const [country, setCountry] = useState('');
+  const passwordForm = useForm({
+    resolver: zodResolver(activationPasswordSchema),
+    defaultValues: {
+      password: '',
+      confirmPassword: '',
+    },
+  });
+
+  const profileForm = useForm({
+    resolver: zodResolver(activationProfileSchema),
+    defaultValues: {
+      mobile: '',
+      address: '',
+      city: '',
+      state: '',
+      pinCode: '',
+      country: '',
+    },
+  });
 
   useEffect(() => {
     if (token) {
@@ -66,38 +78,25 @@ export default function ActivationPage() {
     }
   };
 
-  const handlePasswordSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters');
-      return;
-    }
-
+  const handlePasswordSubmit = (_data: { password: string; confirmPassword: string }) => {
     setStep('profile');
   };
 
-  const handleProfileSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleProfileSubmit = async (data: { mobile: string; address: string; city: string; state: string; pinCode: string; country: string }) => {
     setIsLoading(true);
     setError('');
 
     try {
       await authService.completeActivation(
         token,
-        password,
+        passwordForm.getValues().password,
         userInfo?.name || '',
-        mobile,
-        address,
-        city,
-        state,
-        pinCode,
-        country,
+        data.mobile,
+        data.address,
+        data.city,
+        data.state,
+        data.pinCode,
+        data.country,
       );
       router.push('/dashboard');
     } catch (err: any) {
@@ -147,7 +146,7 @@ export default function ActivationPage() {
           )}
 
           {step === 'password' && userInfo && (
-            <form onSubmit={handlePasswordSubmit}>
+            <form onSubmit={passwordForm.handleSubmit(handlePasswordSubmit)}>
               <FieldGroup>
                 <Field>
                   <FieldLabel>Email</FieldLabel>
@@ -171,10 +170,9 @@ export default function ActivationPage() {
                   <Input
                     id="password"
                     type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
                     placeholder="Minimum 8 characters"
-                    required
+                    {...passwordForm.register('password')}
+                    error={passwordForm.formState.errors.password?.message}
                   />
                 </Field>
 
@@ -183,10 +181,9 @@ export default function ActivationPage() {
                   <Input
                     id="confirmPassword"
                     type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Re-enter your password"
-                    required
+                    {...passwordForm.register('confirmPassword')}
+                    error={passwordForm.formState.errors.confirmPassword?.message}
                   />
                 </Field>
 
@@ -200,7 +197,7 @@ export default function ActivationPage() {
           )}
 
           {step === 'profile' && userInfo && (
-            <form onSubmit={handleProfileSubmit}>
+            <form onSubmit={profileForm.handleSubmit(handleProfileSubmit)}>
               <FieldGroup>
                 <Field>
                   <FieldLabel>Email</FieldLabel>
@@ -209,13 +206,17 @@ export default function ActivationPage() {
 
                 <Field>
                   <FieldLabel htmlFor="mobile">Mobile Number</FieldLabel>
-                  <Input
-                    id="mobile"
-                    type="tel"
-                    value={mobile}
-                    onChange={(e) => setMobile(e.target.value)}
-                    placeholder="+1234567890"
-                    required
+                  <Controller
+                    name="mobile"
+                    control={profileForm.control}
+                    render={({ field }) => (
+                      <PhoneInput
+                        id="mobile"
+                        value={field.value}
+                        onChange={field.onChange}
+                        error={profileForm.formState.errors.mobile?.message}
+                      />
+                    )}
                   />
                 </Field>
 
@@ -224,10 +225,9 @@ export default function ActivationPage() {
                   <Input
                     id="address"
                     type="text"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
                     placeholder="123 Main Street, Apt 4B"
-                    required
+                    {...profileForm.register('address')}
+                    error={profileForm.formState.errors.address?.message}
                   />
                 </Field>
 
@@ -237,10 +237,9 @@ export default function ActivationPage() {
                     <Input
                       id="city"
                       type="text"
-                      value={city}
-                      onChange={(e) => setCity(e.target.value)}
                       placeholder="New York"
-                      required
+                      {...profileForm.register('city')}
+                      error={profileForm.formState.errors.city?.message}
                     />
                   </Field>
 
@@ -249,10 +248,9 @@ export default function ActivationPage() {
                     <Input
                       id="state"
                       type="text"
-                      value={state}
-                      onChange={(e) => setState(e.target.value)}
                       placeholder="NY"
-                      required
+                      {...profileForm.register('state')}
+                      error={profileForm.formState.errors.state?.message}
                     />
                   </Field>
                 </div>
@@ -263,10 +261,9 @@ export default function ActivationPage() {
                     <Input
                       id="pinCode"
                       type="text"
-                      value={pinCode}
-                      onChange={(e) => setPinCode(e.target.value)}
                       placeholder="10001"
-                      required
+                      {...profileForm.register('pinCode')}
+                      error={profileForm.formState.errors.pinCode?.message}
                     />
                   </Field>
 
@@ -275,10 +272,9 @@ export default function ActivationPage() {
                     <Input
                       id="country"
                       type="text"
-                      value={country}
-                      onChange={(e) => setCountry(e.target.value)}
                       placeholder="United States"
-                      required
+                      {...profileForm.register('country')}
+                      error={profileForm.formState.errors.country?.message}
                     />
                   </Field>
                 </div>
