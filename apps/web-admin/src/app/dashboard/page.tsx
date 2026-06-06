@@ -2,7 +2,21 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { adminService } from '@edutech/api-client';
-import { Users, BookOpen, DollarSign, Activity, CheckCircle, Clock, UserPlus } from 'lucide-react';
+import {
+  Users,
+  BookOpen,
+  DollarSign,
+  Activity,
+  CheckCircle,
+  Clock,
+  UserPlus,
+  UserCog,
+  GraduationCap,
+  FileText,
+  BarChart3,
+  Settings,
+  Inbox,
+} from 'lucide-react';
 import { StatCard, StatsRow } from '@/components/StatsRow';
 import { RevenueChart, EngagementChart } from '@/components/charts/Charts';
 import { Card, CardContent, CardHeader, CardTitle } from '@edutech/ui';
@@ -36,17 +50,6 @@ interface PendingModerationItem {
   count: number;
 }
 
-interface AdminDashboardData {
-  totalUsers: number;
-  activeCourses: number;
-  revenueMTD: number;
-  activeNow: number;
-  revenueData: RevenueDataPoint[];
-  engagementData: EngagementDataPoint[];
-  recentActivity: RecentActivityItem[];
-  pendingModeration: PendingModerationItem[];
-}
-
 export default function AdminDashboardPage() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['admin', 'dashboard'],
@@ -56,7 +59,6 @@ export default function AdminDashboardPage() {
         adminService.getChartData()
       ]);
 
-      // Transform the API response to match the expected shape
       return {
         totalUsers: metricsResponse.totalUsers || 0,
         activeCourses: metricsResponse.totalCourses || 0,
@@ -80,10 +82,10 @@ export default function AdminDashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-[60vh]">
         <div className="text-center">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent" />
-          <p className="mt-4 text-muted-foreground">Loading dashboard...</p>
+          <p className="mt-4 text-sm text-muted-foreground">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -91,8 +93,14 @@ export default function AdminDashboardPage() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <p className="text-destructive">Failed to load dashboard. Please try again.</p>
+      <div className="flex items-center justify-center h-[60vh]">
+        <div className="text-center">
+          <div className="rounded-full bg-destructive/10 p-3 mx-auto mb-3">
+            <Activity className="h-6 w-6 text-destructive" />
+          </div>
+          <p className="text-sm font-medium text-foreground">Failed to load dashboard</p>
+          <p className="text-xs text-muted-foreground mt-1">Please try again later.</p>
+        </div>
       </div>
     );
   }
@@ -102,14 +110,14 @@ export default function AdminDashboardPage() {
     activeCourses: 0,
     revenueMTD: 0,
     activeNow: 0,
-    revenueData: [],
-    engagementData: [],
-    recentActivity: [],
-    pendingModeration: []
+    revenueData: [] as RevenueDataPoint[],
+    engagementData: [] as EngagementDataPoint[],
+    recentActivity: [] as RecentActivityItem[],
+    pendingModeration: [] as PendingModerationItem[],
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <PageHeader
         title="Admin Dashboard"
         description="Platform overview and management."
@@ -171,28 +179,40 @@ export default function AdminDashboardPage() {
             <CardTitle>Recent Activity</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {recentActivity.slice(0, 5).map((activity) => (
-                <div
-                  key={activity.id}
-                  className="flex items-start gap-3 border-b border-border pb-3 last:border-0 last:pb-0"
-                >
-                  <div className="rounded-full bg-primary/10 p-1.5">
-                    {activity.type === 'enrollment' ? (
-                      <UserPlus className="h-3.5 w-3.5 text-primary" />
-                    ) : activity.type === 'completion' ? (
-                      <CheckCircle className="h-3.5 w-3.5 text-emerald-600" />
-                    ) : (
-                      <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                    )}
+            {recentActivity.length > 0 ? (
+              <div className="space-y-4">
+                {recentActivity.slice(0, 5).map((activity) => (
+                  <div
+                    key={activity.id}
+                    className="flex items-start gap-3 border-b border-border pb-3 last:border-0 last:pb-0"
+                  >
+                    <div className="rounded-full bg-primary/10 p-1.5">
+                      {activity.type === 'enrollment' ? (
+                        <UserPlus className="h-3.5 w-3.5 text-primary" />
+                      ) : activity.type === 'completion' ? (
+                        <CheckCircle className="h-3.5 w-3.5 text-emerald-600" />
+                      ) : (
+                        <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">{activity.title}</p>
+                      <p className="text-xs text-muted-foreground">{activity.time}</p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground">{activity.title}</p>
-                    <p className="text-xs text-muted-foreground">{activity.time}</p>
-                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <div className="rounded-full bg-muted p-3 mb-3">
+                  <Inbox className="h-6 w-6 text-muted-foreground" />
                 </div>
-              ))}
-            </div>
+                <p className="text-sm font-medium text-foreground">No recent activity</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Platform activity will appear here once users start enrolling.
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -201,27 +221,37 @@ export default function AdminDashboardPage() {
             <CardTitle>Pending Moderation</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {pendingModeration.map((item) => (
-                <div
-                  key={item.id}
-                  className="rounded-lg border bg-card p-3"
-                >
-                  <p className="text-sm font-medium text-foreground line-clamp-1">
-                    {item.title}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">{item.instructor}</p>
-                  <div className="flex items-center justify-between mt-2">
-                    <span className="text-xs text-muted-foreground">
-                      {item.count} items pending
-                    </span>
-                    <Button size="sm" variant="default" className="h-7 text-xs">
-                      Review
-                    </Button>
+            {pendingModeration.length > 0 ? (
+              <div className="space-y-4">
+                {pendingModeration.map((item) => (
+                  <div
+                    key={item.id}
+                    className="rounded-lg border bg-card p-3"
+                  >
+                    <p className="text-sm font-medium text-foreground line-clamp-1">
+                      {item.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">{item.instructor}</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-xs text-muted-foreground">
+                        {item.count} items pending
+                      </span>
+                      <Button size="sm" variant="default" className="h-7 text-xs">
+                        Review
+                      </Button>
+                    </div>
                   </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <div className="rounded-full bg-muted p-3 mb-3">
+                  <CheckCircle className="h-6 w-6 text-muted-foreground" />
                 </div>
-              ))}
-            </div>
+                <p className="text-sm font-medium text-foreground">All caught up</p>
+                <p className="text-xs text-muted-foreground mt-1">No items pending moderation.</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -232,20 +262,35 @@ export default function AdminDashboardPage() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-3">
-            <Button variant="default" asChild>
-              <Link href="/dashboard/users">Manage Users</Link>
+            <Button variant="default" className="gap-2" asChild>
+              <Link href="/dashboard/users">
+                <UserCog className="h-4 w-4" />
+                Manage Users
+              </Link>
             </Button>
-            <Button variant="outline" asChild>
-              <Link href="/dashboard/instructors">Review Instructors</Link>
+            <Button variant="outline" className="gap-2" asChild>
+              <Link href="/dashboard/instructors">
+                <GraduationCap className="h-4 w-4" />
+                Review Instructors
+              </Link>
             </Button>
-            <Button variant="outline" asChild>
-              <Link href="/dashboard/courses">Moderate Courses</Link>
+            <Button variant="outline" className="gap-2" asChild>
+              <Link href="/dashboard/courses">
+                <FileText className="h-4 w-4" />
+                Moderate Courses
+              </Link>
             </Button>
-            <Button variant="outline" asChild>
-              <Link href="/dashboard/reports">View Reports</Link>
+            <Button variant="outline" className="gap-2" asChild>
+              <Link href="/dashboard/reports">
+                <BarChart3 className="h-4 w-4" />
+                View Reports
+              </Link>
             </Button>
-            <Button variant="outline" asChild>
-              <Link href="/dashboard/settings">Settings</Link>
+            <Button variant="outline" className="gap-2" asChild>
+              <Link href="/dashboard/settings">
+                <Settings className="h-4 w-4" />
+                Settings
+              </Link>
             </Button>
           </div>
         </CardContent>

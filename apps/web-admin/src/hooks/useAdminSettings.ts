@@ -1,17 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { platformSettingsService } from '@edutech/api-client';
+import { adminService } from '@edutech/api-client';
 
 export function useAdminSettings() {
   const queryClient = useQueryClient();
 
   const { data: settings, isLoading, error } = useQuery({
     queryKey: ['admin', 'settings'],
-    queryFn: () => platformSettingsService.getAdminSettings(),
+    queryFn: () => adminService.getSettings(),
   });
 
   const updateSettingsMutation = useMutation({
     mutationFn: (settingsData: Record<string, string>) =>
-      platformSettingsService.updateAdminSettings(settingsData),
+      adminService.updateSettings(settingsData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'settings'] });
     },

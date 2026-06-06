@@ -235,6 +235,7 @@ export default function SettingsPage() {
                       ))}
                     </div>
                   </div>
+                </div>
                 </CardContent>
             </Card>
           </div>
@@ -265,7 +266,7 @@ export default function SettingsPage() {
                       onChange={(e) => setSettings(prev => ({ ...prev, security: { ...prev.security, twoFactorAuth: e.target.checked } }))}
                       className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                     />
-                  </div>
+                  </label>
 
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-white">Session Timeout</h3>
@@ -289,7 +290,7 @@ export default function SettingsPage() {
                         <Input
                           type="number"
                           value={settings.security.passwordPolicy.minLength}
-                          onChange={(e) => setSettings(prev => ({ ...prev, security: { ...prev.security, passwordPolicy: { ...prev.security.passwordPolicy, minLength: parseInt(e.target.value) || 8 } }))}
+                          onChange={(e) => setSettings(prev => ({ ...prev, security: { ...prev.security, passwordPolicy: { ...prev.security.passwordPolicy, minLength: parseInt(e.target.value) || 8 } } }))}
                         />
                         <span className="w-24" />
                       </label>
@@ -301,7 +302,7 @@ export default function SettingsPage() {
                         <input
                           type="checkbox"
                           checked={settings.security.passwordPolicy.requireUppercase}
-                          onChange={(e) => setSettings(prev => ({ ...prev, security: { ...prev.security, passwordPolicy: { ...prev.security.passwordPolicy, requireUppercase: e.target.checked } }))}
+                          onChange={(e) => setSettings(prev => ({ ...prev, security: { ...prev.security, passwordPolicy: { ...prev.security.passwordPolicy, requireUppercase: e.target.checked } } }))}
                           className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                         />
                       </label>
@@ -313,7 +314,7 @@ export default function SettingsPage() {
                         <input
                           type="checkbox"
                           checked={settings.security.passwordPolicy.requireNumbers}
-                          onChange={(e) => setSettings(prev => ({ ...prev, security: { ...prev.security, passwordPolicy: { ...prev.security.passwordPolicy, requireNumbers: e.target.checked } }))}
+                          onChange={(e) => setSettings(prev => ({ ...prev, security: { ...prev.security, passwordPolicy: { ...prev.security.passwordPolicy, requireNumbers: e.target.checked } } }))}
                           className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                         />
                       </label>
@@ -325,11 +326,12 @@ export default function SettingsPage() {
                         <input
                           type="checkbox"
                           checked={settings.security.passwordPolicy.requireSpecialChars}
-                          onChange={(e) => setSettings(prev => ({ ...prev, security: { ...prev.security, passwordPolicy: { ...prev.security.passwordPolicy, requireSpecialChars: e.target.checked } }))}
+                          onChange={(e) => setSettings(prev => ({ ...prev, security: { ...prev.security, passwordPolicy: { ...prev.security.passwordPolicy, requireSpecialChars: e.target.checked } } }))}
                           className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                         />
                       </label>
                     </div>
+                  </div>
                   </div>
                 </CardContent>
             </Card>
@@ -388,6 +390,7 @@ export default function SettingsPage() {
                         </button>
                       ))}
                     </div>
+                  </div>
                   </div>
                 </CardContent>
             </Card>

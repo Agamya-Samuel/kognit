@@ -80,7 +80,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   return (
     <DashboardShell
-      brand={{ name: 'EduTech Admin' }}
+      brand={{ name: 'EduTech' }}
+      platform="Admin"
+      platformColor="bg-blue-500"
       navItems={navItems}
       user={user ? { name: user.name, email: user.email } : { name: 'Admin' }}
       headerTitle={pageTitle}
