@@ -729,3 +729,9 @@ export interface InstructorStudent {
   enrolledAt: string;
   progressPercentage: number;
 }
+
+export interface ChartData {
+  name: string;
+  users: number;
+  revenue: number;
+}

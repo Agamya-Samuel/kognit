@@ -1,6 +1,5 @@
 import { getApiClient } from '../index';
-import type { DashboardMetrics, InstructorStudentsResponse } from '@edutech/types';
-import type { ChartData } from '@/types';
+import type { DashboardMetrics, InstructorStudentsResponse, ChartData } from '@edutech/types';
 
 export const analyticsService = {
   async getDashboardMetrics() {

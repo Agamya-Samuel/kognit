@@ -2,6 +2,7 @@ import { getApiClient } from '../index';
 import type {
   Assignment,
   Submission,
+  LateSubmissionStatus,
   QuizQuestion,
   CreateAssignmentDto,
   UpdateAssignmentDto,
@@ -64,7 +65,7 @@ export const quizService = {
 
 export const submissionsService = {
   async submit(assignmentId: number, dto: SubmitAssignmentDto) {
-    return getApiClient().post<Submission>(`/assignments/${assignmentId}/submit`, dto);
+    return getApiClient().post<{ submission: Submission; lateStatus: LateSubmissionStatus }>(`/assignments/${assignmentId}/submit`, dto);
   },
 
   async getMySubmissions(filters?: SubmissionFilters & PaginationQuery) {
