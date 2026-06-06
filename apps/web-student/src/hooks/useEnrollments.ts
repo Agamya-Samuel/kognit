@@ -1,6 +1,6 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getApiClient } from '@edutech/api-client';
-import type { CourseWithCurriculum, LectureProgress } from '@edutech/types';
+import { useQuery } from '@tanstack/react-query';
+import { enrollmentsService } from '@edutech/api-client';
+import type { CourseWithCurriculum } from '@edutech/types';
 
 interface EnrolledCourse extends CourseWithCurriculum {
   enrolledAt: string;
@@ -12,9 +12,7 @@ export function useMyEnrollments() {
   return useQuery({
     queryKey: ['enrollments', 'me'],
     queryFn: async (): Promise<EnrolledCourse[]> => {
-      const apiClient = getApiClient();
-      const response = await apiClient.get<{ data: EnrolledCourse[] }>('/enrollments/me');
-      return response.data;
+      return enrollmentsService.getMyEnrollments() as Promise<EnrolledCourse[]>;
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -25,9 +23,7 @@ export function useEnrolledCourse(courseId: number | string) {
     queryKey: ['enrollments', 'me', courseId],
     queryFn: async (): Promise<EnrolledCourse | null> => {
       try {
-        const apiClient = getApiClient();
-        const response = await apiClient.get<{ data: EnrolledCourse }>(`/enrollments/me/course/${courseId}`);
-        return response.data;
+        return await enrollmentsService.getEnrolledCourse(courseId) as EnrolledCourse;
       } catch {
         return null;
       }
@@ -40,9 +36,7 @@ export function useCourseProgress(courseId: number | string) {
   return useQuery({
     queryKey: ['progress', 'course', courseId],
     queryFn: async (): Promise<{ progress: number; completedLectures: number; totalLectures: number }> => {
-      const apiClient = getApiClient();
-      const response = await apiClient.get(`/progress/course/${courseId}`);
-      return response.data;
+      return enrollmentsService.getCourseProgress(courseId);
     },
     enabled: !!courseId,
   });

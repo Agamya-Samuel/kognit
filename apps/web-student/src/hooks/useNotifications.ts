@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getApiClient } from '@edutech/api-client';
+import { notificationsService } from '@edutech/api-client';
 
 export interface Notification {
   id: number;
@@ -24,17 +24,16 @@ export function useNotifications(filters: NotificationFilters = {}) {
   return useQuery({
     queryKey: ['notifications', 'list', filters],
     queryFn: async () => {
-      const apiClient = getApiClient();
       try {
-        const result = await apiClient.get('/notifications', filters);
+        const result = await notificationsService.getNotifications(filters);
         if (!result) {
           return [];
         }
-        const resultObj = result as { data?: Notification[] };
+        const resultObj = result as unknown as { data?: Notification[] };
         if (resultObj.data && Array.isArray(resultObj.data)) {
           return resultObj.data;
         }
-        return [];
+        return result as unknown as Notification[];
       } catch (error) {
         console.error('[useNotifications] API error:', error);
         return [];
@@ -49,9 +48,7 @@ export function useUnreadCount() {
   return useQuery({
     queryKey: ['notifications', 'unread-count'],
     queryFn: async () => {
-      const apiClient = getApiClient();
-      const result = await apiClient.get('/notifications/unread-count') as { count: number };
-      return result;
+      return notificationsService.getUnreadCount();
     },
     staleTime: 1 * 60 * 1000,
     refetchInterval: 2 * 60 * 1000,
@@ -62,8 +59,7 @@ export function useMarkAsRead() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (notificationId: number) => {
-      const apiClient = getApiClient();
-      await apiClient.patch(`/notifications/${notificationId}/read`);
+      await notificationsService.markAsRead(notificationId);
       return notificationId;
     },
     onSuccess: () => {
@@ -77,8 +73,7 @@ export function useMarkAllAsRead() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async () => {
-      const apiClient = getApiClient();
-      await apiClient.patch('/notifications/read-all');
+      await notificationsService.markAllAsRead();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
