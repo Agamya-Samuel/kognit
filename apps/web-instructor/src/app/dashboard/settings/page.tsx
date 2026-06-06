@@ -8,6 +8,7 @@ import { Label } from '@edutech/ui';
 import { Textarea } from '@edutech/ui';
 import { Avatar } from '@edutech/ui';
 import { Switch } from '@edutech/ui';
+import { PhoneInput } from '@edutech/ui';
 import { User, Lock, Mail, Camera, Save, Bell } from 'lucide-react';
 import { useAuth } from '@edutech/shared-components';
 
@@ -19,6 +20,7 @@ export default function SettingsPage() {
     email: user?.email || '',
     bio: '',
     expertise: '',
+    mobile: '',
   });
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -128,6 +130,16 @@ export default function SettingsPage() {
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">Email cannot be changed</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="mobile">Mobile Number</Label>
+                <PhoneInput
+                  id="mobile"
+                  value={profileData.mobile}
+                  onChange={(value) => setProfileData({ ...profileData, mobile: value || '' })}
+                  placeholder="Enter phone number"
+                />
               </div>
 
               <div className="space-y-2">
