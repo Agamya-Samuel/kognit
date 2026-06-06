@@ -26,6 +26,7 @@ export class EnrollmentsController {
     return {
       success: true,
       data: enrollments,
+      error: null,
     };
   }
 
@@ -39,6 +40,7 @@ export class EnrollmentsController {
     return {
       success: true,
       data: { count },
+      error: null,
     };
   }
 }
