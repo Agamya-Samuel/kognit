@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useGrading } from '@/hooks/useGrading';
 import { toast } from 'sonner';
+import { X } from 'lucide-react';
 
 interface BulkGradingModalProps {
   submissions: Array<{ id: number; studentName: string; maxScore: number }>;
@@ -80,7 +81,7 @@ export function BulkGradingModal({ submissions, isOpen, onClose, onSuccess }: Bu
               className="rounded-full p-2 hover:bg-accent"
               disabled={isLoading}
             >
-              ✕
+              <X className="h-4 w-4" />
             </button>
           </div>
           <p className="mt-2 text-sm text-muted-foreground">

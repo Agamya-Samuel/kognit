@@ -147,12 +147,14 @@ export default function ProfilePage() {
 
   if (authLoading || !user) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center py-12">
-            <div className="inline-block animate-pulse rounded-full bg-muted h-12 w-12"></div>
-            <p className="mt-4 text-muted-foreground">Loading profile...</p>
-          </div>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Profile & Settings</h1>
+          <p className="text-muted-foreground mt-1">Manage your account and preferences</p>
+        </div>
+        <div className="text-center py-12">
+          <div className="inline-block animate-pulse rounded-full bg-muted h-12 w-12"></div>
+          <p className="mt-4 text-muted-foreground">Loading profile...</p>
         </div>
       </div>
     );
@@ -160,231 +162,231 @@ export default function ProfilePage() {
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-destructive/50 border border-destructive text-destructive rounded-lg px-6 py-4">
-            {error}
-            <button
-              onClick={() => setError(null)}
-              className="ml-4 text-destructive hover:text-destructive/80 underline"
-            >
-              Retry
-            </button>
-          </div>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Profile & Settings</h1>
+          <p className="text-muted-foreground mt-1">Manage your account and preferences</p>
+        </div>
+        <div className="bg-destructive/50 border border-destructive text-destructive rounded-lg px-6 py-4">
+          {error}
+          <button
+            onClick={() => setError(null)}
+            className="ml-4 text-destructive hover:text-destructive/80 underline"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );
   }
     
   return (
-<div className="container mx-auto px-4 py-8">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight mb-2">Profile & Settings</h1>
-          <p className="text-muted-foreground">Manage your account and preferences</p>
-        </div>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Profile & Settings</h1>
+        <p className="text-muted-foreground mt-1">Manage your account and preferences</p>
+      </div>
 
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-4">
-              <Avatar className="h-20 w-20" src={user.avatarUrl} fallback={formData.name} />
-              <div className="flex-1">
-                <CardTitle>{formData.name}</CardTitle>
-                <CardDescription>
-                  Student
-                  {!user.isVerified && (
-                    <Badge variant="destructive" className="ml-2">Email not verified</Badge>
-                  )}
-                </CardDescription>
-              </div>
-              <div className="flex items-center gap-2">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-4">
+            <Avatar className="h-20 w-20" src={user.avatarUrl} fallback={formData.name} />
+            <div className="flex-1">
+              <CardTitle>{formData.name}</CardTitle>
+              <CardDescription>
+                Student
                 {!user.isVerified && (
-                  <Button variant="outline" size="sm" onClick={() => router.push('/verify-email')}>
-                    Verify Email
-                  </Button>
+                  <Badge variant="destructive" className="ml-2">Email not verified</Badge>
                 )}
-                <Button onClick={() => setIsEditing(!isEditing)} variant="outline">
-                  {isEditing ? 'Cancel' : 'Edit Profile'}
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              {!user.isVerified && (
+                <Button variant="outline" size="sm" onClick={() => router.push('/verify-email')}>
+                  Verify Email
+                </Button>
+              )}
+              <Button onClick={() => setIsEditing(!isEditing)} variant="outline">
+                {isEditing ? 'Cancel' : 'Edit Profile'}
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  disabled={!isEditing || user.onboardingCompleted}
+                />
+                {user.onboardingCompleted && (
+                  <p className="text-xs text-muted-foreground">Name cannot be changed after onboarding</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  disabled
+                />
+                <p className="text-xs text-muted-foreground">Email cannot be changed</p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="mobile">Mobile Number</Label>
+                <PhoneInput
+                  id="mobile"
+                  value={formData.mobile}
+                  onChange={(value) => setFormData({ ...formData, mobile: value || '' })}
+                  disabled={!isEditing}
+                  placeholder="Enter phone number"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="grade">Grade/Year</Label>
+                <Input
+                  id="grade"
+                  value={formData.grade}
+                  onChange={(e) => setFormData({ ...formData, grade: e.target.value })}
+                  disabled={!isEditing}
+                  placeholder="e.g., 12th, 2nd Year"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="institution">Institution</Label>
+                <Input
+                  id="institution"
+                  value={formData.institution}
+                  onChange={(e) => setFormData({ ...formData, institution: e.target.value })}
+                  disabled={!isEditing}
+                  placeholder="School or college name"
+                />
+              </div>
+            </div>
+            {isEditing && (
+              <div className="flex justify-end">
+                <Button type="submit" className="gap-2">
+                  <Save className="h-4 w-4" />
+                  Save Changes
                 </Button>
               </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    disabled={!isEditing || user.onboardingCompleted}
-                  />
-                  {user.onboardingCompleted && (
-                    <p className="text-xs text-muted-foreground">Name cannot be changed after onboarding</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    disabled
-                  />
-                  <p className="text-xs text-muted-foreground">Email cannot be changed</p>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="mobile">Mobile Number</Label>
-                  <PhoneInput
-                    id="mobile"
-                    value={formData.mobile}
-                    onChange={(value) => setFormData({ ...formData, mobile: value || '' })}
-                    disabled={!isEditing}
-                    placeholder="Enter phone number"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="grade">Grade/Year</Label>
-                  <Input
-                    id="grade"
-                    value={formData.grade}
-                    onChange={(e) => setFormData({ ...formData, grade: e.target.value })}
-                    disabled={!isEditing}
-                    placeholder="e.g., 12th, 2nd Year"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="institution">Institution</Label>
-                  <Input
-                    id="institution"
-                    value={formData.institution}
-                    onChange={(e) => setFormData({ ...formData, institution: e.target.value })}
-                    disabled={!isEditing}
-                    placeholder="School or college name"
-                  />
-                </div>
-              </div>
-              {isEditing && (
-                <div className="flex justify-end">
-                  <Button type="submit" className="gap-2">
-                    <Save className="h-4 w-4" />
-                    Save Changes
-                  </Button>
-                </div>
-              )}
-            </form>
-          </CardContent>
-        </Card>
+            )}
+          </form>
+        </CardContent>
+      </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5" />
-              Notifications
-            </CardTitle>
-            <CardDescription>Manage how you receive notifications</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-medium">Email Notifications</div>
-                <div className="text-sm text-muted-foreground">Receive updates via email</div>
-              </div>
-              <Switch 
-                checked={notificationPreferences.emailNotifications}
-                onCheckedChange={(checked) => handleNotificationPreferenceChange('emailNotifications', checked as boolean)}
-                disabled={isSavingPreferences}
-              />
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="h-5 w-5" />
+            Notifications
+          </CardTitle>
+          <CardDescription>Manage how you receive notifications</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="font-medium">Email Notifications</div>
+              <div className="text-sm text-muted-foreground">Receive updates via email</div>
             </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-medium">Assignment Reminders</div>
-                <div className="text-sm text-muted-foreground">Get notified before due dates</div>
-              </div>
-              <Switch 
-                checked={notificationPreferences.assignmentReminders}
-                onCheckedChange={(checked) => handleNotificationPreferenceChange('assignmentReminders', checked as boolean)}
-                disabled={isSavingPreferences}
-              />
+            <Switch 
+              checked={notificationPreferences.emailNotifications}
+              onCheckedChange={(checked) => handleNotificationPreferenceChange('emailNotifications', checked as boolean)}
+              disabled={isSavingPreferences}
+            />
+          </div>
+          <Separator />
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="font-medium">Assignment Reminders</div>
+              <div className="text-sm text-muted-foreground">Get notified before due dates</div>
             </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-medium">Live Class Alerts</div>
-                <div className="text-sm text-muted-foreground">Be notified when classes start</div>
-              </div>
-              <Switch 
-                checked={notificationPreferences.liveClassAlerts}
-                onCheckedChange={(checked) => handleNotificationPreferenceChange('liveClassAlerts', checked as boolean)}
-                disabled={isSavingPreferences}
-              />
+            <Switch 
+              checked={notificationPreferences.assignmentReminders}
+              onCheckedChange={(checked) => handleNotificationPreferenceChange('assignmentReminders', checked as boolean)}
+              disabled={isSavingPreferences}
+            />
+          </div>
+          <Separator />
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="font-medium">Live Class Alerts</div>
+              <div className="text-sm text-muted-foreground">Be notified when classes start</div>
             </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-medium">Marketing Emails</div>
-                <div className="text-sm text-muted-foreground">Receive course recommendations</div>
-              </div>
-              <Switch 
-                checked={notificationPreferences.marketingEmails}
-                onCheckedChange={(checked) => handleNotificationPreferenceChange('marketingEmails', checked as boolean)}
-                disabled={isSavingPreferences}
-              />
+            <Switch 
+              checked={notificationPreferences.liveClassAlerts}
+              onCheckedChange={(checked) => handleNotificationPreferenceChange('liveClassAlerts', checked as boolean)}
+              disabled={isSavingPreferences}
+            />
+          </div>
+          <Separator />
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="font-medium">Marketing Emails</div>
+              <div className="text-sm text-muted-foreground">Receive course recommendations</div>
             </div>
-          </CardContent>
-        </Card>
+            <Switch 
+              checked={notificationPreferences.marketingEmails}
+              onCheckedChange={(checked) => handleNotificationPreferenceChange('marketingEmails', checked as boolean)}
+              disabled={isSavingPreferences}
+            />
+          </div>
+        </CardContent>
+      </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              Security
-            </CardTitle>
-            <CardDescription>Manage your account security</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Button variant="outline" className="w-full justify-start gap-2" onClick={handleToggleTwoFactor}>
-              <Shield className="h-4 w-4" />
-              Two-Factor Authentication
-              <Badge 
-                variant={isTwoFactorEnabled ? 'success' : 'secondary'} 
-                className="ml-auto"
-              >
-                {isTwoFactorEnabled ? 'Enabled' : 'Disabled'}
-              </Badge>
-              {isLoadingTwoFactor && (
-                <span className="ml-2 animate-spin h-4 w-4" />
-              )}
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="border-destructive/50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-destructive">
-              <AlertTriangle className="h-5 w-5" />
-              Danger Zone
-            </CardTitle>
-            <CardDescription>Irreversible actions for your account</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Button variant="outline" className="w-full justify-start gap-2 text-destructive hover:text-destructive">
-              <LogOut className="h-4 w-4" />
-              Sign Out
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full justify-start gap-2 text-destructive hover:text-destructive"
-              onClick={handleLogout}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            Security
+          </CardTitle>
+          <CardDescription>Manage your account security</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Button variant="outline" className="w-full justify-start gap-2" onClick={handleToggleTwoFactor}>
+            <Shield className="h-4 w-4" />
+            Two-Factor Authentication
+            <Badge 
+              variant={isTwoFactorEnabled ? 'success' : 'secondary'} 
+              className="ml-auto"
             >
-              <Trash2 className="h-4 w-4" />
-              Delete Account
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+              {isTwoFactorEnabled ? 'Enabled' : 'Disabled'}
+            </Badge>
+            {isLoadingTwoFactor && (
+              <span className="ml-2 animate-spin h-4 w-4" />
+            )}
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card className="border-destructive/50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-destructive">
+            <AlertTriangle className="h-5 w-5" />
+            Danger Zone
+          </CardTitle>
+          <CardDescription>Irreversible actions for your account</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Button variant="outline" className="w-full justify-start gap-2 text-destructive hover:text-destructive">
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full justify-start gap-2 text-destructive hover:text-destructive"
+            onClick={handleLogout}
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete Account
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 }

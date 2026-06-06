@@ -43,88 +43,86 @@ export default function NotificationsPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight mb-2">Notifications</h1>
-            <p className="text-muted-foreground">
-              Stay updated with your learning progress
-              {unreadCountValue > 0 && ` • ${unreadCountValue} unread`}
-            </p>
-          </div>
-          {unreadCountValue > 0 && (
-            <Button variant="ghost" size="sm" onClick={() => markAllAsRead.mutate()} className="gap-2">
-              <CheckCheck className="h-4 w-4" />
-              Mark all read
-            </Button>
-          )}
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Notifications</h1>
+          <p className="text-muted-foreground mt-1">
+            Stay updated with your learning progress
+            {unreadCountValue > 0 && ` \u2022 ${unreadCountValue} unread`}
+          </p>
         </div>
-
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'all' | 'unread')} className="mb-6">
-          <TabsList>
-            <TabsTrigger value="unread">
-              Unread {unreadCountValue > 0 && `(${unreadCountValue})`}
-            </TabsTrigger>
-            <TabsTrigger value="all">All</TabsTrigger>
-          </TabsList>
-        </Tabs>
-
-        {isLoading ? (
-          <div className="space-y-4">
-            {Array.from({ length: 4 }).map((_, index) => (
-              <Card key={index}>
-                <CardContent className="p-4 flex items-start gap-4">
-                  <Skeleton className="h-10 w-10 rounded-full" />
-                  <div className="flex-1 space-y-2">
-                    <Skeleton className="h-5 w-3/4" />
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-1/4" />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : notificationsToDisplay.length === 0 ? (
-          <EmptyState
-            title={activeTab === 'unread' ? 'No unread notifications' : 'No notifications'}
-            description={activeTab === 'unread' ? 'You\'re all caught up!' : 'Check back later for updates.'}
-          />
-        ) : (
-          <div className="space-y-3">
-            {notificationsToDisplay.map((notification) => (
-              <Card
-                key={notification.id}
-                className={`transition-colors ${
-                  !notification.read ? 'border-primary/50 bg-primary/5' : ''
-                }`}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-4">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted">
-                      {notificationIcons[notification.type] || <Bell className="h-5 w-5 text-muted-foreground" />}
-                    </div>
-                    <div className="flex-1 space-y-1">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <h4 className="font-semibold">{notification.title}</h4>
-                          <p className="text-sm text-muted-foreground">{notification.message}</p>
-                        </div>
-                        {!notification.read && (
-                          <Badge variant="default" className="shrink-0">
-                            New
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-xs text-muted-foreground">{formatDate(notification.createdAt)}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+        {unreadCountValue > 0 && (
+          <Button variant="ghost" size="sm" onClick={() => markAllAsRead.mutate()} className="gap-2">
+            <CheckCheck className="h-4 w-4" />
+            Mark all read
+          </Button>
         )}
       </div>
+
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'all' | 'unread')}>
+        <TabsList>
+          <TabsTrigger value="unread">
+            Unread {unreadCountValue > 0 && `(${unreadCountValue})`}
+          </TabsTrigger>
+          <TabsTrigger value="all">All</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      {isLoading ? (
+        <div className="space-y-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <Card key={index}>
+              <CardContent className="p-4 flex items-start gap-4">
+                <Skeleton className="h-10 w-10 rounded-full" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-5 w-3/4" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-1/4" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : notificationsToDisplay.length === 0 ? (
+        <EmptyState
+          title={activeTab === 'unread' ? 'No unread notifications' : 'No notifications'}
+          description={activeTab === 'unread' ? 'You\'re all caught up!' : 'Check back later for updates.'}
+        />
+      ) : (
+        <div className="space-y-3">
+          {notificationsToDisplay.map((notification) => (
+            <Card
+              key={notification.id}
+              className={`transition-colors ${
+                !notification.read ? 'border-primary/50 bg-primary/5' : ''
+              }`}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted">
+                    {notificationIcons[notification.type] || <Bell className="h-5 w-5 text-muted-foreground" />}
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <h4 className="font-semibold">{notification.title}</h4>
+                        <p className="text-sm text-muted-foreground">{notification.message}</p>
+                      </div>
+                      {!notification.read && (
+                        <Badge variant="default" className="shrink-0">
+                          New
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">{formatDate(notification.createdAt)}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
