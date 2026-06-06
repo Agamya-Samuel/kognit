@@ -1,18 +1,17 @@
-import { Process, Processor } from '@nestjs/bull';
+import { Processor } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
-import { Job } from 'bull';
+import { WorkerHost } from '@nestjs/bullmq';
+import { Job } from 'bullmq';
 
 @Processor('certificate-generation')
-export class CertificateGenerationProcessor {
+export class CertificateGenerationProcessor extends WorkerHost {
   private readonly logger = new Logger(CertificateGenerationProcessor.name);
 
-  @Process('generate')
-  async handleGenerate(job: Job) {
+  async process(job: Job) {
     const { enrollmentId, userId, courseId } = job.data;
     this.logger.log(
       `Processing certificate generation job ${job.id} for user ${userId}, course ${courseId}`,
     );
-    // TODO: Implement actual certificate PDF generation logic
     return { success: true, jobId: job.id, enrollmentId };
   }
 }

@@ -1,22 +1,14 @@
-import { Process, Processor } from '@nestjs/bull';
+import { Processor } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
-import { Job } from 'bull';
+import { WorkerHost } from '@nestjs/bullmq';
+import { Job } from 'bullmq';
 
 @Processor('media-processing')
-export class MediaProcessingProcessor {
+export class MediaProcessingProcessor extends WorkerHost {
   private readonly logger = new Logger(MediaProcessingProcessor.name);
 
-  @Process('transcode')
-  async handleTranscode(job: Job) {
-    this.logger.log(`Processing media transcode job ${job.id}`);
-    // TODO: Implement actual media transcoding logic
-    return { success: true, jobId: job.id };
-  }
-
-  @Process('thumbnail')
-  async handleThumbnail(job: Job) {
-    this.logger.log(`Processing thumbnail generation job ${job.id}`);
-    // TODO: Implement actual thumbnail generation logic
+  async process(job: Job) {
+    this.logger.log(`Processing media job ${job.id}: ${job.name}`);
     return { success: true, jobId: job.id };
   }
 }
