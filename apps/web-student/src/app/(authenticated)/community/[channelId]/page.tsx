@@ -1,7 +1,7 @@
 'use client';
 
 import { useChannelMessages, useChannelMembers, useSendMessage, useChatSocket } from '@/hooks/useChat';
-import { Card, CardContent, CardHeader, CardTitle, Button, Input, Avatar, AvatarFallback, Badge, ScrollArea } from '@edutech/ui';
+import { Card, CardContent, CardHeader, CardTitle, Button, Input, Avatar, AvatarFallback, ScrollArea } from '@edutech/ui';
 import { Send, ArrowLeft, MoreHorizontal, Flag, Trash2, Edit } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
@@ -56,7 +56,7 @@ export default function ChatChannelPage() {
           </Link>
           <div className="flex-1">
             <CardTitle className="text-lg">
-              {messages?.[0]?.channelId && `Channel #${channelId}`}
+              {messages?.data?.[0]?.channelId && `Channel #${channelId}`}
             </CardTitle>
             <p className="text-sm text-muted-foreground">
               {members?.length ?? 0} members online
@@ -71,7 +71,7 @@ export default function ChatChannelPage() {
           <ScrollArea className="flex-1 pr-4" ref={scrollRef}>
             {messagesLoading ? (
               <div className="space-y-4">
-                {Array.from({ length: 4 }).map((i) => (
+                {Array.from({ length: 4 }).map((_, i) => (
                   <div key={i} className="flex gap-3">
                     <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
                     <div className="flex-1 space-y-2">
@@ -96,7 +96,7 @@ export default function ChatChannelPage() {
 
                   return (
                     <div key={message.id} className={`flex gap-3 ${isMe ? 'flex-row-reverse' : ''}`}>
-                      <Avatar className="h-8 w-8">
+                      <Avatar className="h-8 w-8" fallback={sender ? getInitials(sender.userId.toString()) : '?'}>
                         <AvatarFallback className="text-xs">
                           {sender ? getInitials(sender.userId.toString()) : '?'}
                         </AvatarFallback>
@@ -107,7 +107,7 @@ export default function ChatChannelPage() {
                             {message.senderName || 'Unknown'}
                           </span>
                           <span className="text-xs text-muted-foreground">
-                            {formatTime(message.createdAt)}
+                            {formatTime(message.createdAt.toString())}
                           </span>
                         </div>
                         <div
@@ -141,7 +141,7 @@ export default function ChatChannelPage() {
 
                 {typingUsers.length > 0 && (
                   <div className="flex gap-3">
-                    <Avatar className="h-8 w-8">
+                    <Avatar className="h-8 w-8" fallback="...">
                       <AvatarFallback className="text-xs">...</AvatarFallback>
                     </Avatar>
                     <div className="flex items-center gap-1">

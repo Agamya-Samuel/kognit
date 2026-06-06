@@ -86,12 +86,12 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
                   <span className="rounded-full bg-secondary px-3 py-1 capitalize">
                     {course.domain}
                   </span>
-                  {course.enrollmentCount && (
-                    <span>{course.enrollmentCount} students enrolled</span>
+                  {(course as any).enrollmentCount && (
+                    <span>{(course as any).enrollmentCount} students enrolled</span>
                   )}
-                  {course.rating && (
+                  {(course as any).rating && (
                     <span className="flex items-center gap-1">
-                      ⭐ {course.rating.toFixed(1)}
+                      ⭐ {(course as any).rating.toFixed(1)}
                     </span>
                   )}
                 </div>
@@ -153,10 +153,10 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
                     </span>
                   </div>
                 )}
-                {course.totalDurationSeconds && (
+                {(course as any).totalDurationSeconds && (
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Duration</span>
-                    <span className="font-medium">{formatDuration(course.totalDurationSeconds)}</span>
+                    <span className="font-medium">{formatDuration((course as any).totalDurationSeconds)}</span>
                   </div>
                 )}
               </div>
@@ -167,17 +167,17 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
             <div className="mb-8 rounded-lg border bg-card p-6">
               <h2 className="mb-4 text-xl font-bold">Instructor</h2>
               <div className="flex items-start gap-4">
-                {course.instructor.avatarUrl && (
+                {(course.instructor as any).avatarUrl && (
                   <img
-                    src={course.instructor.avatarUrl}
-                    alt={course.instructor.name}
+                    src={(course.instructor as any).avatarUrl}
+                    alt={(course.instructor as any).name}
                     className="h-16 w-16 rounded-full object-cover"
                   />
                 )}
                 <div>
-                  <h3 className="mb-1 text-lg font-semibold">{course.instructor.name}</h3>
-                  {course.instructor.bio && (
-                    <p className="text-sm text-muted-foreground">{course.instructor.bio}</p>
+                  <h3 className="mb-1 text-lg font-semibold">{(course.instructor as any).name}</h3>
+                  {(course.instructor as any).bio && (
+                    <p className="text-sm text-muted-foreground">{(course.instructor as any).bio}</p>
                   )}
                 </div>
               </div>
@@ -191,25 +191,25 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
             </div>
           )}
 
-          {course.rating && (course.reviewCount ?? 0) > 0 && (
+          {(course as any).rating && ((course as any).reviewCount ?? 0) > 0 && (
             <div className="mt-8">
               <h2 className="mb-6 text-2xl font-bold">Student Reviews</h2>
               <div className="rounded-lg border bg-card p-6">
                 <div className="mb-4 flex items-center gap-4">
-                  <div className="text-4xl font-bold">{course.rating.toFixed(1)}</div>
+                  <div className="text-4xl font-bold">{(course as any).rating.toFixed(1)}</div>
                   <div>
                     <div className="mb-1 flex items-center gap-1">
                       {Array.from({ length: 5 }).map((_, i) => (
                         <span
                           key={i}
-                          className={i < Math.floor(course.rating!) ? 'text-foreground' : 'text-muted-foreground'}
+                          className={i < Math.floor((course as any).rating!) ? 'text-foreground' : 'text-muted-foreground'}
                         >
                           ⭐
                         </span>
                       ))}
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      {course.reviewCount} reviews
+                      {(course as any).reviewCount} reviews
                     </div>
                   </div>
                 </div>

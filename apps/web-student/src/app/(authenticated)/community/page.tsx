@@ -1,8 +1,8 @@
 'use client';
 
 import { useMyChannels, useCourseChannels } from '@/hooks/useChat';
-import { Card, CardContent, CardHeader, CardTitle, Badge, Button, Input, Label, Avatar, AvatarFallback, Skeleton } from '@edutech/ui';
-import { Hash, Users, MessageCircle, Send, Search } from 'lucide-react';
+import { Card, CardContent, Badge, Button, Input, Skeleton } from '@edutech/ui';
+import { Hash, Users, MessageCircle, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
@@ -105,7 +105,7 @@ export default function CommunityPage() {
             </h2>
             {loadingCourseChannels ? (
               <div className="space-y-3">
-                {Array.from({ length: 3 }).map((i) => (
+                {Array.from({ length: 3 }).map((_, i) => (
                   <Card key={i}>
                     <CardContent className="p-4 flex items-center gap-4">
                       <Skeleton className="h-10 w-10 rounded-full" />
