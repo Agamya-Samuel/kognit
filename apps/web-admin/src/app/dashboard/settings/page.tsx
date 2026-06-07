@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Textarea } from '@edutech/ui';
-import { Settings, Bell, Shield, Users, Database, Save, Plus, Trash2 } from 'lucide-react';
+import { Settings, Bell, Shield, Users, Database, Save, Plus, Trash2, AlertCircle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useAdminSettings } from '@/hooks/useAdminSettings';
 
 // Helper function to unflatten the flat key-value pairs from the API into our nested structure
@@ -133,7 +134,7 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Platform Name
                   </label>
                   <Input
@@ -142,18 +143,18 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Description
                   </label>
                   <Textarea
-                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                     rows={3}
                     value={settings.platform.description}
                     onChange={(e) => setSettings((prev: any) => ({ ...prev, platform: { ...prev.platform, description: e.target.value } }))}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Contact Email
                   </label>
                   <Input
@@ -163,7 +164,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Support Email
                   </label>
                   <Input
@@ -186,49 +187,50 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">Notification Methods</h3>
+                  <h3 className="text-base font-semibold text-foreground">Notification Methods</h3>
                   <div className="space-y-3">
-                    <label className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Email Notifications</span>
+                    <label className="flex items-center justify-between py-1">
+                      <span className="text-sm font-medium text-foreground">Email Notifications</span>
                       <input
                         type="checkbox"
                         checked={settings.notifications.email}
                         onChange={(e) => setSettings((prev: any) => ({ ...prev, notifications: { ...prev.notifications, email: e.target.checked } }))}
-                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                        className="h-4 w-4 rounded border-input text-primary focus:ring-primary accent-primary"
                       />
                     </label>
-                    <label className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Push Notifications</span>
+                    <label className="flex items-center justify-between py-1">
+                      <span className="text-sm font-medium text-foreground">Push Notifications</span>
                       <input
                         type="checkbox"
                         checked={settings.notifications.push}
                         onChange={(e) => setSettings((prev: any) => ({ ...prev, notifications: { ...prev.notifications, push: e.target.checked } }))}
-                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                        className="h-4 w-4 rounded border-input text-primary focus:ring-primary accent-primary"
                       />
                     </label>
-                    <label className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">SMS Notifications</span>
+                    <label className="flex items-center justify-between py-1">
+                      <span className="text-sm font-medium text-foreground">SMS Notifications</span>
                       <input
                         type="checkbox"
                         checked={settings.notifications.sms}
                         onChange={(e) => setSettings((prev: any) => ({ ...prev, notifications: { ...prev.notifications, sms: e.target.checked } }))}
-                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                        className="h-4 w-4 rounded border-input text-primary focus:ring-primary accent-primary"
                       />
                     </label>
                   </div>
 
                   <div className="space-y-4">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">Email Frequency</h3>
+                    <h3 className="text-base font-semibold text-foreground">Email Frequency</h3>
                     <div className="grid grid-cols-3 gap-3">
                       {['immediate', 'daily', 'weekly'].map((frequency) => (
                         <button
                           key={frequency}
                           onClick={() => setSettings((prev: any) => ({ ...prev, notifications: { ...prev.notifications, frequency: frequency as any } }))}
-                          className={`p-3 rounded-lg border text-center text-sm font-medium transition-colors ${
+                          className={cn(
+                            "p-3 rounded-lg border text-center text-sm font-medium transition-colors",
                             settings.notifications.frequency === frequency
-                              ? 'border-primary bg-primary/10 text-primary'
-                              : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-                          }`}
+                              ? 'border-primary bg-primary/10 text-primary ring-1 ring-primary/20'
+                              : 'border-border bg-card text-foreground hover:bg-accent'
+                          )}
                         >
                           {frequency.charAt(0).toUpperCase() + frequency.slice(1)}
                         </button>
@@ -250,13 +252,13 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">Two-Factor Authentication</h3>
+                  <h3 className="text-base font-semibold text-foreground">Two-Factor Authentication</h3>
                   <label className="flex items-center justify-between">
                     <div>
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <span className="text-sm font-medium text-foreground">
                         Require 2FA for all users
                       </span>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-muted-foreground mt-1">
                         Adds an extra layer of security to user accounts
                       </p>
                     </div>
@@ -264,27 +266,28 @@ export default function SettingsPage() {
                       type="checkbox"
                       checked={settings.security.twoFactorAuth}
                       onChange={(e) => setSettings((prev: any) => ({ ...prev, security: { ...prev.security, twoFactorAuth: e.target.checked } }))}
-                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                      className="h-4 w-4 rounded border-input text-primary focus:ring-primary accent-primary"
                     />
                   </label>
 
                   <div className="space-y-4">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">Session Timeout</h3>
+                    <h3 className="text-base font-semibold text-foreground">Session Timeout</h3>
                     <div className="flex items-center gap-4">
                       <Input
                         type="number"
                         value={settings.security.sessionTimeout}
                         onChange={(e) => setSettings((prev: any) => ({ ...prev, security: { ...prev.security, sessionTimeout: parseInt(e.target.value) || 30 } }))}
+                        className="max-w-[120px]"
                       />
-                      <span className="text-sm text-gray-600 dark:text-gray-400">minutes</span>
+                      <span className="text-sm text-muted-foreground">minutes</span>
                     </div>
                   </div>
 
                   <div className="space-y-4">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">Password Policy</h3>
+                    <h3 className="text-base font-semibold text-foreground">Password Policy</h3>
                     <div className="space-y-3">
                       <label className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <span className="text-sm font-medium text-foreground">
                           Minimum password length
                         </span>
                         <Input
@@ -296,38 +299,38 @@ export default function SettingsPage() {
                       </label>
 
                       <label className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <span className="text-sm font-medium text-foreground">
                           Require uppercase letters
                         </span>
                         <input
                           type="checkbox"
                           checked={settings.security.passwordPolicy.requireUppercase}
                           onChange={(e) => setSettings((prev: any) => ({ ...prev, security: { ...prev.security, passwordPolicy: { ...prev.security.passwordPolicy, requireUppercase: e.target.checked } } }))}
-                          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                          className="h-4 w-4 rounded border-input text-primary focus:ring-primary accent-primary"
                         />
                       </label>
 
                       <label className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <span className="text-sm font-medium text-foreground">
                           Require numbers
                         </span>
                         <input
                           type="checkbox"
                           checked={settings.security.passwordPolicy.requireNumbers}
                           onChange={(e) => setSettings((prev: any) => ({ ...prev, security: { ...prev.security, passwordPolicy: { ...prev.security.passwordPolicy, requireNumbers: e.target.checked } } }))}
-                          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                          className="h-4 w-4 rounded border-input text-primary focus:ring-primary accent-primary"
                         />
                       </label>
 
                       <label className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <span className="text-sm font-medium text-foreground">
                           Require special characters
                         </span>
                         <input
                           type="checkbox"
                           checked={settings.security.passwordPolicy.requireSpecialChars}
                           onChange={(e) => setSettings((prev: any) => ({ ...prev, security: { ...prev.security, passwordPolicy: { ...prev.security.passwordPolicy, requireSpecialChars: e.target.checked } } }))}
-                          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                          className="h-4 w-4 rounded border-input text-primary focus:ring-primary accent-primary"
                         />
                       </label>
                     </div>
@@ -347,44 +350,45 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">Registration Settings</h3>
+                  <h3 className="text-base font-semibold text-foreground">Registration Settings</h3>
                   <div className="space-y-3">
-                    <label className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <label className="flex items-center justify-between py-1">
+                      <span className="text-sm font-medium text-foreground">
                         Allow user registration
                       </span>
                       <input
                         type="checkbox"
                         checked={settings.users.allowRegistration}
                         onChange={(e) => setSettings((prev: any) => ({ ...prev, users: { ...prev.users, allowRegistration: e.target.checked } }))}
-                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                        className="h-4 w-4 rounded border-input text-primary focus:ring-primary accent-primary"
                       />
                     </label>
-                    <label className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <label className="flex items-center justify-between py-1">
+                      <span className="text-sm font-medium text-foreground">
                         Require admin approval
                       </span>
                       <input
                         type="checkbox"
                         checked={settings.users.requireApproval}
                         onChange={(e) => setSettings((prev: any) => ({ ...prev, users: { ...prev.users, requireApproval: e.target.checked } }))}
-                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                        className="h-4 w-4 rounded border-input text-primary focus:ring-primary accent-primary"
                       />
                     </label>
                   </div>
 
                   <div className="space-y-4">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">Default User Role</h3>
+                    <h3 className="text-base font-semibold text-foreground">Default User Role</h3>
                     <div className="grid grid-cols-3 gap-3">
                       {['student', 'instructor', 'admin'].map((role) => (
                         <button
                           key={role}
                           onClick={() => setSettings((prev: any) => ({ ...prev, users: { ...prev.users, defaultRole: role as any } }))}
-                          className={`p-3 rounded-lg border text-center text-sm font-medium transition-colors capitalize ${
+                          className={cn(
+                            "p-3 rounded-lg border text-center text-sm font-medium transition-colors capitalize",
                             settings.users.defaultRole === role
-                              ? 'border-primary bg-primary/10 text-primary'
-                              : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-                          }`}
+                              ? 'border-primary bg-primary/10 text-primary ring-1 ring-primary/20'
+                              : 'border-border bg-card text-foreground hover:bg-accent'
+                          )}
                         >
                           {role}
                         </button>
@@ -406,9 +410,9 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">Backup Configuration</h3>
-                  <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <h3 className="text-base font-semibold text-foreground">Backup Configuration</h3>
+                  <div className="bg-muted p-4 rounded-lg border border-border">
+                    <p className="text-sm text-muted-foreground">
                       Automatic backups are scheduled daily at 2:00 AM. Last backup: 2 hours ago
                     </p>
                   </div>
@@ -425,15 +429,13 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">Database Statistics</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Total Size</p>
-                      <p className="text-lg font-semibold text-gray-900 dark:text-white">2.4 GB</p>
-                    </div>
-                    <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Tables</p>
-                      <p className="text-lg font-semibold text-gray-900 dark:text-white">48</p>
+                  <h3 className="text-base font-semibold text-foreground">Database Statistics</h3>
+                  <div className="bg-amber-50 dark:bg-amber-950 p-3 rounded-lg border border-amber-200 dark:border-amber-800">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                      <p className="text-sm text-amber-700 dark:text-amber-300">
+                        Detailed database statistics (size, table counts, index health) require a backend monitoring endpoint. Contact your infrastructure team to enable this feature.
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -450,10 +452,10 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
           Settings
         </h1>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className="mt-1 text-sm text-muted-foreground">
           Configure platform settings and preferences
         </p>
       </div>
@@ -468,11 +470,12 @@ export default function SettingsPage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 text-left text-sm font-medium rounded-lg transition-colors ${
+                  className={cn(
+                    "w-full flex items-center gap-3 px-4 py-3 text-left text-sm font-medium rounded-lg transition-colors",
                     activeTab === tab.id
                       ? 'bg-primary/10 text-primary border border-primary/20'
-                      : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
-                  }`}
+                      : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                  )}
                 >
                   <Icon className="h-4 w-4" />
                   {tab.label}

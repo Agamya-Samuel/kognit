@@ -65,17 +65,19 @@ export default function AdminDashboardPage() {
         revenueMTD: metricsResponse.totalRevenue || 0,
         activeNow: metricsResponse.activeUsers || 0,
         revenueData: (chartResponse || []).map((item: any) => ({
-          month: item.name,
+          month: new Date(item.name).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
           revenue: item.revenue,
           costs: 0
         })),
         engagementData: (chartResponse || []).map((item: any) => ({
-          date: item.name,
+          date: new Date(item.name).toLocaleDateString('en-US', { weekday: 'short' }),
           views: item.users,
           interactions: 0
         })),
-        recentActivity: [],
-        pendingModeration: []
+        recentActivity: metricsResponse.recentActivity || [],
+        pendingModeration: metricsResponse.pendingModeration || [],
+        newUsersThisMonth: metricsResponse.newUsersThisMonth || 0,
+        pendingApprovals: metricsResponse.pendingApprovals || 0,
       };
     }
   });
@@ -116,6 +118,8 @@ export default function AdminDashboardPage() {
     pendingModeration: [] as PendingModerationItem[],
   };
 
+  const hasChartData = revenueData.length > 0;
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -127,21 +131,18 @@ export default function AdminDashboardPage() {
         <StatCard
           title="Total Users"
           value={totalUsers.toLocaleString()}
-          change={{ value: '+5.2%', trend: 'up' }}
           icon={Users}
           iconClassName="bg-blue-500/10 text-blue-600 dark:text-blue-400"
         />
         <StatCard
           title="Active Courses"
           value={activeCourses.toString()}
-          change={{ value: '+12', trend: 'up' }}
           icon={BookOpen}
           iconClassName="bg-purple-500/10 text-purple-600 dark:text-purple-400"
         />
         <StatCard
           title="Revenue (MTD)"
           value={`₹${revenueMTD.toLocaleString('en-IN')}`}
-          change={{ value: '+22%', trend: 'up' }}
           icon={DollarSign}
           iconClassName="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
         />
@@ -159,7 +160,15 @@ export default function AdminDashboardPage() {
             <CardTitle>Revenue Overview</CardTitle>
           </CardHeader>
           <CardContent>
-            <RevenueChart data={revenueData} />
+            {hasChartData ? (
+              <RevenueChart data={revenueData} />
+            ) : (
+              <div className="h-[350px] flex flex-col items-center justify-center text-muted-foreground">
+                <BarChart3 className="h-8 w-8 mb-2 opacity-40" />
+                <p className="text-sm">No revenue data yet</p>
+                <p className="text-xs mt-1">Revenue charts will appear once transactions are recorded.</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -168,7 +177,15 @@ export default function AdminDashboardPage() {
             <CardTitle>User Engagement</CardTitle>
           </CardHeader>
           <CardContent>
-            <EngagementChart data={engagementData} />
+            {hasChartData ? (
+              <EngagementChart data={engagementData} />
+            ) : (
+              <div className="h-[350px] flex flex-col items-center justify-center text-muted-foreground">
+                <BarChart3 className="h-8 w-8 mb-2 opacity-40" />
+                <p className="text-sm">No engagement data yet</p>
+                <p className="text-xs mt-1">User activity will appear here over time.</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -181,7 +198,7 @@ export default function AdminDashboardPage() {
           <CardContent>
             {recentActivity.length > 0 ? (
               <div className="space-y-4">
-                {recentActivity.slice(0, 5).map((activity) => (
+                {recentActivity.slice(0, 5).map((activity: RecentActivityItem) => (
                   <div
                     key={activity.id}
                     className="flex items-start gap-3 border-b border-border pb-3 last:border-0 last:pb-0"
@@ -223,7 +240,7 @@ export default function AdminDashboardPage() {
           <CardContent>
             {pendingModeration.length > 0 ? (
               <div className="space-y-4">
-                {pendingModeration.map((item) => (
+                {pendingModeration.map((item: PendingModerationItem) => (
                   <div
                     key={item.id}
                     className="rounded-lg border bg-card p-3"
