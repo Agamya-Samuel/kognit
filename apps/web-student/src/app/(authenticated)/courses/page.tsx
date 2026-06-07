@@ -8,6 +8,7 @@ import { CourseCard } from '@/components/CourseCard';
 import { CourseListSkeleton } from '@/components/CourseListSkeleton';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
+import { Button } from '@edutech/ui';
 import type { CourseFilters } from '@/types/courses';
 
 export default function CoursesPage() {
@@ -47,103 +48,95 @@ export default function CoursesPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mx-auto max-w-7xl">
-        <h1 className="mb-8 text-3xl font-bold">Explore Courses</h1>
-
-        {isLoading && !coursesData ? (
-          <CourseListSkeleton />
-        ) : error ? (
-          <ErrorState
-            message="Failed to load courses. Please try again later."
-            onRetry={() => refetch()}
-          />
-        ) : coursesData?.courses.length === 0 ? (
-          <EmptyState
-            title="No courses found"
-            description="Try adjusting your search or filters to find what you're looking for."
-            icon={<span className="text-6xl">📚</span>}
-            action={{
-              label: 'Clear Filters',
-              onClick: () => setFilters({ page: 1, limit: 20, sort: 'newest', pricingType: 'all' }),
-            }}
-          />
-        ) : (
-          <>
-            <div className="mb-8 space-y-6">
-              <SearchBar
-                value={filters.search || ''}
-                onChange={handleSearch}
-                placeholder="Search courses..."
-                className="max-w-2xl"
-              />
-
-              <div className="space-y-4">
-                {domains && (
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-muted-foreground">
-                      Domain
-                    </label>
-                    <DomainFilter
-                      domains={domains}
-                      selectedDomain={filters.domain || null}
-                      onDomainChange={handleDomainChange}
-                    />
-                  </div>
-                )}
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-muted-foreground">
-                    Price
-                  </label>
-                  <PriceFilter
-                    selectedPricing={filters.pricingType || 'all'}
-                    onPricingChange={handlePricingChange}
-                  />
-                </div>
-
-                <SortDropdown
-                  value={filters.sort || 'newest'}
-                  onChange={handleSortChange}
-                  className="max-w-xs"
-                />
-              </div>
-            </div>
-
-            <div className="mb-6 text-sm text-muted-foreground">
-              Showing {coursesData?.courses.length} of {coursesData?.total} courses
-            </div>
-
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {coursesData?.courses.map((course: any) => (
-                <CourseCard key={course.id} course={course} />
-              ))}
-            </div>
-
-            {coursesData && coursesData.total > coursesData.limit && (
-              <div className="mt-8 flex justify-center gap-2">
-                <button
-                  onClick={() => handlePageChange(filters.page! - 1)}
-                  disabled={!coursesData.hasPrev}
-                  className="rounded-md border px-4 py-2 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent"
-                >
-                  Previous
-                </button>
-                <span className="flex items-center px-4 text-sm">
-                  Page {coursesData.page}
-                </span>
-                <button
-                  onClick={() => handlePageChange(filters.page! + 1)}
-                  disabled={!coursesData.hasNext}
-                  className="rounded-md border px-4 py-2 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent"
-                >
-                  Next
-                </button>
-              </div>
-            )}
-          </>
-        )}
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Course Catalog</h1>
+        <p className="text-muted-foreground mt-1">Explore and enroll in courses across all domains</p>
       </div>
+
+      {isLoading && !coursesData ? (
+        <CourseListSkeleton />
+      ) : error ? (
+        <ErrorState
+          message="Failed to load courses. Please try again later."
+          onRetry={() => refetch()}
+        />
+      ) : coursesData?.courses.length === 0 ? (
+        <EmptyState
+          title="No courses found"
+          description="Try adjusting your search or filters to find what you're looking for."
+          action={{
+            label: 'Clear Filters',
+            onClick: () => setFilters({ page: 1, limit: 20, sort: 'newest', pricingType: 'all' }),
+          }}
+        />
+      ) : (
+        <>
+          {/* Search & Filters */}
+          <div className="space-y-4">
+            <SearchBar
+              value={filters.search || ''}
+              onChange={handleSearch}
+              placeholder="Search courses..."
+              className="max-w-2xl"
+            />
+
+            <div className="flex flex-wrap items-center gap-4">
+              {domains && (
+                <DomainFilter
+                  domains={domains}
+                  selectedDomain={filters.domain || null}
+                  onDomainChange={handleDomainChange}
+                />
+              )}
+              <PriceFilter
+                selectedPricing={filters.pricingType || 'all'}
+                onPricingChange={handlePricingChange}
+              />
+              <SortDropdown
+                value={filters.sort || 'newest'}
+                onChange={handleSortChange}
+                className="max-w-xs"
+              />
+            </div>
+          </div>
+
+          {/* Results count */}
+          <p className="text-sm text-muted-foreground">
+            Showing {coursesData?.courses.length} of {coursesData?.total} courses
+          </p>
+
+          {/* Course Grid */}
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {coursesData?.courses.map((course: any) => (
+              <CourseCard key={course.id} course={course} />
+            ))}
+          </div>
+
+          {/* Pagination */}
+          {coursesData && coursesData.total > coursesData.limit && (
+            <div className="flex justify-center items-center gap-2 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => handlePageChange(filters.page! - 1)}
+                disabled={!coursesData.hasPrev}
+              >
+                Previous
+              </Button>
+              <span className="px-4 text-sm text-muted-foreground">
+                Page {coursesData.page}
+              </span>
+              <Button
+                variant="outline"
+                onClick={() => handlePageChange(filters.page! + 1)}
+                disabled={!coursesData.hasNext}
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
