@@ -52,7 +52,8 @@ export class AuthController {
   @ApiOperation({ summary: 'Initiate Google OAuth flow' })
   async googleAuth(@Req() req: Request, @Res() res: Response) {
     const redirect = req.query.redirect as string;
-    const intent = (req.query.intent as string) || 'student';
+    // Accept both 'portal' (from getGoogleAuthUrl) and 'intent' for backwards compatibility
+    const intent = (req.query.portal as string) || (req.query.intent as string) || 'student';
     // Encode state as base64 JSON containing redirect and intent
     const state = Buffer.from(JSON.stringify({ redirect, intent })).toString('base64');
     const passport = require('passport');
@@ -85,6 +86,23 @@ export class AuthController {
       tokens: { accessToken: string; refreshToken: string };
       isNewUser: boolean;
     };
+
+    // Enforce portal-vs-role access control for OAuth logins (existing users).
+    // New OAuth users are created with the correct role from intent, so only
+    // existing users (whose role may predate the OAuth link) need validation.
+    if (!isNewUser) {
+      try {
+        this.authService.assertPortalAccess(user, intent);
+      } catch (err) {
+        // Revoke the tokens that were just issued to prevent unauthorized access
+        await this.authService.revokeTokensForUser(user.id);
+        const message = err instanceof Error ? err.message : 'Access denied for this portal.';
+        const defaultOrigin = this.configService.get<string>('CORS_ORIGINS')?.split(',')[0] || 'http://localhost:3002';
+        const errorBaseUrl = redirect.startsWith('http') ? redirect : `${defaultOrigin}${redirect}`;
+        const separator = errorBaseUrl.includes('?') ? '&' : '?';
+        return res.redirect(`${errorBaseUrl}${separator}error=${encodeURIComponent(message)}`);
+      }
+    }
 
     // Build redirect URL with tokens and intent
     const defaultOrigin = this.configService.get<string>('CORS_ORIGINS')?.split(',')[0] || 'http://localhost:3002';

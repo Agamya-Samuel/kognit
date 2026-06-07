@@ -246,9 +246,9 @@ export class AuthService {
 
   /**
    * Enforce portal-vs-role access control.
-   * Returns ForbiddenException if user's role doesn't match the portal they tried to access.
+   * Throws ForbiddenException if user's role doesn't match the portal they tried to access.
    */
-  private assertPortalAccess(user: any, portal: string): void {
+  assertPortalAccess(user: any, portal: string): void {
     switch (portal) {
       case 'student':
         if (user.role !== 'student') {
@@ -626,6 +626,14 @@ export class AuthService {
   }
 
   // ─── Helpers ────────────────────────────────────────────────────────────
+
+  /**
+   * Revoke all refresh tokens for a user (used after OAuth portal access denial).
+   */
+  async revokeTokensForUser(userId: number): Promise<void> {
+    await this.tokenService.revokeAllUserTokens(userId);
+    this.logger.warn(`Revoked all tokens for user ${userId} after portal access denial.`);
+  }
 
   /**
    * Remove sensitive fields from user object
