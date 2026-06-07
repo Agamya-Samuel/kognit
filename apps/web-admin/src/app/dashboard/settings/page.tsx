@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Textarea } from '@edutech/ui';
-import { Settings, Bell, Shield, Users, Database, Save, Plus, Trash2, AlertCircle } from 'lucide-react';
+import { Settings, Bell, Shield, Users, Database, Save, Plus, Trash2, AlertCircle, RefreshCw, HardDrive, Table, Server } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAdminSettings } from '@/hooks/useAdminSettings';
+import { useDatabaseStats } from '@/hooks/useDatabaseStats';
 
 // Helper function to unflatten the flat key-value pairs from the API into our nested structure
 function unflattenSettings(flat: Record<string, string>) {
@@ -66,6 +67,7 @@ function flattenSettingsForUpdate(settings: any): Record<string, string> {
 
 export default function SettingsPage() {
   const { settings: flatSettings, isLoading, error, updateSettings, isUpdating } = useAdminSettings();
+  const { stats: dbStats, isLoading: dbStatsLoading, error: dbStatsError, refetch: refetchDbStats } = useDatabaseStats();
   const [settings, setSettings] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('platform');
 
@@ -404,41 +406,166 @@ export default function SettingsPage() {
       case 'database':
         return (
           <div className="space-y-6">
+            {/* Backup Configuration */}
             <Card>
               <CardHeader>
-                <CardTitle>Database Management</CardTitle>
+                <CardTitle>Backup Configuration</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <h3 className="text-base font-semibold text-foreground">Backup Configuration</h3>
-                  <div className="bg-muted p-4 rounded-lg border border-border">
-                    <p className="text-sm text-muted-foreground">
-                      Automatic backups are scheduled daily at 2:00 AM. Last backup: 2 hours ago
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Create Manual Backup
-                    </Button>
-                    <Button variant="outline">
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Clean Old Backups
-                    </Button>
-                  </div>
+              <CardContent className="space-y-4">
+                <div className="bg-muted p-4 rounded-lg border border-border">
+                  <p className="text-sm text-muted-foreground">
+                    Automatic backups are scheduled daily at 2:00 AM. Last backup: 2 hours ago
+                  </p>
                 </div>
+                <div className="flex gap-2">
+                  <Button variant="outline">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Manual Backup
+                  </Button>
+                  <Button variant="outline">
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Clean Old Backups
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
 
-                <div className="space-y-4">
-                  <h3 className="text-base font-semibold text-foreground">Database Statistics</h3>
+            {/* Database Statistics */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <HardDrive className="h-5 w-5" />
+                    Database Statistics
+                  </CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => refetchDbStats()}
+                    disabled={dbStatsLoading}
+                  >
+                    <RefreshCw className={cn('h-4 w-4 mr-1', dbStatsLoading && 'animate-spin')} />
+                    Refresh
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {dbStatsLoading && !dbStats && (
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-r-transparent" />
+                    <span className="text-sm">Loading database statistics…</span>
+                  </div>
+                )}
+
+                {dbStatsError && (
                   <div className="bg-amber-50 dark:bg-amber-950 p-3 rounded-lg border border-amber-200 dark:border-amber-800">
                     <div className="flex items-start gap-2">
                       <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
                       <p className="text-sm text-amber-700 dark:text-amber-300">
-                        Detailed database statistics (size, table counts, index health) require a backend monitoring endpoint. Contact your infrastructure team to enable this feature.
+                        Failed to load database statistics. Make sure the API is reachable and try again.
                       </p>
                     </div>
                   </div>
-                </div>
+                )}
+
+                {dbStats && (
+                  <div className="space-y-6">
+                    {/* Summary cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="rounded-lg border border-border bg-muted/50 p-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                          <HardDrive className="h-4 w-4" />
+                          <span className="text-xs font-medium uppercase tracking-wide">Database Size</span>
+                        </div>
+                        <p className="text-2xl font-semibold text-foreground">{dbStats.databaseSize.pretty}</p>
+                      </div>
+                      <div className="rounded-lg border border-border bg-muted/50 p-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                          <Table className="h-4 w-4" />
+                          <span className="text-xs font-medium uppercase tracking-wide">Tables</span>
+                        </div>
+                        <p className="text-2xl font-semibold text-foreground">{dbStats.tableCount}</p>
+                      </div>
+                      <div className="rounded-lg border border-border bg-muted/50 p-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                          <Server className="h-4 w-4" />
+                          <span className="text-xs font-medium uppercase tracking-wide">Connections</span>
+                        </div>
+                        <p className="text-2xl font-semibold text-foreground">
+                          {dbStats.connectionPool.total}
+                          <span className="text-sm font-normal text-muted-foreground"> / {dbStats.connectionPool.maxPool}</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Connection pool breakdown */}
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-semibold text-foreground">Connection Pool</h3>
+                      <div className="rounded-lg border border-border overflow-hidden">
+                        <div className="grid grid-cols-3 divide-x divide-border text-center text-sm">
+                          <div className="p-3">
+                            <p className="text-xs text-muted-foreground">Active</p>
+                            <p className="text-lg font-semibold text-green-600">{dbStats.connectionPool.active}</p>
+                          </div>
+                          <div className="p-3">
+                            <p className="text-xs text-muted-foreground">Idle</p>
+                            <p className="text-lg font-semibold text-amber-500">{dbStats.connectionPool.idle}</p>
+                          </div>
+                          <div className="p-3">
+                            <p className="text-xs text-muted-foreground">Max Pool</p>
+                            <p className="text-lg font-semibold text-foreground">{dbStats.connectionPool.maxPool}</p>
+                          </div>
+                        </div>
+                        {/* Usage bar */}
+                        <div className="px-3 pb-3">
+                          <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                            <div
+                              className={cn(
+                                'h-full rounded-full transition-all',
+                                (dbStats.connectionPool.total / dbStats.connectionPool.maxPool) > 0.8
+                                  ? 'bg-red-500'
+                                  : (dbStats.connectionPool.total / dbStats.connectionPool.maxPool) > 0.5
+                                  ? 'bg-amber-500'
+                                  : 'bg-green-500',
+                              )}
+                              style={{ width: `${Math.min((dbStats.connectionPool.total / dbStats.connectionPool.maxPool) * 100, 100)}%` }}
+                            />
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {((dbStats.connectionPool.total / dbStats.connectionPool.maxPool) * 100).toFixed(1)}% capacity
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Table list */}
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-semibold text-foreground">Table Details</h3>
+                      <div className="rounded-lg border border-border overflow-hidden">
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="bg-muted/60 text-left">
+                                <th className="px-4 py-2 font-medium text-muted-foreground">Table</th>
+                                <th className="px-4 py-2 font-medium text-muted-foreground text-right">Rows</th>
+                                <th className="px-4 py-2 font-medium text-muted-foreground text-right">Size</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border">
+                              {dbStats.tables.map((tbl) => (
+                                <tr key={tbl.name} className="hover:bg-muted/30 transition-colors">
+                                  <td className="px-4 py-2 font-mono text-xs text-foreground">{tbl.name}</td>
+                                  <td className="px-4 py-2 text-right text-foreground">{tbl.rowCount.toLocaleString()}</td>
+                                  <td className="px-4 py-2 text-right text-muted-foreground">{tbl.sizePretty}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
