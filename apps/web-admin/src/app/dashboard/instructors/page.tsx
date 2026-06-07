@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, Button, Spinner, Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@edutech/ui';
-import { CheckCircle2, XCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, Button, Spinner, Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, Input, Field, FieldGroup, FieldLabel } from '@edutech/ui';
+import { CheckCircle2, XCircle, ChevronLeft, ChevronRight, UserPlus } from 'lucide-react';
 import { adminService } from '@edutech/api-client';
 import { PageHeader } from '@/components/PageHeader';
 import { EmptyState } from '@/components/EmptyState';
@@ -19,6 +19,14 @@ export default function InstructorsPage() {
   const [loading, setLoading] = useState(true);
   const [rejectingId, setRejectingId] = useState<number | null>(null);
   const [rejectReason, setRejectReason] = useState('');
+
+  // Invite dialog state
+  const [showInviteDialog, setShowInviteDialog] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteName, setInviteName] = useState('');
+  const [isInviting, setIsInviting] = useState(false);
+  const [inviteError, setInviteError] = useState('');
+  const [inviteSuccess, setInviteSuccess] = useState('');
 
   const fetchInstructors = useCallback(async () => {
     setLoading(true);
@@ -65,6 +73,33 @@ export default function InstructorsPage() {
     }
   };
 
+  const handleInvite = async () => {
+    if (!inviteEmail.trim() || !inviteName.trim()) return;
+    setIsInviting(true);
+    setInviteError('');
+    setInviteSuccess('');
+
+    try {
+      const result = await adminService.inviteInstructor(inviteEmail.trim(), inviteName.trim()) as any;
+      setInviteSuccess(`Invitation sent to ${inviteEmail}. Activation link: ${result?.activationLink || '(check server logs)'}`);
+      setInviteEmail('');
+      setInviteName('');
+      fetchInstructors();
+    } catch (err: any) {
+      setInviteError(err.response?.data?.message || 'Failed to send invitation. Please try again.');
+    } finally {
+      setIsInviting(false);
+    }
+  };
+
+  const closeInviteDialog = () => {
+    setShowInviteDialog(false);
+    setInviteEmail('');
+    setInviteName('');
+    setInviteError('');
+    setInviteSuccess('');
+  };
+
   const statusColor = (status: string) => {
     switch (status) {
       case 'approved':
@@ -78,10 +113,16 @@ export default function InstructorsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Instructor Approvals"
-        description="Review and manage instructor applications"
-      />
+      <div className="flex items-start justify-between">
+        <PageHeader
+          title="Instructor Approvals"
+          description="Review and manage instructor applications"
+        />
+        <Button onClick={() => setShowInviteDialog(true)} size="sm">
+          <UserPlus className="mr-2 h-4 w-4" />
+          Invite Instructor
+        </Button>
+      </div>
 
       {/* Status filter */}
       <Card>
@@ -210,6 +251,72 @@ export default function InstructorsPage() {
           )}
         </CardContent>
       </Card>
+
+      {showInviteDialog && (
+        <Dialog open onOpenChange={(open) => { if (!open) closeInviteDialog(); }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Invite Instructor</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground">
+              Send an invitation email to a new instructor. They will receive an activation link to set up their account.
+            </p>
+
+            {inviteError && (
+              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 dark:border-red-900 dark:bg-red-950/30 dark:text-red-400">
+                {inviteError}
+              </div>
+            )}
+
+            {inviteSuccess && (
+              <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-600 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-400 break-all">
+                {inviteSuccess}
+              </div>
+            )}
+
+            {!inviteSuccess && (
+              <FieldGroup>
+                <Field>
+                  <FieldLabel htmlFor="invite-email">Email Address</FieldLabel>
+                  <Input
+                    id="invite-email"
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInviteEmail(e.target.value)}
+                    placeholder="instructor@example.com"
+                  />
+                </Field>
+
+                <Field>
+                  <FieldLabel htmlFor="invite-name">Full Name</FieldLabel>
+                  <Input
+                    id="invite-name"
+                    type="text"
+                    value={inviteName}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInviteName(e.target.value)}
+                    placeholder="Dr. Jane Smith"
+                  />
+                </Field>
+              </FieldGroup>
+            )}
+
+            <DialogFooter>
+              <Button variant="outline" onClick={closeInviteDialog}>
+                {inviteSuccess ? 'Close' : 'Cancel'}
+              </Button>
+              {!inviteSuccess && (
+                <Button
+                  onClick={handleInvite}
+                  disabled={!inviteEmail.trim() || !inviteName.trim() || isInviting}
+                  isLoading={isInviting}
+                >
+                  Send Invitation
+                </Button>
+              )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {rejectingId !== null && (
         <Dialog open onOpenChange={(open) => { if (!open) setRejectingId(null); }}>

@@ -35,6 +35,7 @@ function ActivationContent() {
   const [error, setError] = useState('');
 
   const [userInfo, setUserInfo] = useState<{ email: string; name: string; institutionName: string | null } | null>(null);
+  const [editableName, setEditableName] = useState('');
 
   const passwordForm = useForm({
     resolver: zodResolver(activationPasswordSchema),
@@ -78,6 +79,7 @@ function ActivationContent() {
         name: response.name,
         institutionName: response.institutionName,
       });
+      setEditableName(response.name);
       setStep('password');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Invalid or expired activation token.');
@@ -98,7 +100,7 @@ function ActivationContent() {
       await authService.completeActivation(
         token,
         passwordForm.getValues().password,
-        userInfo?.name || '',
+        editableName || userInfo?.name || '',
         data.mobile,
         data.address,
         data.city,
@@ -162,8 +164,15 @@ function ActivationContent() {
                 </Field>
 
                 <Field>
-                  <FieldLabel>Name</FieldLabel>
-                  <Input value={userInfo.name} disabled className="bg-muted" />
+                  <FieldLabel htmlFor="name">Full Name</FieldLabel>
+                  <Input
+                    id="name"
+                    type="text"
+                    value={editableName}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditableName(e.target.value)}
+                    placeholder="Your full name"
+                  />
+                  <FieldDescription className="text-xs">You can edit your name now. It will become permanent after activation.</FieldDescription>
                 </Field>
 
                 {userInfo.institutionName && (
@@ -210,6 +219,16 @@ function ActivationContent() {
                 <Field>
                   <FieldLabel>Email</FieldLabel>
                   <Input value={userInfo.email} disabled className="bg-muted" />
+                </Field>
+
+                <Field>
+                  <FieldLabel htmlFor="profile-name">Full Name</FieldLabel>
+                  <Input
+                    id="profile-name"
+                    type="text"
+                    value={editableName}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditableName(e.target.value)}
+                  />
                 </Field>
 
                 <Field>
@@ -287,13 +306,11 @@ function ActivationContent() {
                   </Field>
                 </div>
 
-                {userInfo.institutionName && (
-                  <Field>
-                    <FieldDescription className="text-center">
-                      Affiliated Institute: <span className="font-medium">{userInfo.institutionName}</span>
-                    </FieldDescription>
-                  </Field>
-                )}
+                <Field>
+                  <FieldDescription className="text-center">
+                    Affiliated Institute: <span className="font-medium">{userInfo.institutionName || 'NA (Not Applicable)'}</span>
+                  </FieldDescription>
+                </Field>
 
                 <Field>
                   <Button type="submit" className="w-full" isLoading={isLoading}>

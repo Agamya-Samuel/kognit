@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, Button, Spinner } from '@edutech/ui';
-import { ChevronLeft, ChevronRight, Building2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, Button, Spinner, Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, Input, Field, FieldGroup, FieldLabel } from '@edutech/ui';
+import { ChevronLeft, ChevronRight, Building2, Plus } from 'lucide-react';
 import { adminService } from '@edutech/api-client';
 import { PageHeader } from '@/components/PageHeader';
 import { EmptyState } from '@/components/EmptyState';
@@ -14,6 +14,18 @@ export default function InstitutionsPage() {
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [loading, setLoading] = useState(true);
+
+  // Create institution dialog state
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    institutionName: '',
+    contactEmail: '',
+    seatCount: 100,
+    activeUntil: '',
+  });
+  const [isCreating, setIsCreating] = useState(false);
+  const [createError, setCreateError] = useState('');
+  const [createSuccess, setCreateSuccess] = useState('');
 
   const fetchInstitutions = useCallback(async () => {
     setLoading(true);
@@ -38,12 +50,47 @@ export default function InstitutionsPage() {
 
   const totalPages = Math.ceil(total / limit);
 
+  const closeCreateDialog = () => {
+    setShowCreateDialog(false);
+    setCreateForm({ institutionName: '', contactEmail: '', seatCount: 100, activeUntil: '' });
+    setCreateError('');
+    setCreateSuccess('');
+  };
+
+  const handleCreateInstitution = async () => {
+    if (!createForm.institutionName.trim() || !createForm.contactEmail.trim() || !createForm.activeUntil) return;
+    setIsCreating(true);
+    setCreateError('');
+    setCreateSuccess('');
+
+    try {
+      await adminService.createInstitution({
+        institutionName: createForm.institutionName.trim(),
+        contactEmail: createForm.contactEmail.trim(),
+        seatCount: createForm.seatCount,
+        activeUntil: createForm.activeUntil,
+      });
+      setCreateSuccess('Institution created successfully!');
+      fetchInstitutions();
+    } catch (err: any) {
+      setCreateError(err.response?.data?.message || 'Failed to create institution. Please try again.');
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Institutions"
-        description="Manage educational institutions"
-      />
+      <div className="flex items-start justify-between">
+        <PageHeader
+          title="Institutions"
+          description="Manage educational institutions"
+        />
+        <Button onClick={() => setShowCreateDialog(true)} size="sm">
+          <Plus className="mr-2 h-4 w-4" />
+          Create Institution
+        </Button>
+      </div>
 
       <Card>
         <CardHeader>
@@ -126,6 +173,95 @@ export default function InstitutionsPage() {
           )}
         </CardContent>
       </Card>
+      {showCreateDialog && (
+        <Dialog open onOpenChange={(open) => { if (!open) closeCreateDialog(); }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create Institution</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground">
+              Add a new educational institution to the platform.
+            </p>
+
+            {createError && (
+              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 dark:border-red-900 dark:bg-red-950/30 dark:text-red-400">
+                {createError}
+              </div>
+            )}
+
+            {createSuccess && (
+              <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-600 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-400">
+                {createSuccess}
+              </div>
+            )}
+
+            {!createSuccess && (
+              <FieldGroup>
+                <Field>
+                  <FieldLabel htmlFor="inst-name">Institution Name</FieldLabel>
+                  <Input
+                    id="inst-name"
+                    type="text"
+                    value={createForm.institutionName}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCreateForm({ ...createForm, institutionName: e.target.value })}
+                    placeholder="e.g., MIT, Stanford University"
+                  />
+                </Field>
+
+                <Field>
+                  <FieldLabel htmlFor="inst-email">Contact Email</FieldLabel>
+                  <Input
+                    id="inst-email"
+                    type="email"
+                    value={createForm.contactEmail}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCreateForm({ ...createForm, contactEmail: e.target.value })}
+                    placeholder="admin@institution.edu"
+                  />
+                </Field>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <Field>
+                    <FieldLabel htmlFor="inst-seats">Seat Count</FieldLabel>
+                    <Input
+                      id="inst-seats"
+                      type="number"
+                      value={createForm.seatCount}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCreateForm({ ...createForm, seatCount: parseInt(e.target.value) || 0 })}
+                      placeholder="100"
+                    />
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="inst-active">Active Until</FieldLabel>
+                    <Input
+                      id="inst-active"
+                      type="date"
+                      value={createForm.activeUntil}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCreateForm({ ...createForm, activeUntil: e.target.value })}
+                    />
+                  </Field>
+                </div>
+              </FieldGroup>
+            )}
+
+            <DialogFooter>
+              <Button variant="outline" onClick={closeCreateDialog}>
+                {createSuccess ? 'Close' : 'Cancel'}
+              </Button>
+              {!createSuccess && (
+                <Button
+                  onClick={handleCreateInstitution}
+                  disabled={!createForm.institutionName.trim() || !createForm.contactEmail.trim() || !createForm.activeUntil || isCreating}
+                  isLoading={isCreating}
+                >
+                  Create Institution
+                </Button>
+              )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
     </div>
   );
 }

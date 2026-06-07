@@ -25,6 +25,7 @@ export default function OnboardingPage() {
   const form = useForm({
     resolver: zodResolver(onboardingSchema),
     defaultValues: {
+      name: '',
       mobile: '',
       address: '',
       city: '',
@@ -40,6 +41,7 @@ export default function OnboardingPage() {
         const response = await authService.getMe() as any;
         setProfile(response);
         form.reset({
+          name: response.name || '',
           mobile: response.studentProfile?.mobile || '',
           address: response.studentProfile?.address || '',
           city: response.studentProfile?.city || '',
@@ -57,12 +59,20 @@ export default function OnboardingPage() {
     fetchProfile();
   }, []);
 
-  const handleSubmit = async (data: { mobile: string; address: string; city: string; state: string; pinCode: string; country: string }) => {
+  const handleSubmit = async (data: { name: string; mobile: string; address: string; city: string; state: string; pinCode: string; country: string }) => {
     setIsLoading(true);
     setError('');
 
     try {
-      await usersService.updateProfile(data as any);
+      await usersService.updateProfile({
+        name: data.name,
+        mobile: data.mobile,
+        address: data.address,
+        city: data.city,
+        state: data.state,
+        pinCode: data.pinCode,
+        country: data.country,
+      });
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to complete onboarding. Please try again.');
@@ -106,11 +116,11 @@ export default function OnboardingPage() {
               <Input
                 id="name"
                 type="text"
-                defaultValue={profile?.name}
-                disabled
-                className="bg-muted"
+                placeholder="Your full name"
+                {...form.register('name')}
+                error={form.formState.errors.name?.message}
               />
-              <FieldDescription className="text-xs">Name cannot be changed after onboarding.</FieldDescription>
+              <FieldDescription className="text-xs">You can edit your name during onboarding. It becomes permanent after completion.</FieldDescription>
             </Field>
 
             <Field>
