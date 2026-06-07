@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@edutech/ui';
 import { Button } from '@edutech/ui';
@@ -8,64 +8,136 @@ import { Input } from '@edutech/ui';
 import { Label } from '@edutech/ui';
 import { Textarea } from '@edutech/ui';
 import { Badge } from '@edutech/ui';
-import { ArrowLeft, Save, Eye, Users, DollarSign, TrendingUp, Clock, BookOpen } from 'lucide-react';
+import { ArrowLeft, Save, Eye, Users, DollarSign, TrendingUp, Clock, BookOpen, AlertCircle } from 'lucide-react';
 import { StatCard, StatsRow } from '@/components/StatsRow';
+import { useCourse, useUpdateCourse, useInstructorAnalytics } from '@/hooks/useCourses';
 import Link from 'next/link';
 
 export default function EditCoursePage() {
   const params = useParams();
-  const courseId = params.id;
+  const courseId = params.id as string;
+
+  const { data: courseData, isLoading, error } = useCourse(courseId);
+  const { data: analytics } = useInstructorAnalytics();
+  const updateCourse = useUpdateCourse();
 
   const [course, setCourse] = useState({
-    id: parseInt(courseId as string),
-    title: 'Introduction to TypeScript',
-    description: 'Learn TypeScript from scratch with practical examples and real-world projects.',
-    domain: 'Programming',
+    title: '',
+    description: '',
+    domain: '',
     pricingType: 'free' as 'free' | 'paid',
     priceInr: 0,
-    isPublished: true,
+    isPublished: false,
   });
-
   const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
-  // Mock data for course analytics
+  // Populate form from API data
+  useEffect(() => {
+    if (courseData) {
+      setCourse({
+        title: courseData.title || '',
+        description: courseData.description || '',
+        domain: courseData.domain || '',
+        pricingType: (courseData.priceInr && courseData.priceInr > 0) ? 'paid' : 'free',
+        priceInr: courseData.priceInr || 0,
+        isPublished: courseData.isPublished || false,
+      });
+    }
+  }, [courseData]);
+
+  // Get course-specific stats from analytics
+  const courseAnalytics = analytics?.courseAnalytics?.find(
+    (c) => String(c.courseId) === courseId
+  );
+
   const courseStats = [
     {
       title: 'Enrollments',
-      value: '245',
-      change: { value: '+12 this week', trend: 'up' as const },
+      value: (courseAnalytics?.enrollmentCount ?? 0).toString(),
       icon: Users,
     },
     {
       title: 'Revenue',
-      value: '₹12,450',
-      change: { value: '+2,340 this month', trend: 'up' as const },
+      value: `₹${(courseAnalytics?.revenue ?? 0).toLocaleString('en-IN')}`,
       icon: DollarSign,
     },
     {
       title: 'Completion Rate',
-      value: '78%',
-      change: { value: '+5%', trend: 'up' as const },
+      value: `${courseAnalytics?.completionRate ?? 0}%`,
       icon: TrendingUp,
     },
     {
-      title: 'Avg. Watch Time',
-      value: '4h 32m',
-      change: { value: '+12m', trend: 'up' as const },
-      icon: Clock,
+      title: 'Certificates',
+      value: (courseAnalytics?.certificateCount ?? 0).toString(),
+      icon: BookOpen,
     },
   ];
 
   const handleSave = async () => {
     setIsSaving(true);
-    setTimeout(() => {
+    setSaveSuccess(false);
+    try {
+      await updateCourse.mutateAsync({
+        id: courseId,
+        dto: {
+          title: course.title,
+          description: course.description,
+          domain: course.domain,
+          priceInr: course.pricingType === 'paid' ? course.priceInr : 0,
+        },
+      });
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err) {
+      console.error('Failed to save course:', err);
+    } finally {
       setIsSaving(false);
-    }, 1000);
+    }
   };
 
   const togglePublish = () => {
-    setCourse({ ...course, isPublished: !course.isPublished });
+    const newPublished = !course.isPublished;
+    setCourse({ ...course, isPublished: newPublished });
+    // Also persist via API
+    updateCourse.mutate({
+      id: courseId,
+      dto: { isPublished: newPublished },
+    });
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <div className="text-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent" />
+          <p className="mt-4 text-sm text-muted-foreground">Loading course...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !courseData) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <div className="text-center">
+          <div className="rounded-full bg-destructive/10 p-3 mx-auto mb-3">
+            <AlertCircle className="h-6 w-6 text-destructive" />
+          </div>
+          <p className="text-sm font-medium text-foreground">Failed to load course</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {error ? 'An error occurred' : 'Course not found'}
+          </p>
+          <Link href="/dashboard/courses">
+            <Button variant="outline" size="sm" className="mt-4 gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Courses
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto space-y-6">
@@ -76,7 +148,6 @@ export default function EditCoursePage() {
             key={stat.title}
             title={stat.title}
             value={stat.value}
-            change={stat.change}
             icon={stat.icon}
           />
         ))}
@@ -94,12 +165,12 @@ export default function EditCoursePage() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-foreground">Edit Course</h1>
             <p className="text-sm text-muted-foreground">
-              Course ID: {course.id} • {course.domain}
+              Course ID: {courseId} {course.domain ? `• ${course.domain}` : ''}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Link href={`/courses/${course.id}`}>
+          <Link href={`/courses/${courseId}`}>
             <Button variant="outline" size="sm" className="gap-2">
               <Eye className="h-4 w-4" />
               Preview
@@ -111,10 +182,16 @@ export default function EditCoursePage() {
             className="gap-2"
           >
             <Save className="h-4 w-4" />
-            {isSaving ? 'Saving...' : 'Save Changes'}
+            {isSaving ? 'Saving...' : saveSuccess ? 'Saved!' : 'Save Changes'}
           </Button>
         </div>
       </div>
+
+      {saveSuccess && (
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950 p-3 text-sm text-emerald-700 dark:text-emerald-300">
+          Course updated successfully.
+        </div>
+      )}
 
       {/* Course Details Card */}
       <Card>
