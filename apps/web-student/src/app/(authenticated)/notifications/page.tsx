@@ -25,7 +25,7 @@ export default function NotificationsPage() {
   const unreadCountValue = (unreadCount as any)?.count || 0;
 
   const notificationsToDisplay = activeTab === 'unread'
-    ? notifications?.filter((n) => !n.read) ?? []
+    ? notifications?.filter((n: any) => !n.read) ?? []
     : notifications ?? [];
 
   const formatDate = (dateString: string) => {
@@ -91,7 +91,7 @@ export default function NotificationsPage() {
         />
       ) : (
         <div className="space-y-3">
-          {notificationsToDisplay.map((notification) => (
+          {notificationsToDisplay.map((notification: any) => (
             <Card
               key={notification.id}
               className={`transition-colors ${
