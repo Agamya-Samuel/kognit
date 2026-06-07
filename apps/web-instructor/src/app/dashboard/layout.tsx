@@ -40,6 +40,8 @@ const navGroups = [
   },
 ];
 
+const REQUIRED_ROLE = 'instructor';
+
 const footerLinks = [
   { label: 'Help', href: '/help' },
   { label: 'Feedback', href: '/feedback' },
@@ -54,8 +56,14 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push('/auth/login');
+      return;
     }
-  }, [isAuthenticated, isLoading, router]);
+    // Enforce role-based access: only instructor users may access the instructor portal
+    if (!isLoading && user && user.role !== REQUIRED_ROLE) {
+      logout();
+      router.push(`/auth/login?error=${encodeURIComponent('Access denied. This portal is for instructors only.')}`);
+    }
+  }, [isAuthenticated, isLoading, user, router, logout]);
 
   if (isLoading) {
     return (
@@ -68,7 +76,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !user || user.role !== REQUIRED_ROLE) {
     return null;
   }
 

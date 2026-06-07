@@ -27,6 +27,8 @@ const navItems = [
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },
 ];
 
+const REQUIRED_ROLE = 'admin';
+
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -35,8 +37,14 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push('/auth/login');
+      return;
     }
-  }, [isAuthenticated, isLoading, router]);
+    // Enforce role-based access: only admin users may access the admin portal
+    if (!isLoading && user && user.role !== REQUIRED_ROLE) {
+      logout();
+      router.push(`/auth/login?error=${encodeURIComponent('Access denied. This portal is for administrators only.')}`);
+    }
+  }, [isAuthenticated, isLoading, user, router, logout]);
 
   if (isLoading) {
     return (
@@ -49,7 +57,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !user || user.role !== REQUIRED_ROLE) {
     return null;
   }
 

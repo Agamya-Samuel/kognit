@@ -20,6 +20,8 @@ import {
 } from 'lucide-react';
 import { BottomTabBar } from '@/components/BottomTabBar';
 
+const REQUIRED_ROLE = 'student';
+
 interface NavItem {
   href: string;
   label: string;
@@ -50,15 +52,21 @@ export default function AuthenticatedLayout({ children }: { children: ReactNode 
       router.replace('/auth/login');
       return;
     }
-    if (!isLoading && user && user.onboardingCompleted === false) {
+    // Enforce role-based access: only student users may access the student portal
+    if (!isLoading && user && user.role !== REQUIRED_ROLE) {
+      logout();
+      router.replace(`/auth/login?error=${encodeURIComponent('Access denied. This portal is for students only.')}`);
+      return;
+    }
+    if (!isLoading && user && user.role === REQUIRED_ROLE && user.onboardingCompleted === false) {
       const allowedPaths = ['/onboarding', '/auth/login', '/auth/logout'];
       if (!allowedPaths.includes(pathname)) {
         router.push('/onboarding');
       }
     }
-  }, [isLoading, isAuthenticated, user, pathname, router]);
+  }, [isLoading, isAuthenticated, user, pathname, router, logout]);
 
-  if (isLoading || !isAuthenticated) {
+  if (isLoading || !isAuthenticated || !user || user.role !== REQUIRED_ROLE) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-r-transparent" />
