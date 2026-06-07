@@ -104,4 +104,13 @@ export const adminService = {
   async updateUserNotificationPreferences(userId: number, preferences: Record<string, unknown>) {
     return getApiClient().patch<any>(`/admin/notifications/users/${userId}/preferences`, preferences);
   },
+
+  async getDatabaseStats() {
+    return getApiClient().get<{
+      databaseSize: { bytes: number; pretty: string };
+      tableCount: number;
+      tables: { name: string; rowCount: number; sizeBytes: number; sizePretty: string }[];
+      connectionPool: { active: number; idle: number; total: number; maxPool: number };
+    }>('/admin/database-stats');
+  },
 };

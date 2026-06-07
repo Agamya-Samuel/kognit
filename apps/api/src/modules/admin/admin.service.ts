@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
+import { sql } from 'drizzle-orm';
 import { UsersRepository } from '../../db/repositories/users.repository';
 import { InstructorProfilesRepository } from '../../db/repositories/instructor-profiles.repository';
 import { StudentProfilesRepository } from '../../db/repositories/student-profiles.repository';
@@ -72,9 +73,17 @@ export interface CourseCountByStatus {
   archived: number;
 }
 
+export interface DatabaseStats {
+  databaseSize: { bytes: number; pretty: string };
+  tableCount: number;
+  tables: { name: string; rowCount: number; sizeBytes: number; sizePretty: string }[];
+  connectionPool: { active: number; idle: number; total: number; maxPool: number };
+}
+
 @Injectable()
 export class AdminService {
   constructor(
+    @Inject('ADMIN_DRIZZLE_DB') private readonly db: any,
     private readonly usersRepo: UsersRepository,
     private readonly instructorProfilesRepo: InstructorProfilesRepository,
     private readonly coursesRepo: CoursesRepository,
@@ -498,6 +507,64 @@ async getRevenueBreakdown(): Promise<RevenueBreakdown> {
       successCount,
       failureCount: errors.length,
       errors,
+    };
+  }
+
+  // ─── Database Stats ─────────────────────────────────────────────────────
+
+  async getDatabaseStats(): Promise<DatabaseStats> {
+    // 1. Database size
+    const [sizeRow] = await this.db.execute(sql`
+      SELECT pg_database_size(current_database())::bigint AS bytes,
+             pg_size_pretty(pg_database_size(current_database())) AS pretty
+    `);
+
+    // 2. Per-table row counts and sizes
+    const tableRows = await this.db.execute(sql`
+      SELECT
+        relname                                        AS name,
+        n_live_tup::bigint                             AS row_count,
+        pg_total_relation_size(quote_ident(relname))   AS size_bytes,
+        pg_size_pretty(pg_total_relation_size(quote_ident(relname))) AS size_pretty
+      FROM pg_stat_user_tables
+      ORDER BY pg_total_relation_size(quote_ident(relname)) DESC
+    `);
+
+    const tables = tableRows.map((r: any) => ({
+      name: r.name,
+      rowCount: Number(r.row_count),
+      sizeBytes: Number(r.size_bytes),
+      sizePretty: r.size_pretty,
+    }));
+
+    // 3. Connection pool stats
+    const connRows = await this.db.execute(sql`
+      SELECT
+        state,
+        count(*) AS cnt
+      FROM pg_stat_activity
+      WHERE datname = current_database()
+      GROUP BY state
+    `);
+
+    let active = 0;
+    let idle = 0;
+    let total = 0;
+    for (const row of connRows) {
+      const cnt = Number(row.cnt);
+      total += cnt;
+      if (row.state === 'active') active = cnt;
+      else if (row.state === 'idle' || row.state === 'idle in transaction') idle += cnt;
+    }
+
+    const [maxRow] = await this.db.execute(sql`SHOW max_connections`);
+    const maxPool = Number(maxRow.max_connections);
+
+    return {
+      databaseSize: { bytes: Number(sizeRow.bytes), pretty: sizeRow.pretty },
+      tableCount: tables.length,
+      tables,
+      connectionPool: { active, idle, total, maxPool },
     };
   }
 

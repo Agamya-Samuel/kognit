@@ -309,4 +309,13 @@ export class AdminController {
     ) {
       return this.adminService.importStudentsFromCSV(institutionId, body.students);
     }
+
+    // ─── Database Monitoring ──────────────────────────────────────────────
+
+    @Get('database-stats')
+    @ApiResponse({ status: 200, description: 'Database statistics' })
+    @ApiOperation({ summary: 'Get database size, table counts, and connection pool info' })
+    async getDatabaseStats() {
+      return this.adminService.getDatabaseStats();
+    }
 }

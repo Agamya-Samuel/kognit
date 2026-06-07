@@ -18,6 +18,11 @@ import { NotificationsModule } from '../notifications/notifications.module';
 
 const repositories = [
   {
+    provide: 'ADMIN_DRIZZLE_DB',
+    useFactory: (db: any) => db,
+    inject: [DRIZZLE_DB],
+  },
+  {
     provide: UsersRepository,
     useFactory: (db: any) => new UsersRepository(db),
     inject: [DRIZZLE_DB],
