@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@edutech/ui';
 import { Button } from '@edutech/ui';
 import { Input } from '@edutech/ui';
@@ -9,12 +9,15 @@ import { Textarea } from '@edutech/ui';
 import { Avatar } from '@edutech/ui';
 import { Switch } from '@edutech/ui';
 import { PhoneInput } from '@edutech/ui';
-import { User, Lock, Mail, Camera, Save, Bell } from 'lucide-react';
+import { User, Lock, Mail, Camera, Save, Bell, AlertCircle, CheckCircle } from 'lucide-react';
 import { useAuth } from '@edutech/shared-components';
+import { useChangePassword, useUpdateProfile } from '@/hooks/useCourses';
+import { notificationsService, type NotificationPreferencesDto } from '@edutech/api-client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export default function SettingsPage() {
   const { user } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
   const [profileData, setProfileData] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -27,6 +30,17 @@ export default function SettingsPage() {
     newPassword: '',
     confirmPassword: '',
   });
+  const [profileSuccess, setProfileSuccess] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+
+  // Notification preferences from API
+  const { data: notifPrefs } = useQuery({
+    queryKey: ['notifications', 'preferences'],
+    queryFn: () => notificationsService.getPreferences(),
+  });
+
   const [notifications, setNotifications] = useState({
     enrollments: true,
     submissions: true,
@@ -34,35 +48,73 @@ export default function SettingsPage() {
     marketing: false,
   });
 
+  useEffect(() => {
+    if (notifPrefs) {
+      setNotifications({
+        enrollments: notifPrefs.emailNotifications ?? true,
+        submissions: notifPrefs.assignmentReminders ?? true,
+        reminders: notifPrefs.liveClassAlerts ?? true,
+        marketing: notifPrefs.marketingEmails ?? false,
+      });
+    }
+  }, [notifPrefs]);
+
+  const updateProfile = useUpdateProfile();
+  const changePassword = useChangePassword();
+
+  const updateNotifPrefs = useMutation({
+    mutationFn: (prefs: NotificationPreferencesDto) => notificationsService.updatePreferences(prefs),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications', 'preferences'] });
+    },
+  });
+
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setProfileSuccess(false);
+    setProfileError(null);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log('Profile saved:', profileData);
-    } catch (error) {
-      console.error('Failed to update profile:', error);
-    } finally {
-      setIsLoading(false);
+      await updateProfile.mutateAsync({
+        name: profileData.name,
+        mobile: profileData.mobile,
+      });
+      setProfileSuccess(true);
+      setTimeout(() => setProfileSuccess(false), 3000);
+    } catch (error: any) {
+      setProfileError(error?.message || 'Failed to update profile');
     }
   };
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    setPasswordSuccess(false);
+    setPasswordError(null);
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      alert('Passwords do not match');
+      setPasswordError('Passwords do not match');
       return;
     }
-    setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log('Password changed');
+      await changePassword.mutateAsync({
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+      });
+      setPasswordSuccess(true);
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    } catch (error) {
-      console.error('Failed to change password:', error);
-    } finally {
-      setIsLoading(false);
+      setTimeout(() => setPasswordSuccess(false), 3000);
+    } catch (error: any) {
+      setPasswordError(error?.message || 'Failed to change password');
     }
+  };
+
+  const handleNotificationToggle = (key: keyof typeof notifications, value: boolean) => {
+    const updated = { ...notifications, [key]: value };
+    setNotifications(updated);
+    updateNotifPrefs.mutate({
+      emailNotifications: updated.enrollments,
+      assignmentReminders: updated.submissions,
+      liveClassAlerts: updated.reminders,
+      marketingEmails: updated.marketing,
+    });
   };
 
   return (
@@ -163,9 +215,22 @@ export default function SettingsPage() {
                 />
               </div>
 
-              <Button type="submit" disabled={isLoading} className="w-full">
+              {profileSuccess && (
+                <div className="flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400">
+                  <CheckCircle className="h-4 w-4" />
+                  Profile updated successfully
+                </div>
+              )}
+              {profileError && (
+                <div className="flex items-center gap-2 text-sm text-destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  {profileError}
+                </div>
+              )}
+
+              <Button type="submit" disabled={updateProfile.isPending} className="w-full">
                 <Save className="h-4 w-4 mr-2" />
-                {isLoading ? 'Saving...' : 'Save Profile'}
+                {updateProfile.isPending ? 'Saving...' : 'Save Profile'}
               </Button>
             </form>
           </CardContent>
@@ -225,8 +290,21 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <Button type="submit" disabled={isLoading} variant="outline" className="w-full">
-                {isLoading ? 'Changing...' : 'Change Password'}
+              {passwordSuccess && (
+                <div className="flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400">
+                  <CheckCircle className="h-4 w-4" />
+                  Password changed successfully
+                </div>
+              )}
+              {passwordError && (
+                <div className="flex items-center gap-2 text-sm text-destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  {passwordError}
+                </div>
+              )}
+
+              <Button type="submit" disabled={changePassword.isPending} variant="outline" className="w-full">
+                {changePassword.isPending ? 'Changing...' : 'Change Password'}
               </Button>
             </form>
           </CardContent>
@@ -249,7 +327,7 @@ export default function SettingsPage() {
               </div>
               <Switch
                 checked={notifications.enrollments}
-                onCheckedChange={(checked) => setNotifications({ ...notifications, enrollments: checked })}
+                onCheckedChange={(checked) => handleNotificationToggle('enrollments', checked)}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -259,7 +337,7 @@ export default function SettingsPage() {
               </div>
               <Switch
                 checked={notifications.submissions}
-                onCheckedChange={(checked) => setNotifications({ ...notifications, submissions: checked })}
+                onCheckedChange={(checked) => handleNotificationToggle('submissions', checked)}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -269,7 +347,7 @@ export default function SettingsPage() {
               </div>
               <Switch
                 checked={notifications.reminders}
-                onCheckedChange={(checked) => setNotifications({ ...notifications, reminders: checked })}
+                onCheckedChange={(checked) => handleNotificationToggle('reminders', checked)}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -279,7 +357,7 @@ export default function SettingsPage() {
               </div>
               <Switch
                 checked={notifications.marketing}
-                onCheckedChange={(checked) => setNotifications({ ...notifications, marketing: checked })}
+                onCheckedChange={(checked) => handleNotificationToggle('marketing', checked)}
               />
             </div>
           </div>

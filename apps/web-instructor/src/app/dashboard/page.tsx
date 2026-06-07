@@ -40,31 +40,18 @@ export default function DashboardPage() {
   const safeChartData = Array.isArray(chartData) ? chartData : [];
 
   const revenueData = safeChartData.map((item: any) => ({
-    month: item.name,
+    month: new Date(item.name).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
     revenue: item.revenue,
-    costs: Math.round(item.revenue * 0.7)
-  })) || [
-    { month: 'Jan', revenue: 45000, costs: 32000 },
-    { month: 'Feb', revenue: 52000, costs: 35000 },
-    { month: 'Mar', revenue: 61000, costs: 38000 },
-    { month: 'Apr', revenue: 58000, costs: 36000 },
-    { month: 'May', revenue: 72000, costs: 42000 },
-    { month: 'Jun', revenue: 85000, costs: 48000 },
-  ];
+    costs: 0,
+  }));
 
   const engagementData = safeChartData.map((item: any) => ({
-    date: item.name,
+    date: new Date(item.name).toLocaleDateString('en-US', { weekday: 'short' }),
     views: item.users,
-    interactions: Math.round(item.users * 0.75)
-  })) || [
-    { date: 'Mon', views: 2400, interactions: 1800 },
-    { date: 'Tue', views: 2100, interactions: 1600 },
-    { date: 'Wed', views: 3200, interactions: 2400 },
-    { date: 'Thu', views: 2800, interactions: 2200 },
-    { date: 'Fri', views: 3600, interactions: 2800 },
-    { date: 'Sat', views: 1900, interactions: 1200 },
-    { date: 'Sun', views: 1600, interactions: 1100 },
-  ];
+    interactions: Math.round(item.users * 0.6),
+  }));
+
+  const hasChartData = revenueData.length > 0;
 
   if (metricsLoading || activityLoading || classesLoading || chartLoading) {
     return (
@@ -102,21 +89,18 @@ export default function DashboardPage() {
         <StatCard
           title="Total Revenue"
           value={`₹${safeNumber(metricsData.totalRevenue).toLocaleString('en-IN')}`}
-          change={{ value: '+18%', trend: 'up' }}
           icon={DollarSign}
           iconClassName="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
         />
         <StatCard
           title="Active Students"
           value={safeNumber(metricsData.totalStudents).toLocaleString()}
-          change={{ value: '+12%', trend: 'up' }}
           icon={Users}
           iconClassName="bg-blue-500/10 text-blue-600 dark:text-blue-400"
         />
         <StatCard
           title="Active Courses"
           value={safeNumber(metricsData.activeCourses).toString()}
-          change={{ value: '+2', trend: 'up' }}
           icon={BookOpen}
           iconClassName="bg-purple-500/10 text-purple-600 dark:text-purple-400"
         />
@@ -134,7 +118,15 @@ export default function DashboardPage() {
             <CardTitle>Revenue Overview</CardTitle>
           </CardHeader>
           <CardContent>
-            <RevenueChart data={revenueData} />
+            {hasChartData ? (
+              <RevenueChart data={revenueData} />
+            ) : (
+              <div className="h-[350px] flex flex-col items-center justify-center text-muted-foreground">
+                <BarChart3 className="h-8 w-8 mb-2 opacity-40" />
+                <p className="text-sm">No revenue data yet</p>
+                <p className="text-xs mt-1">Data will appear once students enroll in your courses.</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -143,7 +135,15 @@ export default function DashboardPage() {
             <CardTitle>Student Engagement</CardTitle>
           </CardHeader>
           <CardContent>
-            <EngagementChart data={engagementData} />
+            {hasChartData ? (
+              <EngagementChart data={engagementData} />
+            ) : (
+              <div className="h-[350px] flex flex-col items-center justify-center text-muted-foreground">
+                <BarChart3 className="h-8 w-8 mb-2 opacity-40" />
+                <p className="text-sm">No engagement data yet</p>
+                <p className="text-xs mt-1">Student activity will appear here over time.</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
