@@ -1,0 +1,1 @@
+ALTER TYPE "public"."email_verification_purpose" ADD VALUE 'instructor_activation';

@@ -142,6 +142,7 @@ export const activationProfileSchema = z.object({
 // ─── Onboarding Schemas ───────────────────────────────────────────────────────
 
 export const onboardingSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters').max(255, 'Name must be at most 255 characters'),
   mobile: mobileSchema,
   address: z.string().min(1, 'Street address is required').max(500),
   city: z.string().min(1, 'City is required').max(100),
@@ -158,6 +159,33 @@ export const instructorProfileSchema = z.object({
   bio: z.string().max(2000).optional().default(''),
   expertise: z.string().max(500).optional().default(''),
   mobile: mobileOptionalSchema,
+});
+
+// ─── Admin Invite Instructor Schema ────────────────────────────────────────────
+
+export const adminInviteInstructorSchema = z.object({
+  email: z.email('Please enter a valid email address'),
+  name: z.string().min(2, 'Name must be at least 2 characters').max(255, 'Name must be at most 255 characters'),
+});
+
+// ─── Instructor Activation Schemas ─────────────────────────────────────────────
+
+export const instructorActivationPasswordSchema = z
+  .object({
+    password: passwordPolicy,
+    confirmPassword: z.string().min(1, 'Please confirm your password'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
+
+export const instructorActivationProfileSchema = z.object({
+  bio: z.string().max(2000, 'Bio must be at most 2000 characters').optional().default(''),
+  expertise: z.string().max(500, 'Expertise list must be at most 500 characters').optional().default(''),
+  mobile: mobileOptionalSchema,
+  linkedinUrl: z.string().url('Please enter a valid URL').max(500).or(z.literal('')).optional(),
+  websiteUrl: z.string().url('Please enter a valid URL').max(500).or(z.literal('')).optional(),
 });
 
 // ─── Course Schemas ───────────────────────────────────────────────────────────
@@ -261,6 +289,9 @@ export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 export type ActivationPasswordInput = z.infer<typeof activationPasswordSchema>;
 export type ActivationProfileInput = z.infer<typeof activationProfileSchema>;
 export type OnboardingInput = z.infer<typeof onboardingSchema>;
+export type AdminInviteInstructorInput = z.infer<typeof adminInviteInstructorSchema>;
+export type InstructorActivationPasswordInput = z.infer<typeof instructorActivationPasswordSchema>;
+export type InstructorActivationProfileInput = z.infer<typeof instructorActivationProfileSchema>;
 export type InstructorProfileInput = z.infer<typeof instructorProfileSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 export type RefreshTokenInput = z.infer<typeof refreshTokenSchema>;

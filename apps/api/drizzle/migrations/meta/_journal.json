@@ -85,6 +85,13 @@
       "when": 1780720898678,
       "tag": "0011_closed_fat_cobra",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1780815793764,
+      "tag": "0012_add-instructor-activation-purpose",
+      "breakpoints": true
     }
   ]
 }

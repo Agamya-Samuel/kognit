@@ -39,4 +39,4 @@ export const waitlistSource = pgEnum('waitlist_source', ['landing_page', 'invite
 export const permissionsLevel = pgEnum('permissions_level', ['super_admin', 'moderator', 'support']);
 
 export const uploadStatus = pgEnum('upload_status', ['pending', 'uploading', 'complete', 'failed', 'cancelled']);
-export const emailVerificationPurpose = pgEnum('email_verification_purpose', ['email_verify', 'student_activation']);
+export const emailVerificationPurpose = pgEnum('email_verification_purpose', ['email_verify', 'student_activation', 'instructor_activation']);
