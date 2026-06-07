@@ -1,8 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { ChevronDown } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { Check } from 'lucide-react';
 import {
   getCountries,
   getCountryCallingCode,
@@ -18,6 +17,7 @@ import {
   CommandItem,
   CommandList,
 } from './command';
+import { cn } from '../lib/utils';
 
 export type PhoneInputValue = string | undefined;
 export type PhoneInputCountry = CountryCode;
@@ -31,21 +31,12 @@ export interface PhoneInputFieldProps {
   defaultCountry?: PhoneInputCountry;
   countries?: PhoneInputCountry[];
   placeholder?: string;
-  className?: string;
   name?: string;
   onBlur?: React.FocusEventHandler<HTMLInputElement>;
   onFocus?: React.FocusEventHandler<HTMLInputElement>;
 }
 
 const ALL_COUNTRIES = getCountries() as readonly CountryCode[];
-
-function getCountryFlag(countryCode: string): string {
-  const codePoints = countryCode
-    .toUpperCase()
-    .split('')
-    .map((char) => 127397 + char.charCodeAt(0));
-  return String.fromCodePoint(...codePoints);
-}
 
 function getCountryName(countryCode: CountryCode): string {
   try {
@@ -60,7 +51,6 @@ interface CountryOption {
   code: CountryCode;
   callingCode: string;
   name: string;
-  flag: string;
   search: string;
 }
 
@@ -70,7 +60,6 @@ function buildCountryList(countries: readonly CountryCode[]): CountryOption[] {
       code,
       callingCode: getCountryCallingCode(code),
       name: getCountryName(code),
-      flag: getCountryFlag(code),
       search: `${getCountryCallingCode(code)} ${getCountryName(code)} ${code}`,
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
@@ -129,8 +118,7 @@ const PhoneInput = React.forwardRef<HTMLDivElement, PhoneInputFieldProps>(
       disabled = false,
       defaultCountry = 'US',
       countries,
-      placeholder = 'Enter 10-digit mobile number',
-      className,
+      placeholder = 'Enter phone number',
       name,
       onBlur,
       onFocus,
@@ -187,46 +175,57 @@ const PhoneInput = React.forwardRef<HTMLDivElement, PhoneInputFieldProps>(
       }
     };
 
+    // Input component base styles (matching the Grade input field)
+    const inputBaseStyles = cn(
+      'h-11 w-full min-w-0 rounded-lg border border-input bg-transparent px-4 py-3 text-base shadow-xs transition-[color,box-shadow] outline-none selection:bg-primary selection:text-primary-foreground placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:bg-input/30',
+      'focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50',
+      'aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40',
+    );
+
     return (
-      <div
-        ref={ref}
-        className={cn('phone-field', error && 'phone-field--error', disabled && 'phone-field--disabled', className)}
-      >
-        <div className="phone-field__inner">
+      <div ref={ref} className="w-full">
+        <div className="flex gap-2">
+          {/* Country Code Selector Box */}
           <Popover open={popoverOpen && !disabled} onOpenChange={setPopoverOpen}>
             <PopoverTrigger asChild>
               <button
                 type="button"
                 disabled={disabled}
-                className="phone-field__country-trigger"
-                aria-label="Select country code"
+                aria-label={`Country code: +${selectedOption.callingCode}. Click to change.`}
                 id={id ? `${id}-country` : undefined}
+                className={cn(
+                  inputBaseStyles,
+                  'inline-flex items-center justify-center shrink-0 w-[50px] cursor-pointer hover:bg-accent/50',
+                  disabled && 'pointer-events-none opacity-50',
+                )}
               >
-                <span className="phone-field__country-flag">{selectedOption.flag}</span>
-                <span className="phone-field__country-code">+{selectedOption.callingCode}</span>
-                <ChevronDown className="phone-field__country-chevron" />
+                <span className="font-medium">+{selectedOption.callingCode}</span>
               </button>
             </PopoverTrigger>
-            <PopoverContent className="phone-field__country-popover" align="start" sideOffset={4}>
+            <PopoverContent align="start" sideOffset={4} className="w-[280px] p-0">
               <Command shouldFilter={true} loop>
-                <div className="phone-field__search-header">
+                <div className="border-b">
                   <CommandInput placeholder="Search country or code..." />
                 </div>
                 <CommandList>
-                  <CommandEmpty className="phone-field__search-empty">
+                  <CommandEmpty>
                     No country found.
                   </CommandEmpty>
-                  <CommandGroup className="phone-field__country-list">
+                  <CommandGroup>
                     {countryList.map((country) => (
                       <CommandItem
                         key={country.code}
                         value={country.search}
                         onSelect={() => selectCountry(country.code)}
-                        className="phone-field__country-item"
+                        className="flex items-center justify-between"
                       >
-                        <span className="phone-field__country-item-flag">{country.flag}</span>
-                        <span className="phone-field__country-item-code">+{country.callingCode}</span>
-                        <span className="phone-field__country-item-name">{country.name}</span>
+                        <span className="flex items-center gap-2">
+                          <span className="font-medium text-muted-foreground w-10">+{country.callingCode}</span>
+                          <span>{country.name}</span>
+                        </span>
+                        {country.code === internalCountry && (
+                          <Check className="h-4 w-4 text-primary" />
+                        )}
                       </CommandItem>
                     ))}
                   </CommandGroup>
@@ -235,6 +234,7 @@ const PhoneInput = React.forwardRef<HTMLDivElement, PhoneInputFieldProps>(
             </PopoverContent>
           </Popover>
 
+          {/* Phone Number Input Field */}
           <input
             ref={nationalNumberRef}
             id={id}
@@ -248,13 +248,18 @@ const PhoneInput = React.forwardRef<HTMLDivElement, PhoneInputFieldProps>(
             onFocus={onFocus}
             disabled={disabled}
             placeholder={placeholder}
-            className="phone-field__number-input"
             aria-label="Mobile number"
+            aria-invalid={!!error}
+            className={cn(
+              inputBaseStyles,
+              'flex-1',
+              error && 'border-destructive ring-destructive/20 dark:ring-destructive/40',
+            )}
           />
         </div>
 
         {error && (
-          <p className="phone-field__error" role="alert">
+          <p className="mt-2 text-sm text-destructive" role="alert">
             {error}
           </p>
         )}
