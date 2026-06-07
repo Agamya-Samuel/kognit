@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { coursesService, liveClassesService, analyticsService } from '@edutech/api-client';
+import { coursesService, liveClassesService, analyticsService, authService, usersService, scheduleService, type CreateScheduleDto } from '@edutech/api-client';
 
 export function useMyCourses() {
   return useQuery({
@@ -34,11 +34,34 @@ export function useCreateCourse() {
   });
 }
 
+export function useUpdateCourse() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, dto }: { id: number | string; dto: any }) => {
+      return coursesService.update(id, dto);
+    },
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
+      queryClient.invalidateQueries({ queryKey: ['course', id] });
+    },
+  });
+}
+
 export function useDashboardMetrics() {
   return useQuery({
     queryKey: ['dashboard', 'metrics'],
     queryFn: async () => {
       return analyticsService.getDashboardMetrics();
+    },
+  });
+}
+
+export function useInstructorAnalytics() {
+  return useQuery({
+    queryKey: ['instructor', 'analytics'],
+    queryFn: async () => {
+      return analyticsService.getInstructorAnalytics();
     },
   });
 }
@@ -66,4 +89,40 @@ export function useUpcomingClasses() {
        }));
      },
    });
+}
+
+export function useChangePassword() {
+  return useMutation({
+    mutationFn: async ({ currentPassword, newPassword }: { currentPassword: string; newPassword: string }) => {
+      return authService.changePassword(currentPassword, newPassword);
+    },
+  });
+}
+
+export function useUpdateProfile() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: { name?: string; mobile?: string }) => {
+      return usersService.updateProfile(data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user', 'profile'] });
+      queryClient.invalidateQueries({ queryKey: ['user', 'me'] });
+    },
+  });
+}
+
+export function useCreateSchedule() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (dto: CreateScheduleDto) => {
+      return scheduleService.createSchedule(dto);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['live', 'upcoming'] });
+      queryClient.invalidateQueries({ queryKey: ['schedule'] });
+    },
+  });
 }
