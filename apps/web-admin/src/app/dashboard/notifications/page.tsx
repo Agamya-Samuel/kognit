@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, Button, Switch, Badge } from '@edutech/ui';
 import {
   Bell,
@@ -16,6 +16,7 @@ import {
   CheckCircle2,
   Loader2,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useNotificationConfig } from '@/hooks/useNotificationConfig';
 
 const CATEGORY_LABELS = {
@@ -83,26 +84,28 @@ export default function NotificationsPage() {
   const { config, isLoading, updateConfig, isUpdating } = useNotificationConfig();
   const [settings, setSettings] = useState<NotificationConfig>(DEFAULTS);
   const [saved, setSaved] = useState(false);
-
+  
   useEffect(() => {
+    useEffect(() => {
     if (config && !isLoading) {
-      setSettings({
-        emailEnrollments: config.emailEnrollments ?? DEFAULTS.emailEnrollments,
-        emailSubmissions: config.emailSubmissions ?? DEFAULTS.emailSubmissions,
-        emailReminders: config.emailReminders ?? DEFAULTS.emailReminders,
-        emailMarketing: config.emailMarketing ?? DEFAULTS.emailMarketing,
-        pushEnrollments: config.pushEnrollments ?? DEFAULTS.pushEnrollments,
-        pushSubmissions: config.pushSubmissions ?? DEFAULTS.pushSubmissions,
-        pushReminders: config.pushReminders ?? DEFAULTS.pushReminders,
-        pushMarketing: config.pushMarketing ?? DEFAULTS.pushMarketing,
-        smsEnrollments: config.smsEnrollments ?? DEFAULTS.smsEnrollments,
-        smsSubmissions: config.smsSubmissions ?? DEFAULTS.smsSubmissions,
-        smsReminders: config.smsReminders ?? DEFAULTS.smsReminders,
-        smsMarketing: config.smsMarketing ?? DEFAULTS.smsMarketing,
-        emailFrequency: config.emailFrequency ?? DEFAULTS.emailFrequency,
-        smsFrequency: config.smsFrequency ?? DEFAULTS.smsFrequency,
-      });
-    }
+        setSettings({
+          emailEnrollments: config.emailEnrollments ?? DEFAULTS.emailEnrollments,
+          emailSubmissions: config.emailSubmissions ?? DEFAULTS.emailSubmissions,
+          emailReminders: config.emailReminders ?? DEFAULTS.emailReminders,
+          emailMarketing: config.emailMarketing ?? DEFAULTS.emailMarketing,
+          pushEnrollments: config.pushEnrollments ?? DEFAULTS.pushEnrollments,
+          pushSubmissions: config.pushSubmissions ?? DEFAULTS.pushSubmissions,
+          pushReminders: config.pushReminders ?? DEFAULTS.pushReminders,
+          pushMarketing: config.pushMarketing ?? DEFAULTS.pushMarketing,
+          smsEnrollments: config.smsEnrollments ?? DEFAULTS.smsEnrollments,
+          smsSubmissions: config.smsSubmissions ?? DEFAULTS.smsSubmissions,
+          smsReminders: config.smsReminders ?? DEFAULTS.smsReminders,
+          smsMarketing: config.smsMarketing ?? DEFAULTS.smsMarketing,
+          emailFrequency: config.emailFrequency ?? DEFAULTS.emailFrequency,
+          smsFrequency: config.smsFrequency ?? DEFAULTS.smsFrequency,
+        });
+      }
+  }, [config, isLoading]);
   }, [config, isLoading]);
 
   const toggleChannel = (channel: Channel, category: Category) => {
@@ -149,8 +152,8 @@ export default function NotificationsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Notifications</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Notifications</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             Configure notification channels, categories, and delivery frequency
           </p>
         </div>
@@ -177,10 +180,10 @@ export default function NotificationsPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b">
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Category</th>
+                <tr className="border-b border-border">
+                  <th className="text-left py-3 px-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Category</th>
                   {channelInfo.map(({ key, label, icon: Icon }) => (
-                    <th key={key} className="text-center py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">
+                    <th key={key} className="text-center py-3 px-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                       <div className="flex flex-col items-center gap-1">
                         <Icon className="h-4 w-4" />
                         {label}
@@ -194,13 +197,15 @@ export default function NotificationsPage() {
                   const catInfo = CATEGORY_LABELS[category];
                   const CatIcon = catInfo.icon;
                   return (
-                    <tr key={category} className={idx < 3 ? 'border-b' : ''}>
+                    <tr key={category} className={cn("transition-colors hover:bg-accent/50", idx < 3 ? 'border-b border-border' : '')}>
                       <td className="py-4 px-4">
-                        <div className="flex items-center gap-2">
-                          <CatIcon className="h-4 w-4 text-muted-foreground" />
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                            <CatIcon className="h-4 w-4 text-muted-foreground" />
+                          </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">{catInfo.label}</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">{catInfo.description}</p>
+                            <p className="text-sm font-medium text-foreground">{catInfo.label}</p>
+                            <p className="text-xs text-muted-foreground">{catInfo.description}</p>
                           </div>
                         </div>
                       </td>
@@ -219,7 +224,7 @@ export default function NotificationsPage() {
             </table>
           </div>
 
-          <div className="flex items-center justify-end gap-4 mt-4 pt-4 border-t">
+          <div className="flex items-center justify-end gap-2 mt-4 pt-4 border-t border-border">
             {channelInfo.map(({ key, label }) => {
               const allOn = (Object.keys(CATEGORY_LABELS) as Category[]).every(
                 (cat) => settings[getConfigKey(key, cat)],
@@ -252,28 +257,31 @@ export default function NotificationsPage() {
               <button
                 key={opt.value}
                 onClick={() => setFrequency('email', opt.value)}
-                className={`w-full flex items-start gap-3 p-3 rounded-lg border text-left transition-colors ${
+                className={cn(
+                  "w-full flex items-start gap-3 p-3 rounded-lg border text-left transition-colors",
                   settings.emailFrequency === opt.value
-                    ? 'border-primary bg-primary/5'
-                    : 'border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800'
-                }`}
+                    ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
+                    : 'border-border hover:bg-accent'
+                )}
               >
                 <div className="mt-0.5">
-                  <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center ${
-                    settings.emailFrequency === opt.value ? 'border-primary' : 'border-gray-300 dark:border-gray-600'
-                  }`}>
+                  <div className={cn(
+                    "h-4 w-4 rounded-full border-2 flex items-center justify-center transition-colors",
+                    settings.emailFrequency === opt.value ? 'border-primary' : 'border-muted-foreground/30'
+                  )}>
                     {settings.emailFrequency === opt.value && (
                       <div className="h-2 w-2 rounded-full bg-primary" />
                     )}
                   </div>
                 </div>
                 <div>
-                  <p className={`text-sm font-medium ${
-                    settings.emailFrequency === opt.value ? 'text-primary' : 'text-gray-900 dark:text-white'
-                  }`}>
+                  <p className={cn(
+                    "text-sm font-medium",
+                    settings.emailFrequency === opt.value ? 'text-primary' : 'text-foreground'
+                  )}>
                     {opt.label}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{opt.description}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{opt.description}</p>
                 </div>
               </button>
             ))}
@@ -292,28 +300,31 @@ export default function NotificationsPage() {
               <button
                 key={opt.value}
                 onClick={() => setFrequency('sms', opt.value)}
-                className={`w-full flex items-start gap-3 p-3 rounded-lg border text-left transition-colors ${
+                className={cn(
+                  "w-full flex items-start gap-3 p-3 rounded-lg border text-left transition-colors",
                   settings.smsFrequency === opt.value
-                    ? 'border-primary bg-primary/5'
-                    : 'border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800'
-                }`}
+                    ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
+                    : 'border-border hover:bg-accent'
+                )}
               >
                 <div className="mt-0.5">
-                  <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center ${
-                    settings.smsFrequency === opt.value ? 'border-primary' : 'border-gray-300 dark:border-gray-600'
-                  }`}>
+                  <div className={cn(
+                    "h-4 w-4 rounded-full border-2 flex items-center justify-center transition-colors",
+                    settings.smsFrequency === opt.value ? 'border-primary' : 'border-muted-foreground/30'
+                  )}>
                     {settings.smsFrequency === opt.value && (
                       <div className="h-2 w-2 rounded-full bg-primary" />
                     )}
                   </div>
                 </div>
                 <div>
-                  <p className={`text-sm font-medium ${
-                    settings.smsFrequency === opt.value ? 'text-primary' : 'text-gray-900 dark:text-white'
-                  }`}>
+                  <p className={cn(
+                    "text-sm font-medium",
+                    settings.smsFrequency === opt.value ? 'text-primary' : 'text-foreground'
+                  )}>
                     {opt.label}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{opt.description}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{opt.description}</p>
                 </div>
               </button>
             ))}
@@ -336,13 +347,15 @@ export default function NotificationsPage() {
               ).length;
               const totalCount = Object.keys(CATEGORY_LABELS).length;
               return (
-                <div key={key} className="rounded-lg border p-4 text-center">
-                  <Icon className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{label}</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                <div key={key} className="rounded-lg border border-border bg-card p-5 text-center shadow-sm">
+                  <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+                    <Icon className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  <p className="text-sm font-medium text-foreground">{label}</p>
+                  <p className="text-2xl font-bold text-foreground mt-1">
                     {enabledCount}<span className="text-sm font-normal text-muted-foreground">/{totalCount}</span>
                   </p>
-                  <Badge variant={enabledCount === totalCount ? 'default' : 'secondary'} className="mt-2">
+                  <Badge variant={enabledCount === totalCount ? 'default' : 'secondary'} className="mt-3">
                     {enabledCount === totalCount ? 'All Active' : `${totalCount - enabledCount} Off`}
                   </Badge>
                 </div>

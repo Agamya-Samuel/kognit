@@ -92,10 +92,10 @@ export default function InstructorsPage() {
                 key={status}
                 onClick={() => { setStatusFilter(status); setPage(1); }}
                 className={cn(
-                  "rounded-full px-3 py-1.5 text-xs font-medium capitalize transition-colors",
+                  "rounded-full px-3 py-1.5 text-xs font-medium capitalize transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
                   statusFilter === status
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
                 )}
               >
                 {status} {status === 'pending' ? `(${total})` : ''}
@@ -127,12 +127,12 @@ export default function InstructorsPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border">
-                      <th className="pb-3 text-left text-xs font-medium uppercase text-muted-foreground">Name</th>
-                      <th className="pb-3 text-left text-xs font-medium uppercase text-muted-foreground">Email</th>
-                      <th className="pb-3 text-left text-xs font-medium uppercase text-muted-foreground">Expertise</th>
-                      <th className="pb-3 text-left text-xs font-medium uppercase text-muted-foreground">Status</th>
-                      <th className="pb-3 text-left text-xs font-medium uppercase text-muted-foreground">Applied</th>
-                      <th className="pb-3 text-right text-xs font-medium uppercase text-muted-foreground">Actions</th>
+                      <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Name</th>
+                      <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Email</th>
+                      <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Expertise</th>
+                      <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Status</th>
+                      <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Applied</th>
+                      <th className="pb-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -172,14 +172,14 @@ export default function InstructorsPage() {
                             <div className="flex items-center justify-end gap-1">
                               <button
                                 onClick={() => handleApprove(inst.id)}
-                                className="rounded p-1.5 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                                className="rounded p-1.5 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
                                 title="Approve"
                               >
                                 <CheckCircle2 className="h-4 w-4" />
                               </button>
                               <button
                                 onClick={() => { setRejectingId(inst.id); setRejectReason(''); }}
-                                className="rounded p-1.5 text-destructive hover:bg-destructive/10"
+                                className="rounded p-1.5 text-destructive hover:bg-destructive/10 transition-colors"
                                 title="Reject"
                               >
                                 <XCircle className="h-4 w-4" />

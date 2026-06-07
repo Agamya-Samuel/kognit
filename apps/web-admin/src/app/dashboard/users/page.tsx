@@ -134,10 +134,10 @@ const result = await adminService.getUsers(params);
                   key={role}
                   onClick={() => { setRoleFilter(role); setPage(1); }}
                   className={cn(
-                    "rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
+                    "rounded-full px-3 py-1.5 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
                     roleFilter === role
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
                   )}
                 >
                   {role === 'all' ? 'All' : role.replace('_', ' ')}
@@ -170,12 +170,12 @@ const result = await adminService.getUsers(params);
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border">
-                      <th className="pb-3 text-left text-xs font-medium uppercase text-muted-foreground">Name</th>
-                      <th className="pb-3 text-left text-xs font-medium uppercase text-muted-foreground">Email</th>
-                      <th className="pb-3 text-left text-xs font-medium uppercase text-muted-foreground">Role</th>
-                      <th className="pb-3 text-left text-xs font-medium uppercase text-muted-foreground">Status</th>
-                      <th className="pb-3 text-left text-xs font-medium uppercase text-muted-foreground">Joined</th>
-                      <th className="pb-3 text-right text-xs font-medium uppercase text-muted-foreground">Actions</th>
+                      <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Name</th>
+                      <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Email</th>
+                      <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Role</th>
+                      <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Status</th>
+                      <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Joined</th>
+                      <th className="pb-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -207,21 +207,21 @@ const result = await adminService.getUsers(params);
                           <div className="flex items-center justify-end gap-1">
                             <button
                               onClick={() => handleToggleActive(user)}
-                              className="rounded p-1.5 text-muted-foreground hover:bg-accent"
+                              className="rounded p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                               title={user.isActive ? 'Deactivate' : 'Activate'}
                             >
                               <Shield className="h-4 w-4" />
                             </button>
                             <button
                               onClick={() => openDrawer(user)}
-                              className="rounded p-1.5 text-muted-foreground hover:bg-accent"
+                              className="rounded p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                               title="Edit user"
                             >
                               <UserCog className="h-4 w-4" />
                             </button>
                             <button
                               onClick={() => handleDelete(user.id)}
-                              className="rounded p-1.5 text-destructive hover:bg-destructive/10"
+                              className="rounded p-1.5 text-destructive hover:bg-destructive/10 transition-colors"
                               title="Delete user"
                             >
                               <Trash2 className="h-4 w-4" />
