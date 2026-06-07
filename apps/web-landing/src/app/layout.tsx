@@ -1,22 +1,27 @@
 import type { Metadata } from 'next';
-import { Inter, Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
+import localFont from 'next/font/local';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import './globals.css';
 
-const inter = Inter({
-  subsets: ['latin'],
+const inter = localFont({
+  src: '../../public/fonts/inter-400.woff2',
+  weight: '400',
   variable: '--font-inter',
+  display: 'swap',
 });
 
-const jakarta = Plus_Jakarta_Sans({
-  subsets: ['latin'],
-  weight: ['600', '700', '800'],
+const jakarta = localFont({
+  src: '../../public/fonts/plus-jakarta-sans-600-700-800.woff2',
+  weight: '600 700 800',
   variable: '--font-jakarta',
+  display: 'swap',
 });
 
-const mono = JetBrains_Mono({
-  subsets: ['latin'],
+const mono = localFont({
+  src: '../../public/fonts/jetbrains-mono-400.woff2',
+  weight: '400',
   variable: '--font-mono',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
