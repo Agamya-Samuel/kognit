@@ -13,6 +13,10 @@ export const adminService = {
     return getApiClient().patch<void>(`/admin/instructors/${id}/reject`, { reason });
   },
 
+  async inviteInstructor(email: string, name: string) {
+    return getApiClient().post<{ message: string; activationLink: string }>('/admin/instructors/invite', { email, name });
+  },
+
   async getCourses(filters?: Record<string, unknown>) {
     return getApiClient().get<any[]>('/admin/courses', filters);
   },
@@ -73,12 +77,16 @@ export const adminService = {
      return getApiClient().get<any>('/admin/dashboard/revenue-breakdown');
    },
 
-   async getInstitutions(filters?: { page?: number; limit?: number; search?: string }) {
-     return getApiClient().get<any>('/admin/institutions', filters);
-   },
-
    async getInstitution(id: number) {
      return getApiClient().get<any>(`/admin/institutions/${id}`);
+   },
+   
+   async createInstitution(data: { institutionName: string; contactEmail: string; seatCount: number; activeUntil: string; razorpayCustomerId?: string }) {
+     return getApiClient().post<any>('/admin/institutions', data);
+   },
+   
+   async getInstitutions(filters?: { page?: number; limit?: number; search?: string }) {
+     return getApiClient().get<any>('/admin/institutions', filters);
    },
 
   async importStudents(institutionId: number, students: { name: string; email: string }[]) {

@@ -259,6 +259,51 @@ export const authService = {
     return getApiClient().get('/auth/me');
   },
 
+  // ─── Instructor Activation (Admin Invite) ──────────────────────────────
+
+  /**
+   * Validate an instructor activation token
+   * @param token - Activation token from email
+   * @returns User info if valid
+   */
+  async validateInstructorActivationToken(token: string): Promise<{ userId: number; email: string; name: string }> {
+    return getApiClient().post<{ userId: number; email: string; name: string }>('/auth/instructor-activation/validate', { token });
+  },
+
+  /**
+   * Complete instructor activation with password and profile
+   * @param token - Activation token from email
+   * @param password - Password to set
+   * @param name - Full name
+   * @param bio - Instructor bio
+   * @param expertise - Areas of expertise
+   * @param mobile - Mobile phone (optional)
+   * @param linkedinUrl - LinkedIn URL (optional)
+   * @param websiteUrl - Website URL (optional)
+   * @returns User profile and tokens (auto-login)
+   */
+  async completeInstructorActivation(
+    token: string,
+    password: string,
+    name: string,
+    bio: string,
+    expertise: string[],
+    mobile: string,
+    linkedinUrl: string,
+    websiteUrl: string,
+  ): Promise<RegistrationCompleteResponse> {
+    return getApiClient().post<RegistrationCompleteResponse>('/auth/instructor-activation/complete', {
+      token,
+      password,
+      name,
+      bio,
+      expertise,
+      mobile,
+      linkedinUrl,
+      websiteUrl,
+    });
+  },
+
   getGoogleAuthUrl(redirectUrl: string, portal: string): string {
     const client = getApiClient().getAxiosInstance();
     const baseURL = client.defaults.baseURL || '';
