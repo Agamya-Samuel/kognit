@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@edutech/ui';
 import { Users, BookOpen, Award, TrendingUp, Calendar, DollarSign, AlertCircle } from 'lucide-react';
 import { adminService } from '@edutech/api-client';
+import { PageHeader } from '@/components/PageHeader';
 
 interface DashboardMetrics {
   totalUsers: number;
@@ -219,14 +220,10 @@ export default function ReportsPage() {
   if (error) {
     return (
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">
-            Analytics & Reports
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Monitor platform performance and user engagement
-          </p>
-        </div>
+        <PageHeader
+          title="Analytics & Reports"
+          description="Monitor platform performance and user engagement"
+        />
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-col items-center justify-center gap-3 py-12 text-muted-foreground">
@@ -241,14 +238,10 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">
-          Analytics & Reports
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Monitor platform performance and user engagement
-        </p>
-      </div>
+      <PageHeader
+        title="Analytics & Reports"
+        description="Monitor platform performance and user engagement"
+      />
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -265,25 +258,25 @@ export default function ReportsPage() {
               title="Total Users"
               value={formatNumber(metrics.totalUsers)}
               icon={Users}
-              subtitle="+12% from last month"
+              subtitle={metrics.newUsersThisMonth > 0 ? `+${metrics.newUsersThisMonth} new this period` : 'No new users this period'}
             />
             <MetricCard
               title="Total Courses"
               value={formatNumber(metrics.totalCourses)}
               icon={BookOpen}
-              subtitle="+8 new this month"
+              subtitle={metrics.totalCourses > 0 ? `${metrics.totalCourses} total on platform` : 'No courses yet'}
             />
             <MetricCard
               title="Total Revenue"
               value={formatCurrency(metrics.totalRevenue)}
               icon={DollarSign}
-              subtitle="+24% from last month"
+              subtitle={metrics.totalRevenue > 0 ? 'All-time platform revenue' : 'No revenue yet'}
             />
             <MetricCard
               title="Active Users"
               value={formatNumber(metrics.activeUsers)}
               icon={TrendingUp}
-              subtitle="+5% from last week"
+              subtitle={metrics.activeUsers > 0 ? `${metrics.activeUsers} currently active` : 'No active users'}
             />
           </>
         )}
