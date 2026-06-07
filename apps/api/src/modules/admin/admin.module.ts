@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { DRIZZLE_DB } from '../../db/database.module';
 import { UsersRepository } from '../../db/repositories/users.repository';
 import { InstructorProfilesRepository } from '../../db/repositories/instructor-profiles.repository';
@@ -75,7 +76,7 @@ const repositories = [
 ];
 
 @Module({
-  imports: [NotificationsModule],
+  imports: [NotificationsModule, ConfigModule],
   controllers: [AdminController],
   providers: [...repositories, AdminService],
 })

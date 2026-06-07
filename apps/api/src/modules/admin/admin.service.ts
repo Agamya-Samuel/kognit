@@ -1,4 +1,5 @@
-import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { sql } from 'drizzle-orm';
 import { UsersRepository } from '../../db/repositories/users.repository';
 import { InstructorProfilesRepository } from '../../db/repositories/instructor-profiles.repository';
@@ -94,6 +95,7 @@ export class AdminService {
     private readonly studentProfilesRepo: StudentProfilesRepository,
     private readonly institutionAccountsRepo: InstitutionAccountsRepository,
     private readonly emailVerificationsRepo: EmailVerificationsRepository,
+    private readonly configService: ConfigService,
   ) {}
 
   async listUsers(query: AdminListUsersQuery) {
@@ -177,7 +179,10 @@ export class AdminService {
       approvalStatus: 'approved',
     });
 
-    await this.usersRepo.update(profile.userId, { role: 'instructor' });
+    await this.usersRepo.update(profile.userId, {
+      role: 'instructor',
+      approvalStatus: 'approved',
+    });
 
     return { message: 'Instructor approved' };
   }
@@ -192,7 +197,85 @@ export class AdminService {
       approvalStatus: 'rejected',
     });
 
+    await this.usersRepo.update(profile.userId, {
+      approvalStatus: 'rejected',
+    });
+
     return { message: 'Instructor rejected' };
+  }
+
+  // ─── Instructor Invite ───────────────────────────────────────────────────
+
+  async inviteInstructor(email: string, name: string) {
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Check if email already exists
+    const existingUser = await this.usersRepo.findByEmail(normalizedEmail);
+    if (existingUser) {
+      throw new ConflictException('A user with this email already exists.');
+    }
+
+    // Create user record with no password (will be set via activation)
+    const user = await this.usersRepo.create({
+      email: normalizedEmail,
+      name: name.trim(),
+      passwordHash: null as any, // No password - will be set via activation
+      role: 'instructor',
+      avatarUrl: null,
+      isVerified: false,
+      isActive: true,
+      approvalStatus: 'pending',
+      onboardingCompleted: false,
+      deletedAt: null,
+    });
+
+    // Create instructor profile with pending status
+    await this.instructorProfilesRepo.create({
+      userId: user.id,
+      bio: null,
+      expertise: [],
+      socialLinks: [],
+      approvalStatus: 'pending',
+      razorpaySellerAccountId: null,
+    });
+
+    // Generate activation token (30 day validity)
+    const token = await this.generateInstructorActivationToken(user.id);
+
+    const frontendUrl = this.configService.get<string>('INSTRUCTOR_APP_URL') || 'http://localhost:3002';
+    const activationLink = `${frontendUrl}/auth/activate?token=${token}`;
+
+    // Log the activation link (in production, send via email)
+    console.log(`[Instructor Invite] Activation link for ${normalizedEmail}: ${activationLink}`);
+
+    // TODO: In production, dispatch email via notification service
+    // await this.notificationDispatcher.dispatch({ ... })
+
+    return {
+      message: 'Instructor invitation sent',
+      activationLink, // Include in response for development/testing
+    };
+  }
+
+  private async generateInstructorActivationToken(userId: number): Promise<string> {
+    const crypto = require('crypto');
+    const bcrypt = require('bcrypt');
+
+    const token = crypto.randomBytes(64).toString('hex');
+    const tokenHash = await bcrypt.hash(token, 10);
+
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 30); // 30 days
+
+    await this.emailVerificationsRepo.create({
+      userId,
+      tokenHash,
+      purpose: 'instructor_activation',
+      expiresAt,
+      verified: false,
+    });
+
+    return token;
   }
 
   async listCourses(query: AdminListCoursesQuery) {
@@ -413,6 +496,30 @@ async getRevenueBreakdown(): Promise<RevenueBreakdown> {
     return institution;
   }
 
+  async createInstitution(data: {
+    institutionName: string;
+    contactEmail: string;
+    seatCount: number;
+    activeUntil: string; // ISO date string
+    razorpayCustomerId?: string;
+  }) {
+    // Check if contact email already exists
+    const existing = await this.institutionAccountsRepo.findByContactEmail(data.contactEmail);
+    if (existing) {
+      throw new ConflictException('An institution with this contact email already exists.');
+    }
+
+    const institution = await this.institutionAccountsRepo.create({
+      institutionName: data.institutionName.trim(),
+      contactEmail: data.contactEmail.toLowerCase().trim(),
+      seatCount: data.seatCount,
+      activeUntil: new Date(data.activeUntil),
+      razorpayCustomerId: data.razorpayCustomerId || null,
+    });
+
+    return institution;
+  }
+
   // ─── Student Bulk Import ──────────────────────────────────────────────────
 
   async importStudentsFromCSV(
@@ -576,7 +683,7 @@ async getRevenueBreakdown(): Promise<RevenueBreakdown> {
     const tokenHash = await bcrypt.hash(token, 10);
 
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 1200); // 1200 days
+    expiresAt.setDate(expiresAt.getDate() + 180); // 180 days
 
     await this.emailVerificationsRepo.create({
       userId,

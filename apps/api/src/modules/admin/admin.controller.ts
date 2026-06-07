@@ -117,6 +117,13 @@ export class AdminController {
     return this.adminService.rejectInstructor(id, body.reason);
   }
 
+  @Post('instructors/invite')
+  @ApiResponse({ status: 201, description: 'Instructor invitation sent' })
+  @ApiOperation({ summary: 'Invite a new instructor by email' })
+  async inviteInstructor(@Body() body: { email: string; name: string }) {
+    return this.adminService.inviteInstructor(body.email, body.name);
+  }
+
   @Get('courses')
   @ApiResponse({ status: 200, description: 'Paginated course list for moderation' })
   @ApiOperation({ summary: 'List all courses with filters for moderation' })
@@ -295,6 +302,16 @@ export class AdminController {
     @ApiOperation({ summary: 'Get a single institution by ID' })
     async getInstitution(@Param('id', ParseIntPipe) id: number) {
       return this.adminService.getInstitution(id);
+    }
+
+    @Post('institutions')
+    @ApiResponse({ status: 201, description: 'Institution created' })
+    @ApiResponse({ status: 409, description: 'Institution with this email already exists' })
+    @ApiOperation({ summary: 'Create a new institution' })
+    async createInstitution(
+      @Body() body: { institutionName: string; contactEmail: string; seatCount: number; activeUntil: string; razorpayCustomerId?: string },
+    ) {
+      return this.adminService.createInstitution(body);
     }
 
     // ─── Student Bulk Import ──────────────────────────────────────────────
