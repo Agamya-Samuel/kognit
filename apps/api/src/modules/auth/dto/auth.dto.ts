@@ -1,4 +1,4 @@
-import { IsEmail, IsString, IsNotEmpty, MinLength, MaxLength, IsOptional, IsIn } from 'class-validator';
+import { IsEmail, IsString, IsNotEmpty, MinLength, MaxLength, IsOptional, IsIn, IsArray } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class LoginDto {
@@ -200,4 +200,65 @@ export class CompleteActivationDto {
   @IsString()
   @MaxLength(100)
   country: string;
+}
+
+export class ValidateInstructorActivationTokenDto {
+  @ApiProperty({ example: 'abc123...', description: 'Activation token from email' })
+  @IsString()
+  @IsNotEmpty({ message: 'Activation token is required' })
+  token: string;
+}
+
+export class CompleteInstructorActivationDto {
+  @ApiProperty({ example: 'abc123...', description: 'Activation token from email' })
+  @IsString()
+  @IsNotEmpty({ message: 'Activation token is required' })
+  token: string;
+
+  @ApiProperty({
+    example: 'NewPassword123',
+    description: 'Password to set (min 8 chars, 1 uppercase, 1 lowercase, 1 digit)',
+    minLength: 8,
+    maxLength: 128,
+  })
+  @IsString()
+  @MinLength(8, { message: 'Password must be at least 8 characters' })
+  @MaxLength(128, { message: 'Password must be at most 128 characters' })
+  password: string;
+
+  @ApiProperty({ example: 'John Doe', description: 'User full name' })
+  @IsString()
+  @MinLength(2, { message: 'Name must be at least 2 characters' })
+  @MaxLength(255, { message: 'Name must be at most 255 characters' })
+  name: string;
+
+  @ApiPropertyOptional({ example: 'Experienced web developer...', description: 'Instructor bio' })
+  @IsString()
+  @IsOptional()
+  @MaxLength(2000)
+  bio?: string;
+
+  @ApiPropertyOptional({ example: ['JavaScript', 'React'], description: 'Areas of expertise' })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  expertise?: string[];
+
+  @ApiPropertyOptional({ example: '+1234567890', description: 'Mobile phone number' })
+  @IsString()
+  @IsOptional()
+  @MaxLength(20)
+  mobile?: string;
+
+  @ApiPropertyOptional({ example: 'https://linkedin.com/in/johndoe', description: 'LinkedIn profile URL' })
+  @IsString()
+  @IsOptional()
+  @MaxLength(500)
+  linkedinUrl?: string;
+
+  @ApiPropertyOptional({ example: 'https://johndoe.com', description: 'Website or portfolio URL' })
+  @IsString()
+  @IsOptional()
+  @MaxLength(500)
+  websiteUrl?: string;
 }

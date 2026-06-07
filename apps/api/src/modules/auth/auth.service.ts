@@ -15,6 +15,7 @@ import { EmailVerificationsRepository } from '../../db/repositories/email-verifi
 import { RefreshTokensRepository } from '../../db/repositories/refresh-tokens.repository';
 import { UserAuthProvidersRepository } from '../../db/repositories/user-auth-providers.repository';
 import { StudentProfilesRepository } from '../../db/repositories/student-profiles.repository';
+import { InstructorProfilesRepository } from '../../db/repositories/instructor-profiles.repository';
 import { PasswordService } from './services/password.service';
 import { TokenService, TokenPayload } from './services/token.service';
 import { LockoutService } from './services/lockout.service';
@@ -46,6 +47,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly studentProfilesRepo: StudentProfilesRepository,
+    private readonly instructorProfilesRepo: InstructorProfilesRepository,
   ) {}
 
   // ─── Email-First Registration Flow ──────────────────────────────────────
@@ -179,6 +181,19 @@ export class AuthService {
       onboardingCompleted: false,
       deletedAt: null,
     });
+
+    // Create role-specific profile record
+    if (registrationIntent === 'instructor') {
+      await this.instructorProfilesRepo.create({
+        userId: user.id,
+        bio: null,
+        expertise: [],
+        socialLinks: [],
+        approvalStatus: 'pending',
+        razorpaySellerAccountId: null,
+      });
+      this.logger.log(`Instructor profile created for user ${user.id}`);
+    }
 
     // Clean up pending registration
     await this.cacheService.del(PENDING_REGISTRATION_NAMESPACE, email);

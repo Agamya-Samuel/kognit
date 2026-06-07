@@ -11,6 +11,7 @@ import { PasswordResetsRepository } from '../../db/repositories/password-resets.
 import { RefreshTokensRepository } from '../../db/repositories/refresh-tokens.repository';
 import { UserAuthProvidersRepository } from '../../db/repositories/user-auth-providers.repository';
 import { StudentProfilesRepository } from '../../db/repositories/student-profiles.repository';
+import { InstructorProfilesRepository } from '../../db/repositories/instructor-profiles.repository';
 
 // Strategies
 import { JwtStrategy } from './strategies/jwt.strategy';
@@ -29,6 +30,7 @@ import { LockoutService } from './services/lockout.service';
 import { EmailVerificationService } from './services/email-verification.service';
 import { PasswordResetService } from './services/password-reset.service';
 import { StudentActivationService } from './services/student-activation.service';
+import { InstructorActivationService } from './services/instructor-activation.service';
 
 // Controller & main service
 import { AuthController } from './auth.controller';
@@ -65,6 +67,11 @@ const repositories = [
     useFactory: (db: any) => new StudentProfilesRepository(db),
     inject: [DRIZZLE_DB],
   },
+  {
+    provide: InstructorProfilesRepository,
+    useFactory: (db: any) => new InstructorProfilesRepository(db),
+    inject: [DRIZZLE_DB],
+  },
 ];
 
 @Module({
@@ -97,11 +104,13 @@ const repositories = [
     EmailVerificationService,
     PasswordResetService,
     StudentActivationService,
+    InstructorActivationService,
     AuthService,
   ],
   exports: [
     AuthService,
     StudentActivationService,
+    InstructorActivationService,
     JwtAuthGuard,
     JwtRefreshGuard,
     RolesGuard,

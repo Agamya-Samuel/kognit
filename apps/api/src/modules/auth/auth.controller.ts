@@ -14,6 +14,7 @@ import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { StudentActivationService } from './services/student-activation.service';
+import { InstructorActivationService } from './services/instructor-activation.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { RolesGuard } from './guards/roles.guard';
@@ -32,6 +33,8 @@ import {
   ChangePasswordDto,
   ValidateActivationTokenDto,
   CompleteActivationDto,
+  ValidateInstructorActivationTokenDto,
+  CompleteInstructorActivationDto,
 } from './dto/auth.dto';
 
 @ApiTags('Authentication')
@@ -40,6 +43,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly studentActivationService: StudentActivationService,
+    private readonly instructorActivationService: InstructorActivationService,
     private readonly configService: ConfigService,
   ) {}
 
@@ -262,6 +266,35 @@ export class AuthController {
       dto.state,
       dto.pinCode,
       dto.country,
+    );
+  }
+
+  // ─── Instructor Activation ──────────────────────────────────────────────
+
+  @Public()
+  @Post('instructor-activation/validate')
+  @HttpCode(HttpStatus.OK)
+  @ApiResponse({ status: 200, description: 'Token validated successfully' })
+  @ApiOperation({ summary: 'Validate an instructor activation token' })
+  async validateInstructorActivationToken(@Body() dto: ValidateInstructorActivationTokenDto) {
+    return this.instructorActivationService.validateActivationToken(dto.token);
+  }
+
+  @Public()
+  @Post('instructor-activation/complete')
+  @HttpCode(HttpStatus.OK)
+  @ApiResponse({ status: 200, description: 'Instructor activation completed and logged in' })
+  @ApiOperation({ summary: 'Complete instructor activation with password and profile' })
+  async completeInstructorActivation(@Body() dto: CompleteInstructorActivationDto) {
+    return this.instructorActivationService.completeActivation(
+      dto.token,
+      dto.password,
+      dto.name,
+      dto.bio || '',
+      dto.expertise || [],
+      dto.mobile || '',
+      dto.linkedinUrl || '',
+      dto.websiteUrl || '',
     );
   }
 }
