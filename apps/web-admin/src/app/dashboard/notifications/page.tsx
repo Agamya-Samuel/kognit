@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, Button, Switch, Badge } from '@edutech/ui';
 import {
   Bell,
@@ -84,24 +84,26 @@ export default function NotificationsPage() {
   const [settings, setSettings] = useState<NotificationConfig>(DEFAULTS);
   const [saved, setSaved] = useState(false);
 
-  if (config && !isLoading) {
-    setSettings({
-      emailEnrollments: config.emailEnrollments ?? DEFAULTS.emailEnrollments,
-      emailSubmissions: config.emailSubmissions ?? DEFAULTS.emailSubmissions,
-      emailReminders: config.emailReminders ?? DEFAULTS.emailReminders,
-      emailMarketing: config.emailMarketing ?? DEFAULTS.emailMarketing,
-      pushEnrollments: config.pushEnrollments ?? DEFAULTS.pushEnrollments,
-      pushSubmissions: config.pushSubmissions ?? DEFAULTS.pushSubmissions,
-      pushReminders: config.pushReminders ?? DEFAULTS.pushReminders,
-      pushMarketing: config.pushMarketing ?? DEFAULTS.pushMarketing,
-      smsEnrollments: config.smsEnrollments ?? DEFAULTS.smsEnrollments,
-      smsSubmissions: config.smsSubmissions ?? DEFAULTS.smsSubmissions,
-      smsReminders: config.smsReminders ?? DEFAULTS.smsReminders,
-      smsMarketing: config.smsMarketing ?? DEFAULTS.smsMarketing,
-      emailFrequency: config.emailFrequency ?? DEFAULTS.emailFrequency,
-      smsFrequency: config.smsFrequency ?? DEFAULTS.smsFrequency,
-    });
-  }
+  useEffect(() => {
+    if (config && !isLoading) {
+      setSettings({
+        emailEnrollments: config.emailEnrollments ?? DEFAULTS.emailEnrollments,
+        emailSubmissions: config.emailSubmissions ?? DEFAULTS.emailSubmissions,
+        emailReminders: config.emailReminders ?? DEFAULTS.emailReminders,
+        emailMarketing: config.emailMarketing ?? DEFAULTS.emailMarketing,
+        pushEnrollments: config.pushEnrollments ?? DEFAULTS.pushEnrollments,
+        pushSubmissions: config.pushSubmissions ?? DEFAULTS.pushSubmissions,
+        pushReminders: config.pushReminders ?? DEFAULTS.pushReminders,
+        pushMarketing: config.pushMarketing ?? DEFAULTS.pushMarketing,
+        smsEnrollments: config.smsEnrollments ?? DEFAULTS.smsEnrollments,
+        smsSubmissions: config.smsSubmissions ?? DEFAULTS.smsSubmissions,
+        smsReminders: config.smsReminders ?? DEFAULTS.smsReminders,
+        smsMarketing: config.smsMarketing ?? DEFAULTS.smsMarketing,
+        emailFrequency: config.emailFrequency ?? DEFAULTS.emailFrequency,
+        smsFrequency: config.smsFrequency ?? DEFAULTS.smsFrequency,
+      });
+    }
+  }, [config, isLoading]);
 
   const toggleChannel = (channel: Channel, category: Category) => {
     const key = getConfigKey(channel, category);
