@@ -39,34 +39,6 @@ export default function CreateCoursePage() {
   const createCourseMutation = useCreateCourse();
   const { mutate: createCourse, isPending: isCreating } = createCourseMutation;
 
-  // Mock data for course creation stats
-  const creationStats = [
-    {
-      title: 'Total Courses',
-      value: '12',
-      change: { value: '+2 this month', trend: 'up' as const },
-      icon: BookOpen,
-    },
-    {
-      title: 'Published',
-      value: '8',
-      change: { value: '+1 this week', trend: 'up' as const },
-      icon: CheckCircle2,
-    },
-    {
-      title: 'Total Students',
-      value: '245',
-      change: { value: '+18 this week', trend: 'up' as const },
-      icon: Users,
-    },
-    {
-      title: 'Avg. Completion',
-      value: '78%',
-      change: { value: '+5%', trend: 'up' as const },
-      icon: TrendingUp,
-    },
-  ];
-
   const currentStepIndex = steps.findIndex((step) => step.id === currentStep);
 
   const handleNext = () => {
@@ -125,19 +97,6 @@ export default function CreateCoursePage() {
 
   return (
     <div className="container mx-auto space-y-6">
-      {/* Stats Row */}
-      <StatsRow>
-        {creationStats.map((stat) => (
-          <StatCard
-            key={stat.title}
-            title={stat.title}
-            value={stat.value}
-            change={stat.change}
-            icon={stat.icon}
-          />
-        ))}
-      </StatsRow>
-
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>

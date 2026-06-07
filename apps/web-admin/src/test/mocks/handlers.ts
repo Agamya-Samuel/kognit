@@ -200,6 +200,27 @@ const mockNotifications = [
   },
 ];
 
+const mockInstitutions = [
+  {
+    id: 1,
+    institutionName: 'Test University',
+    contactEmail: 'admin@testuniversity.edu',
+    seatCount: 500,
+    activeUntil: new Date(Date.now() + 365 * 86400000).toISOString(),
+    razorpayCustomerId: null as string | null,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 2,
+    institutionName: 'Sample College',
+    contactEmail: 'info@samplecollege.edu',
+    seatCount: 200,
+    activeUntil: new Date(Date.now() + 180 * 86400000).toISOString(),
+    razorpayCustomerId: null as string | null,
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+  },
+];
+
 // ─── Auth Handlers ─────────────────────────────────────────────────────────────
 
 export const authHandlers = [
@@ -212,6 +233,29 @@ export const authHandlers = [
       },
       { status: 201 },
     );
+  }),
+
+  http.post(`${API_BASE}/auth/instructor-activation/validate`, async () => {
+    await delay(200);
+    return HttpResponse.json({
+      success: true,
+      data: {
+        userId: 10,
+        email: 'invited@edutech.test',
+        name: 'Invited Instructor',
+      },
+    });
+  }),
+
+  http.post(`${API_BASE}/auth/instructor-activation/complete`, async () => {
+    await delay(300);
+    return HttpResponse.json({
+      success: true,
+      data: {
+        user: { id: 10, email: 'invited@edutech.test', name: 'Invited Instructor', role: 'instructor', isVerified: true },
+        tokens: { accessToken: 'mock-instructor-access-token', refreshToken: 'mock-instructor-refresh-token' },
+      },
+    });
   }),
 
   http.post(`${API_BASE}/auth/login`, async () => {
@@ -461,6 +505,141 @@ export const adminHandlers = [
     }
     profile.approvalStatus = 'rejected';
     return HttpResponse.json({ success: true, data: { message: 'Instructor rejected' } });
+  }),
+
+  http.post(`${API_BASE}/admin/instructors/invite`, async ({ request }) => {
+    await delay(300);
+    const body = await request.json() as { email: string; name: string };
+    if (!body.email || !body.name) {
+      return HttpResponse.json(
+        { success: false, error: { message: 'Email and name are required' } },
+        { status: 400 },
+      );
+    }
+    // Check if email already exists
+    const existing = mockInstructorProfiles.find((i) => i.userEmail === body.email);
+    if (existing) {
+      return HttpResponse.json(
+        { success: false, error: { message: 'An instructor with this email already exists' } },
+        { status: 409 },
+      );
+    }
+    const newId = mockInstructorProfiles.length + 1;
+    mockInstructorProfiles.push({
+      id: newId,
+      userId: 100 + newId,
+      userName: body.name,
+      userEmail: body.email,
+      bio: '',
+      expertise: [],
+      approvalStatus: 'pending',
+      createdAt: new Date().toISOString(),
+    });
+    return HttpResponse.json(
+      {
+        success: true,
+        data: {
+          message: `Invitation sent to ${body.email}`,
+          activationLink: `http://localhost:3002/auth/activate?token=mock-instructor-token-${newId}`,
+        },
+      },
+      { status: 201 },
+    );
+  }),
+
+  // ─── Admin Institution Endpoints ──────────────────────────────────────
+
+  http.get(`${API_BASE}/admin/institutions`, async ({ request }) => {
+    await delay(200);
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '1', 10);
+    const limit = parseInt(url.searchParams.get('limit') || '10', 10);
+
+    const start = (page - 1) * limit;
+    const paged = mockInstitutions.slice(start, start + limit);
+
+    return HttpResponse.json({
+      success: true,
+      data: {
+        institutions: paged,
+        total: mockInstitutions.length,
+        page,
+        limit,
+      },
+    });
+  }),
+
+  http.get(`${API_BASE}/admin/institutions/:id`, async ({ params }) => {
+    await delay(150);
+    const inst = mockInstitutions.find((i) => i.id === Number(params.id));
+    if (!inst) {
+      return HttpResponse.json(
+        { success: false, error: { code: 'NOT_FOUND', message: 'Institution not found' } },
+        { status: 404 },
+      );
+    }
+    return HttpResponse.json({ success: true, data: inst });
+  }),
+
+  http.post(`${API_BASE}/admin/institutions`, async ({ request }) => {
+    await delay(300);
+    const body = await request.json() as { institutionName: string; contactEmail: string; seatCount: number; activeUntil: string };
+    if (!body.institutionName || !body.contactEmail) {
+      return HttpResponse.json(
+        { success: false, error: { message: 'Institution name and contact email are required' } },
+        { status: 400 },
+      );
+    }
+    const existing = mockInstitutions.find((i) => i.contactEmail === body.contactEmail);
+    if (existing) {
+      return HttpResponse.json(
+        { success: false, error: { message: 'An institution with this contact email already exists.' } },
+        { status: 409 },
+      );
+    }
+    const newId = mockInstitutions.length + 1;
+    const newInst = {
+      id: newId,
+      institutionName: body.institutionName,
+      contactEmail: body.contactEmail,
+      seatCount: body.seatCount || 100,
+      activeUntil: body.activeUntil,
+      razorpayCustomerId: null as string | null,
+      createdAt: new Date().toISOString(),
+    };
+    mockInstitutions.push(newInst);
+    return HttpResponse.json({ success: true, data: newInst }, { status: 201 });
+  }),
+
+  http.post(`${API_BASE}/admin/institutions/:id/students/import`, async ({ params, request }) => {
+    await delay(500);
+    const body = await request.json() as { students: { name: string; email: string }[] };
+    const instId = Number(params.id);
+    const inst = mockInstitutions.find((i) => i.id === instId);
+    if (!inst) {
+      return HttpResponse.json(
+        { success: false, error: { message: 'Institution not found' } },
+        { status: 404 },
+      );
+    }
+    const errors: { row: number; email: string; reason: string }[] = [];
+    let successCount = 0;
+    for (let i = 0; i < body.students.length; i++) {
+      const student = body.students[i];
+      if (!student.email || !/^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$/.test(student.email)) {
+        errors.push({ row: i + 2, email: student.email || '', reason: 'Invalid email format' });
+        continue;
+      }
+      if (!student.name || student.name.trim().length < 2) {
+        errors.push({ row: i + 2, email: student.email, reason: 'Name must be at least 2 characters' });
+        continue;
+      }
+      successCount++;
+    }
+    return HttpResponse.json({
+      success: true,
+      data: { successCount, failureCount: errors.length, errors },
+    });
   }),
 
   // ─── Admin Course Moderation Endpoints ──────────────────────────────────
