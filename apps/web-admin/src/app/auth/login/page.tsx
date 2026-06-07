@@ -1,14 +1,23 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { LoginForm, useAuth } from '@edutech/shared-components';
 import { authService } from '@edutech/api-client';
 
-export default function LoginPage() {
+function LoginFormContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login } = useAuth();
   const [error, setError] = useState<string>();
+
+  // Display error messages from OAuth callback (e.g., portal access denial)
+  useEffect(() => {
+    const urlError = searchParams.get('error');
+    if (urlError) {
+      setError(urlError);
+    }
+  }, [searchParams]);
 
   const handleGoogleLogin = () => {
     const redirectUrl = `${window.location.origin}/auth/callback`;
@@ -31,5 +40,13 @@ export default function LoginPage() {
       onForgotPassword={() => router.push('/auth/forgot-password')}
       onGoogleLogin={handleGoogleLogin}
     />
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginFormContent />
+    </Suspense>
   );
 }
