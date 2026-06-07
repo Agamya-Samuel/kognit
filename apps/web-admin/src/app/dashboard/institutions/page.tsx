@@ -65,13 +65,13 @@ export default function InstitutionsPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border">
-                      <th className="pb-3 text-left text-xs font-medium uppercase text-muted-foreground">ID</th>
-                      <th className="pb-3 text-left text-xs font-medium uppercase text-muted-foreground">Name</th>
-                      <th className="pb-3 text-left text-xs font-medium uppercase text-muted-foreground">Contact Email</th>
-                      <th className="pb-3 text-left text-xs font-medium uppercase text-muted-foreground">Contact Phone</th>
-                      <th className="pb-3 text-left text-xs font-medium uppercase text-muted-foreground">Address</th>
-                      <th className="pb-3 text-left text-xs font-medium uppercase text-muted-foreground">Created</th>
-                      <th className="pb-3 text-right text-xs font-medium uppercase text-muted-foreground">Actions</th>
+                      <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">ID</th>
+                      <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Name</th>
+                      <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Contact Email</th>
+                      <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Contact Phone</th>
+                      <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Address</th>
+                      <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Created</th>
+                      <th className="pb-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">

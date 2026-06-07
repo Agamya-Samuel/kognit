@@ -135,10 +135,10 @@ export default function CoursesPage() {
                   key={filter}
                   onClick={() => { setPublishFilter(filter); setPage(1); }}
                   className={cn(
-                    "rounded-full px-3 py-1.5 text-xs font-medium capitalize transition-colors",
+                    "rounded-full px-3 py-1.5 text-xs font-medium capitalize transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
                     publishFilter === filter
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
                   )}
                 >
                   {filter}
@@ -171,12 +171,12 @@ export default function CoursesPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border">
-                      <th className="pb-3 text-left text-xs font-medium uppercase text-muted-foreground">Title</th>
-                      <th className="pb-3 text-left text-xs font-medium uppercase text-muted-foreground">Instructor</th>
-                      <th className="pb-3 text-left text-xs font-medium uppercase text-muted-foreground">Domain</th>
-                      <th className="pb-3 text-left text-xs font-medium uppercase text-muted-foreground">Price</th>
-                      <th className="pb-3 text-left text-xs font-medium uppercase text-muted-foreground">Status</th>
-                      <th className="pb-3 text-right text-xs font-medium uppercase text-muted-foreground">Actions</th>
+                      <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Title</th>
+                      <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Instructor</th>
+                      <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Domain</th>
+                      <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Price</th>
+                      <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Status</th>
+                      <th className="pb-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -212,7 +212,7 @@ export default function CoursesPage() {
                             {!course.isPublished && (
                               <button
                                 onClick={() => handleApprove(course.id)}
-                                className="rounded p-1.5 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                                className="rounded p-1.5 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
                                 title="Approve (publish)"
                               >
                                 <CheckCircle2 className="h-4 w-4" />
@@ -221,7 +221,7 @@ export default function CoursesPage() {
                             {course.isPublished && (
                               <button
                                 onClick={() => openAction(course.id, 'suspend')}
-                                className="rounded p-1.5 text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
+                                className="rounded p-1.5 text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 transition-colors"
                                 title="Suspend (unpublish)"
                               >
                                 <PauseCircle className="h-4 w-4" />
@@ -229,7 +229,7 @@ export default function CoursesPage() {
                             )}
                             <button
                               onClick={() => openAction(course.id, 'reject')}
-                              className="rounded p-1.5 text-destructive hover:bg-destructive/10"
+                              className="rounded p-1.5 text-destructive hover:bg-destructive/10 transition-colors"
                               title="Reject"
                             >
                               <XCircle className="h-4 w-4" />
