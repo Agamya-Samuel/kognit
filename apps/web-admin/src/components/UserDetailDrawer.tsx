@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { Button, Separator } from '@edutech/ui';
 import { PhoneInput } from '@edutech/ui';
 import { X, Shield, Trash2, Mail, Calendar, CheckCircle2, Phone } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface User {
   id: number;
@@ -59,7 +60,7 @@ export function UserDetailDrawer({ user, open, onClose, onRoleChange, onToggleAc
       case 'admin': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
       case 'instructor': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
       case 'institution_admin': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+      default: return 'bg-muted text-muted-foreground';
     }
   };
 
@@ -72,15 +73,15 @@ export function UserDetailDrawer({ user, open, onClose, onRoleChange, onToggleAc
       />
 
       {/* Drawer */}
-      <div className="fixed right-0 top-0 z-50 h-full w-96 overflow-y-auto border-l border-gray-200 bg-white shadow-xl dark:border-gray-800 dark:bg-gray-950">
+      <div className="fixed right-0 top-0 z-50 h-full w-96 overflow-y-auto border-l border-border bg-card shadow-xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-800 px-6 py-4">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+        <div className="flex items-center justify-between border-b border-border px-6 py-4">
+          <h2 className="text-lg font-semibold text-foreground">
             User Details
           </h2>
           <button
             onClick={onClose}
-            className="rounded p-1 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="rounded p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
@@ -94,8 +95,8 @@ export function UserDetailDrawer({ user, open, onClose, onRoleChange, onToggleAc
               {user.name.charAt(0).toUpperCase()}
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white">{user.name}</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
+              <h3 className="font-semibold text-foreground">{user.name}</h3>
+              <p className="text-sm text-muted-foreground">{user.email}</p>
             </div>
           </div>
 
@@ -123,7 +124,7 @@ export function UserDetailDrawer({ user, open, onClose, onRoleChange, onToggleAc
                   ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200'
                   : user.approvalStatus === 'pending'
                   ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                  : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
+                  : 'bg-muted text-muted-foreground'
               }`}>
                 {user.approvalStatus}
               </span>
@@ -149,18 +150,18 @@ export function UserDetailDrawer({ user, open, onClose, onRoleChange, onToggleAc
           {/* Details */}
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-sm">
-              <Mail className="h-4 w-4 text-gray-400" />
-              <span className="text-gray-600 dark:text-gray-400">{user.email}</span>
+              <Mail className="h-4 w-4 text-muted-foreground" />
+              <span className="text-muted-foreground">{user.email}</span>
             </div>
             <div className="flex items-center gap-2 text-sm">
-              <Phone className="h-4 w-4 text-gray-400" />
-              <span className="text-gray-600 dark:text-gray-400">
+              <Phone className="h-4 w-4 text-muted-foreground" />
+              <span className="text-muted-foreground">
                 {user.mobile || 'No mobile number'}
               </span>
             </div>
             <div className="flex items-center gap-2 text-sm">
-              <Calendar className="h-4 w-4 text-gray-400" />
-              <span className="text-gray-600 dark:text-gray-400">
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <span className="text-muted-foreground">
                 Joined {new Date(user.createdAt).toLocaleDateString()}
               </span>
             </div>
@@ -170,7 +171,7 @@ export function UserDetailDrawer({ user, open, onClose, onRoleChange, onToggleAc
 
           {/* Role selector */}
           <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="mb-2 block text-sm font-medium text-foreground">
               Role
             </label>
             <div className="flex flex-wrap gap-2">
@@ -178,11 +179,12 @@ export function UserDetailDrawer({ user, open, onClose, onRoleChange, onToggleAc
                 <button
                   key={role}
                   onClick={() => onRoleChange(role)}
-                  className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                  className={cn(
+                    "rounded-full px-3 py-1.5 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
                     user.role === role
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-                  }`}
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground'
+                  )}
                 >
                   {role.replace('_', ' ')}
                 </button>
@@ -194,7 +196,7 @@ export function UserDetailDrawer({ user, open, onClose, onRoleChange, onToggleAc
 
           {/* Mobile Number */}
           <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="mb-2 block text-sm font-medium text-foreground">
               Mobile Number
             </label>
             <PhoneInput
@@ -219,7 +221,7 @@ export function UserDetailDrawer({ user, open, onClose, onRoleChange, onToggleAc
 
             <Button
               variant="outline"
-              className="w-full text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20"
+              className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive"
               onClick={onDelete}
             >
               <Trash2 className="mr-2 h-4 w-4" />

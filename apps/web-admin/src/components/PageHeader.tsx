@@ -13,28 +13,28 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, description, actions, breadcrumbs, className }: PageHeaderProps) {
   return (
-    <div className={cn("flex flex-col gap-2 mb-6", className)}>
+    <div className={cn("flex flex-col gap-1.5", className)}>
       {breadcrumbs && (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <nav className="flex items-center gap-1.5 text-sm text-muted-foreground">
           {breadcrumbs.map((crumb, idx) => (
             <React.Fragment key={idx}>
-              {idx > 0 && <span>/</span>}
+              {idx > 0 && <span className="mx-1 text-muted-foreground/50">/</span>}
               {crumb.href ? (
-                <a href={crumb.href} className="hover:text-foreground">
+                <a href={crumb.href} className="hover:text-foreground transition-colors">
                   {crumb.label}
                 </a>
               ) : (
-                <span className="text-foreground font-medium">{crumb.label}</span>
+                <span className="font-medium text-foreground">{crumb.label}</span>
               )}
             </React.Fragment>
           ))}
-        </div>
+        </nav>
       )}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">{title}</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">{title}</h1>
           {description && (
-            <p className="mt-2 text-muted-foreground">{description}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{description}</p>
           )}
         </div>
         {actions && (
