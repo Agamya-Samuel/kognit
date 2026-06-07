@@ -522,12 +522,12 @@ async getRevenueBreakdown(): Promise<RevenueBreakdown> {
     // 2. Per-table row counts and sizes
     const tableRows = await this.db.execute(sql`
       SELECT
-        relname                                        AS name,
-        n_live_tup::bigint                             AS row_count,
-        pg_total_relation_size(quote_ident(relname))   AS size_bytes,
-        pg_size_pretty(pg_total_relation_size(quote_ident(relname))) AS size_pretty
+        relname AS name,
+        n_live_tup::bigint AS row_count,
+        pg_total_relation_size(relid) AS size_bytes,
+        pg_size_pretty(pg_total_relation_size(relid)) AS size_pretty
       FROM pg_stat_user_tables
-      ORDER BY pg_total_relation_size(quote_ident(relname)) DESC
+      ORDER BY pg_total_relation_size(relid) DESC
     `);
 
     const tables = tableRows.map((r: any) => ({
