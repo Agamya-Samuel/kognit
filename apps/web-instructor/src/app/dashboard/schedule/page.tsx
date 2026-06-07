@@ -7,8 +7,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from '@edutech/ui';
 import { Label } from '@edutech/ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@edutech/ui';
-import { Plus, Calendar as CalendarIcon, Clock, Users, Video, Eye, Edit } from 'lucide-react';
-import { useUpcomingClasses } from '@/hooks/useCourses';
+import { Plus, Calendar as CalendarIcon, Clock, Users, Video, Eye, Edit, AlertCircle } from 'lucide-react';
+import { useUpcomingClasses, useMyCourses } from '@/hooks/useCourses';
 import { useInstructorSchedule } from '@/hooks/useSchedule';
 import { StatCard, StatsRow } from '@/components/StatsRow';
 
@@ -16,9 +16,11 @@ export default function SchedulePage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const { data: upcomingClasses, isLoading } = useUpcomingClasses();
   const { data: calendarEvents } = useInstructorSchedule();
+  const { data: myCourses } = useMyCourses();
 
   const scheduledClasses = upcomingClasses || [];
   const calendarData = calendarEvents || [];
+  const courses = Array.isArray(myCourses) ? myCourses : [];
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -76,14 +78,30 @@ export default function SchedulePage() {
                 <Label htmlFor="course">Course</Label>
                 <Select>
                   <SelectTrigger id="course">
-                    <SelectValue placeholder="Select a course" />
+                    <SelectValue placeholder={courses.length > 0 ? 'Select a course' : 'No courses available'} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="course1">TypeScript Basics</SelectItem>
-                    <SelectItem value="course2">React Patterns</SelectItem>
-                    <SelectItem value="course3">Node.js Fundamentals</SelectItem>
+                    {courses.length > 0 ? (
+                      courses.map((course: any) => (
+                        <SelectItem key={course.id} value={String(course.id)}>
+                          {course.title}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <div className="p-3 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          <AlertCircle className="h-4 w-4" />
+                          No courses found. Create a course first.
+                        </div>
+                      </div>
+                    )}
                   </SelectContent>
                 </Select>
+                {courses.length > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    Note: Scheduling requires a live lecture to be set up in the course curriculum.
+                  </p>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
