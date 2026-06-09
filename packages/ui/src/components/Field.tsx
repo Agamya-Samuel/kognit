@@ -38,7 +38,7 @@ export const Field = React.forwardRef<HTMLDivElement, FieldProps>(
 );
 Field.displayName = 'Field';
 
-export interface FieldGroupProps extends React.ComponentProps<'div'> {}
+export type FieldGroupProps = React.ComponentProps<'div'>;
 
 export const FieldGroup = React.forwardRef<HTMLDivElement, FieldGroupProps>(
   ({ className, ...props }, ref) => (
@@ -52,7 +52,7 @@ export const FieldGroup = React.forwardRef<HTMLDivElement, FieldGroupProps>(
 );
 FieldGroup.displayName = 'FieldGroup';
 
-export interface FieldLabelProps extends React.ComponentProps<typeof Label> {}
+export type FieldLabelProps = React.ComponentProps<typeof Label>;
 
 export const FieldLabel = React.forwardRef<HTMLLabelElement, FieldLabelProps>(
   ({ className, ...props }, ref) => (
@@ -66,7 +66,7 @@ export const FieldLabel = React.forwardRef<HTMLLabelElement, FieldLabelProps>(
 );
 FieldLabel.displayName = 'FieldLabel';
 
-export interface FieldDescriptionProps extends React.ComponentProps<'p'> {}
+export type FieldDescriptionProps = React.ComponentProps<'p'>;
 
 export const FieldDescription = React.forwardRef<HTMLParagraphElement, FieldDescriptionProps>(
   ({ className, ...props }, ref) => (
