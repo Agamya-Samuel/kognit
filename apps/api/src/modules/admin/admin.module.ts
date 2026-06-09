@@ -13,8 +13,6 @@ import { InstitutionAccountsRepository } from '../../db/repositories/institution
 import { EmailVerificationsRepository } from '../../db/repositories/email-verifications.repository';
 import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
-import { NotificationsService } from '../notifications/services/notifications.service';
-import { UserNotificationPreferencesRepository } from '../notifications/repositories/notifications-preferences.repository';
 import { NotificationsModule } from '../notifications/notifications.module';
 
 const repositories = [

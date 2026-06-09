@@ -1,4 +1,4 @@
-import { Injectable, Inject, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, BadRequestException, ConflictException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { sql } from 'drizzle-orm';
 import { UsersRepository } from '../../db/repositories/users.repository';
@@ -11,6 +11,7 @@ import { AssignmentsRepository } from '../../db/repositories/assignments.reposit
 import { PaymentsRepository } from '../../db/repositories/payments.repository';
 import { ProgressRepository } from '../../db/repositories/progress.repository';
 import { SettingsRepository } from '../../db/repositories/settings.repository';
+import { NotificationDispatcherService } from '../notifications/services/notification-dispatcher.service';
 import type { User } from '../../db/schema';
 
 export interface AdminListUsersQuery {
@@ -83,6 +84,8 @@ export interface DatabaseStats {
 
 @Injectable()
 export class AdminService {
+  private readonly logger = new Logger(AdminService.name);
+
   constructor(
     @Inject('ADMIN_DRIZZLE_DB') private readonly db: any,
     private readonly usersRepo: UsersRepository,
@@ -96,6 +99,7 @@ export class AdminService {
     private readonly institutionAccountsRepo: InstitutionAccountsRepository,
     private readonly emailVerificationsRepo: EmailVerificationsRepository,
     private readonly configService: ConfigService,
+    private readonly notificationDispatcher: NotificationDispatcherService,
   ) {}
 
   async listUsers(query: AdminListUsersQuery) {
@@ -245,15 +249,31 @@ export class AdminService {
     const frontendUrl = this.configService.get<string>('INSTRUCTOR_APP_URL') || 'http://localhost:3002';
     const activationLink = `${frontendUrl}/auth/activate?token=${token}`;
 
-    // Log the activation link (in production, send via email)
-    console.log(`[Instructor Invite] Activation link for ${normalizedEmail}: ${activationLink}`);
+    this.logger.log(`[Instructor Invite] Activation link for ${normalizedEmail}: ${activationLink}`);
 
-    // TODO: In production, dispatch email via notification service
-    // await this.notificationDispatcher.dispatch({ ... })
+    try {
+      await this.notificationDispatcher.dispatch({
+        userId: user.id,
+        type: 'instructor',
+        title: "You're Invited to Teach on EduTech",
+        body: `${name} has invited you to join EduTech as an instructor.`,
+        deliveredVia: 'email',
+        channels: ['email'],
+        templateName: 'instructor-invite',
+        templateData: {
+          userName: name.trim(),
+          activationLink,
+          invitedBy: 'EduTech Admin',
+        },
+        userEmail: normalizedEmail,
+        priority: 5,
+      });
+    } catch (error) {
+      this.logger.error(`[Instructor Invite] Failed to send invitation email to ${normalizedEmail}`, error);
+    }
 
     return {
       message: 'Instructor invitation sent',
-      activationLink, // Include in response for development/testing
     };
   }
 
