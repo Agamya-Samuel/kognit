@@ -9,6 +9,7 @@ import { PaymentsRepository } from '../../db/repositories/payments.repository';
 import { ProgressRepository } from '../../db/repositories/progress.repository';
 import { LiveClassesRepository } from '../../db/repositories/live-classes.repository';
 import { UsersRepository } from '../../db/repositories/users.repository';
+import { SubmissionsRepository } from '../../db/repositories/submissions.repository';
 
 // Services
 import { AnalyticsService } from './analytics.service';
@@ -53,6 +54,11 @@ const repositories = [
   {
     provide: UsersRepository,
     useFactory: (db: any) => new UsersRepository(db),
+    inject: [DRIZZLE_DB],
+  },
+  {
+    provide: SubmissionsRepository,
+    useFactory: (db: any) => new SubmissionsRepository(db),
     inject: [DRIZZLE_DB],
   },
 ];

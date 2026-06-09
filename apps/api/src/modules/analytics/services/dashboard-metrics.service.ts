@@ -5,6 +5,7 @@ import { PaymentsRepository } from '../../../db/repositories/payments.repository
 import { LiveClassesRepository } from '../../../db/repositories/live-classes.repository';
 import { UsersRepository } from '../../../db/repositories/users.repository';
 import { ProgressRepository } from '../../../db/repositories/progress.repository';
+import { SubmissionsRepository } from '../../../db/repositories/submissions.repository';
 
 export interface DashboardMetrics {
   totalStudents: number;      // Total enrolled students across instructor's courses
@@ -33,6 +34,7 @@ export class DashboardMetricsService {
     private readonly liveClassesRepo: LiveClassesRepository,
     private readonly usersRepo: UsersRepository,
     private readonly progressRepo: ProgressRepository,
+    private readonly submissionsRepo: SubmissionsRepository,
   ) {}
 
   async getDashboardMetrics(instructorId: number): Promise<DashboardMetricsWithActivity> {
@@ -116,14 +118,23 @@ export class DashboardMetricsService {
   }
 
   private async getRecentCompletions(instructorId: number): Promise<RecentActivityItem[]> {
-    // TODO: Implement based on progress completion tracking
-    // Would need to query progressRepository for completed lectures
-    return [];
+    const completions = await this.progressRepo.findRecentCompletionsForInstructor(instructorId, 10);
+    return completions.map(completion => ({
+      id: completion.id,
+      type: 'completion' as const,
+      title: `${completion.studentName} completed "${completion.lectureTitle}" in ${completion.courseTitle}`,
+      time: this.formatTimeAgo(completion.completedAt.toISOString()),
+    }));
   }
 
   private async getRecentAssignmentSubmissions(instructorId: number): Promise<RecentActivityItem[]> {
-    // TODO: Implement using assignmentsRepository for submissions
-    return [];
+    const submissions = await this.submissionsRepo.findRecentForInstructor(instructorId, 10);
+    return submissions.map(submission => ({
+      id: submission.id,
+      type: 'assignment_submission' as const,
+      title: `${submission.studentName} submitted "${submission.assignmentTitle}" in ${submission.courseTitle}`,
+      time: this.formatTimeAgo(submission.submittedAt.toISOString()),
+    }));
   }
 
   private async getRecentLiveClasses(instructorId: number): Promise<RecentActivityItem[]> {
