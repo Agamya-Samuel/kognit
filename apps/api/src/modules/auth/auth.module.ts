@@ -3,6 +3,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigService, ConfigModule } from '@nestjs/config';
 import { DRIZZLE_DB } from '../../db/database.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 // Repositories
 import { UsersRepository } from '../../db/repositories/users.repository';
@@ -76,6 +77,7 @@ const repositories = [
 
 @Module({
   imports: [
+    NotificationsModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],

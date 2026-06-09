@@ -23,9 +23,10 @@ import { EmailVerificationService } from './services/email-verification.service'
 import { PasswordResetService } from './services/password-reset.service';
 import type { JwtPayload } from './strategies';
 import { CacheService } from '../../common/services/cache.service';
+import { NotificationDispatcherService } from '../notifications/services/notification-dispatcher.service';
 
 // Temp storage for pending registrations (email → verification data)
-// In production, this would be stored in Redis with TTL
+// Stored in Redis with TTL via CacheService
 const VERIFICATION_CODE_TTL_SECONDS = 10 * 60; // 10 minutes
 const PENDING_REGISTRATION_NAMESPACE = 'pending_registration';
 
@@ -48,6 +49,7 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly studentProfilesRepo: StudentProfilesRepository,
     private readonly instructorProfilesRepo: InstructorProfilesRepository,
+    private readonly notificationDispatcher: NotificationDispatcherService,
   ) {}
 
   // ─── Email-First Registration Flow ──────────────────────────────────────
@@ -55,9 +57,9 @@ export class AuthService {
   /**
    * Step 1: Request email verification for registration.
    * Stores a 6-digit code in Redis (pending_registration:{email}).
-   * Returns the plaintext code (in production, send via email).
+   * Sends the code via email through the notification dispatcher.
    */
-  async requestRegistrationVerification(email: string, intent?: string): Promise<{ message: string; code: string }> {
+  async requestRegistrationVerification(email: string, intent?: string): Promise<{ message: string }> {
     // Check if email is already registered
     const existingUser = await this.usersRepo.findByEmail(email);
     if (existingUser) {
@@ -79,10 +81,30 @@ export class AuthService {
       VERIFICATION_CODE_TTL_SECONDS,
     );
 
+    // Send verification code via email
+    try {
+      await this.notificationDispatcher.dispatch({
+        userId: 0, // User doesn't exist yet
+        type: 'verification',
+        title: 'Your EduTech Verification Code',
+        body: `Your verification code is: ${code}`,
+        deliveredVia: 'email',
+        channels: ['email'],
+        templateName: 'EmailVerification',
+        templateData: {
+          code,
+          intent: validIntent,
+        },
+        userEmail: email,
+        priority: 1,
+      });
+    } catch (error) {
+      this.logger.error(`Failed to send verification email to ${email}`, error);
+    }
+
     this.logger.log(`Registration verification code sent for ${email} (intent: ${validIntent})`);
     return {
       message: 'Verification code sent to your email.',
-      code, // In production, this would be sent via email
     };
   }
 
@@ -500,13 +522,6 @@ export class AuthService {
   }
 
   /**
-   * Reset password with token
-   */
-  async resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
-    throw new BadRequestException('Use resetPasswordWithEmail instead — token alone is insufficient.');
-  }
-
-  /**
    * Reset password with token and email
    */
   async resetPasswordWithEmail(email: string, token: string, newPassword: string): Promise<{ message: string }> {
@@ -519,18 +534,37 @@ export class AuthService {
   /**
    * Request email verification for an existing user
    */
-  async requestEmailVerification(userId: number): Promise<{ message: string; code: string }> {
+  async requestEmailVerification(userId: number): Promise<{ message: string }> {
     const user = await this.usersRepo.findById(userId);
     if (!user) {
       throw new UnauthorizedException('User not found.');
     }
 
     if (user.isVerified) {
-      return { message: 'Email is already verified.', code: '' };
+      return { message: 'Email is already verified.' };
     }
 
     const code = await this.emailVerificationService.generateCode(userId);
-    return { message: 'Verification code sent to your email.', code };
+
+    // Send verification code via email
+    try {
+      await this.notificationDispatcher.dispatch({
+        userId: user.id,
+        type: 'verification',
+        title: 'Your EduTech Verification Code',
+        body: `Your verification code is: ${code}`,
+        deliveredVia: 'email',
+        channels: ['email'],
+        templateName: 'EmailVerification',
+        templateData: { code },
+        userEmail: user.email,
+        priority: 1,
+      });
+    } catch (error) {
+      this.logger.error(`Failed to send verification email to ${user.email}`, error);
+    }
+
+    return { message: 'Verification code sent to your email.' };
   }
 
   /**
