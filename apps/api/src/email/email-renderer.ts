@@ -10,6 +10,7 @@ import { PasswordReset } from './templates/PasswordReset';
 import { EmailVerification } from './templates/EmailVerification';
 import { InstructorApproval } from './templates/InstructorApproval';
 import { InstructorRejection } from './templates/InstructorRejection';
+import { InstructorInvite } from './templates/InstructorInvite';
 import { CourseModeration } from './templates/CourseModeration';
 
 export const EmailTemplates = {
@@ -23,6 +24,7 @@ export const EmailTemplates = {
   EMAIL_VERIFICATION: 'email-verification',
   INSTRUCTOR_APPROVAL: 'instructor-approval',
   INSTRUCTOR_REJECTION: 'instructor-rejection',
+  INSTRUCTOR_INVITE: 'instructor-invite',
   COURSE_MODERATION: 'course-moderation',
 } as const;
 
@@ -48,6 +50,7 @@ const templateMap: Record<
   [EmailTemplates.EMAIL_VERIFICATION]: asTemplateComponent(EmailVerification),
   [EmailTemplates.INSTRUCTOR_APPROVAL]: asTemplateComponent(InstructorApproval),
   [EmailTemplates.INSTRUCTOR_REJECTION]: asTemplateComponent(InstructorRejection),
+  [EmailTemplates.INSTRUCTOR_INVITE]: asTemplateComponent(InstructorInvite),
   [EmailTemplates.COURSE_MODERATION]: asTemplateComponent(CourseModeration),
 };
 
