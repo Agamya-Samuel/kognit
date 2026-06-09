@@ -616,9 +616,30 @@ async getRevenueBreakdown(): Promise<RevenueBreakdown> {
         // Generate activation token
         const token = await this.generateActivationToken(user.id);
 
-        // In production, send activation email here
-        // For now, just log it
-        console.log(`[CSV Import] Activation token for ${row.email}: ${token}`);
+        // Send activation email to the student
+        const frontendUrl = this.configService.get<string>('STUDENT_APP_URL') || 'http://localhost:3001';
+        const activationLink = `${frontendUrl}/auth/activate?token=${token}`;
+
+        try {
+          await this.notificationDispatcher.dispatch({
+            userId: user.id,
+            type: 'verification',
+            title: 'Welcome to EduTech — Activate Your Account',
+            body: `You have been enrolled at EduTech. Click the link to activate your account and set your password.`,
+            deliveredVia: 'email',
+            channels: ['email'],
+            templateName: 'student-activation',
+            templateData: {
+              userName: row.name.trim(),
+              activationLink,
+              institutionName: institution.institutionName,
+            },
+            userEmail: row.email.toLowerCase().trim(),
+            priority: 3,
+          });
+        } catch (emailError) {
+          this.logger.error(`[CSV Import] Failed to send activation email to ${row.email}`, emailError);
+        }
 
         successCount++;
       } catch (error) {
