@@ -3,8 +3,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@edutech/ui';
 import { Button } from '@edutech/ui';
-import { CheckCircle2, ChevronLeft, ChevronRight, BookOpen, Users, TrendingUp } from 'lucide-react';
-import { StatCard, StatsRow } from '@/components/StatsRow';
+import { CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { CourseDetailsStep } from '@/components/course-creation/CourseDetailsStep';
 import { SectionsStep } from '@/components/course-creation/SectionsStep';
 import { LecturesStep } from '@/components/course-creation/LecturesStep';
