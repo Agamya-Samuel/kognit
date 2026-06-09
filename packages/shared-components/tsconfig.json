@@ -9,13 +9,7 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "types": ["node"],
-    "paths": {
-      "@edutech/ui": ["../ui/src"],
-      "@edutech/validation": ["../validation/src"],
-      "@edutech/api-client": ["../api-client/src"],
-      "@edutech/types": ["../types/src"]
-    }
+    "types": ["node"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

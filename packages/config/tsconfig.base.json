@@ -16,14 +16,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "incremental": true,
-    "paths": {
-      "@edutech/ui": ["../../packages/ui/src"],
-      "@edutech/types": ["../../packages/types/src"],
-      "@edutech/validation": ["../../packages/validation/src"],
-      "@edutech/api-client": ["../../packages/api-client/src"],
-      "@edutech/shared-components": ["../../packages/shared-components/src"]
-    }
+    "incremental": true
   },
   "exclude": ["node_modules", "dist", ".next", "build"]
 }
