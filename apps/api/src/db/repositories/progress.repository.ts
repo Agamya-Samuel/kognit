@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository } from './base.repository';
-import { progress, lectures, sections } from '../schema';
+import { progress, lectures, sections, courses, users } from '../schema';
 import { eq, and, desc, asc, sql, inArray } from 'drizzle-orm';
 import type { Progress } from '../schema';
 
@@ -289,6 +289,43 @@ export class ProgressRepository extends BaseRepository<Progress> {
       }));
     } catch (error) {
       this.handleError(error, 'getRecentWatchHistory');
+      return [];
+    }
+  }
+
+  async findRecentCompletionsForInstructor(instructorId: number, limit: number = 10): Promise<Array<{
+    id: number;
+    studentName: string;
+    lectureTitle: string;
+    courseTitle: string;
+    completedAt: Date;
+  }>> {
+    try {
+      const result = await this.db
+        .select({
+          id: progress.id,
+          studentName: users.name,
+          lectureTitle: lectures.title,
+          courseTitle: courses.title,
+          completedAt: progress.lastWatchedAt,
+        })
+        .from(progress)
+        .innerJoin(users, eq(progress.studentId, users.id))
+        .innerJoin(lectures, eq(progress.lectureId, lectures.id))
+        .innerJoin(sections, eq(lectures.sectionId, sections.id))
+        .innerJoin(courses, eq(sections.courseId, courses.id))
+        .where(
+          and(
+            eq(courses.instructorId, instructorId),
+            eq(progress.isCompleted, true),
+          )
+        )
+        .orderBy(desc(progress.lastWatchedAt))
+        .limit(limit);
+
+      return result;
+    } catch (error) {
+      this.handleError(error, 'findRecentCompletionsForInstructor');
       return [];
     }
   }

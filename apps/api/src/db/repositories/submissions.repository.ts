@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository, PaginatedResult } from './base.repository';
 import { submissions } from '../schema';
+import { assignments } from '../schema/assignments';
+import { lectures } from '../schema/lectures';
+import { sections } from '../schema/sections';
+import { courses } from '../schema/courses';
+import { users } from '../schema/users';
 import { eq, and, desc } from 'drizzle-orm';
 import type { Submission } from '../schema';
 
@@ -124,6 +129,39 @@ export class SubmissionsRepository extends BaseRepository<Submission> {
     } catch (error) {
       this.handleError(error, 'count');
       return 0;
+    }
+  }
+
+  async findRecentForInstructor(instructorId: number, limit: number = 10): Promise<Array<{
+    id: number;
+    studentName: string;
+    assignmentTitle: string;
+    courseTitle: string;
+    submittedAt: Date;
+  }>> {
+    try {
+      const result = await this.db
+        .select({
+          id: submissions.id,
+          studentName: users.name,
+          assignmentTitle: assignments.title,
+          courseTitle: courses.title,
+          submittedAt: submissions.submittedAt,
+        })
+        .from(submissions)
+        .innerJoin(users, eq(submissions.studentId, users.id))
+        .innerJoin(assignments, eq(submissions.assignmentId, assignments.id))
+        .innerJoin(lectures, eq(assignments.lectureId, lectures.id))
+        .innerJoin(sections, eq(lectures.sectionId, sections.id))
+        .innerJoin(courses, eq(sections.courseId, courses.id))
+        .where(eq(courses.instructorId, instructorId))
+        .orderBy(desc(submissions.submittedAt))
+        .limit(limit);
+
+      return result;
+    } catch (error) {
+      this.handleError(error, 'findRecentForInstructor');
+      return [];
     }
   }
 }
