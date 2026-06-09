@@ -142,7 +142,7 @@ export class SocketGateway
     }
 
     const roomName = data.room;
-    const canJoin = this.roomService.canJoinRoom(roomName, user.role);
+    const canJoin = await this.roomService.canJoinRoom(roomName, user.sub, user.role);
     if (!canJoin.allowed) {
       client.emit('error', {
         code: 'ROOM_DENIED',

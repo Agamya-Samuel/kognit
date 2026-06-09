@@ -1,4 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { EnrollmentsRepository } from '../../../db/repositories/enrollments.repository';
+import { LiveClassesRepository } from '../../../db/repositories/live-classes.repository';
+import { LecturesRepository } from '../../../db/repositories/lectures.repository';
+import { SectionsRepository } from '../../../db/repositories/sections.repository';
 
 /**
  * Room naming conventions:
@@ -18,6 +22,13 @@ export interface RoomInfo {
 @Injectable()
 export class RoomService {
   private readonly logger = new Logger(RoomService.name);
+
+  constructor(
+    private readonly enrollmentsRepo: EnrollmentsRepository,
+    private readonly liveClassesRepo: LiveClassesRepository,
+    private readonly lecturesRepo: LecturesRepository,
+    private readonly sectionsRepo: SectionsRepository,
+  ) {}
 
   /**
    * Build a room name from type and identifier.
@@ -61,7 +72,7 @@ export class RoomService {
    *   - Anyone authenticated can join 'general' rooms
    *   - Only instructors/admins or enrolled students can join 'live' rooms
    */
-  canJoinRoom(roomName: string, userRole: string): { allowed: boolean; reason?: string } {
+  async canJoinRoom(roomName: string, userId: number, userRole: string): Promise<{ allowed: boolean; reason?: string }> {
     const info = this.parseRoomName(roomName);
     if (!info) {
       return { allowed: false, reason: 'Invalid room name format' };
@@ -71,13 +82,63 @@ export class RoomService {
       case 'course':
         return { allowed: true };
       case 'live':
-        // Allow all authenticated users; fine-grained enrollment checks
-        // can be added later when live-class enrollment logic is available
-        return { allowed: true };
+        return this.canJoinLiveRoom(info.id, userId, userRole);
       case 'general':
         return { allowed: true };
       default:
         return { allowed: false, reason: 'Unknown room type' };
     }
+  }
+
+  /**
+   * Check if a user can join a live class room.
+   * Instructors and admins always have access.
+   * Students must be enrolled in the course that the live class belongs to.
+   */
+  private async canJoinLiveRoom(
+    liveClassIdStr: string,
+    userId: number,
+    userRole: string,
+  ): Promise<{ allowed: boolean; reason?: string }> {
+    // Instructors and admins can always join live rooms
+    if (userRole === 'instructor' || userRole === 'admin') {
+      return { allowed: true };
+    }
+
+    // Parse live class ID
+    const liveClassId = parseInt(liveClassIdStr, 10);
+    if (isNaN(liveClassId)) {
+      return { allowed: false, reason: 'Invalid live class ID' };
+    }
+
+    // Look up the live class to find its course
+    const liveClass = await this.liveClassesRepo.findById(liveClassId);
+    if (!liveClass) {
+      return { allowed: false, reason: 'Live class not found' };
+    }
+
+    // Find the course via lecture → section → course
+    const lecture = await this.lecturesRepo.findById(liveClass.lectureId);
+    if (!lecture) {
+      return { allowed: false, reason: 'Associated lecture not found' };
+    }
+
+    const section = await this.sectionsRepo.findById(lecture.sectionId);
+    if (!section) {
+      return { allowed: false, reason: 'Associated section not found' };
+    }
+
+    const courseId = section.courseId;
+
+    // Check if student is enrolled in the course
+    const enrollment = await this.enrollmentsRepo.findByStudentAndCourse(userId, courseId);
+    if (!enrollment) {
+      return {
+        allowed: false,
+        reason: 'You must be enrolled in this course to join the live class',
+      };
+    }
+
+    return { allowed: true };
   }
 }
