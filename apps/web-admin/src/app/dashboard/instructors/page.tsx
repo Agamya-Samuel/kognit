@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, Button, Spinner, Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, Input, Field, FieldGroup, FieldLabel } from '@edutech/ui';
+import { Card, CardContent, CardHeader, CardTitle, Button, Spinner, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, Input, Field, FieldGroup, FieldLabel } from '@edutech/ui';
 import { CheckCircle2, XCircle, ChevronLeft, ChevronRight, UserPlus } from 'lucide-react';
 import { adminService } from '@edutech/api-client';
 import { PageHeader } from '@/components/PageHeader';
@@ -80,8 +80,8 @@ export default function InstructorsPage() {
     setInviteSuccess('');
 
     try {
-      const result = await adminService.inviteInstructor(inviteEmail.trim(), inviteName.trim()) as any;
-      setInviteSuccess(`Invitation sent to ${inviteEmail}. Activation link: ${result?.activationLink || '(check server logs)'}`);
+      await adminService.inviteInstructor(inviteEmail.trim(), inviteName.trim());
+      setInviteSuccess(`Invitation sent to ${inviteEmail}. The instructor will receive an activation email shortly.`);
       setInviteEmail('');
       setInviteName('');
       fetchInstructors();
@@ -257,10 +257,10 @@ export default function InstructorsPage() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Invite Instructor</DialogTitle>
+              <DialogDescription>
+                Send an invitation email to a new instructor. They will receive an activation link to set up their account.
+              </DialogDescription>
             </DialogHeader>
-            <p className="text-sm text-muted-foreground">
-              Send an invitation email to a new instructor. They will receive an activation link to set up their account.
-            </p>
 
             {inviteError && (
               <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 dark:border-red-900 dark:bg-red-950/30 dark:text-red-400">
@@ -269,8 +269,9 @@ export default function InstructorsPage() {
             )}
 
             {inviteSuccess && (
-              <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-600 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-400 break-all">
-                {inviteSuccess}
+              <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-600 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-400">
+                <p className="font-medium">Invitation sent successfully!</p>
+                <p className="mt-1 text-xs break-all">{inviteSuccess}</p>
               </div>
             )}
 
