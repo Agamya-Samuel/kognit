@@ -53,28 +53,6 @@ export class PasswordResetService {
   }
 
   /**
-   * Reset password using a token.
-   * Returns true if successful.
-   */
-  async resetPassword(token: string, newPassword: string): Promise<boolean> {
-    // Hash the token to search in DB
-    // We need to find the token by trying all active reset tokens for the user
-    // Since we can't search by hash directly, we need a different approach.
-    // We'll decode the token to find the user, then iterate through their active tokens.
-    // Actually, the token is random bytes, not a JWT, so we can't decode it.
-    // We need to find the matching record by checking all unused tokens.
-
-    // Find all active (unused, non-expired) password reset records
-    // The repository doesn't have a method for this, so we'll use a different approach:
-    // Store the token hash and compare against all active tokens
-
-    // For now, we'll use a brute-force approach (acceptable since password resets are infrequent)
-    // In production, we could add a userId field to the reset flow or use a different storage approach
-
-    throw new BadRequestException('Use resetPasswordWithIdentifier instead.');
-  }
-
-  /**
    * Reset password using token and email (the email helps identify the user).
    */
   async resetPasswordWithEmail(email: string, token: string, newPassword: string): Promise<boolean> {
