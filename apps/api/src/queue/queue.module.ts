@@ -6,6 +6,7 @@ import { EmailNotificationProcessor } from './processors/email-notification.proc
 import { CertificateGenerationProcessor } from './processors/certificate-generation.processor';
 import { SmsNotificationProcessor } from './processors/sms-notification.processor';
 import { ScheduledNotificationProcessor } from './processors/scheduled-notification.processor';
+import { ProvidersModule } from '../modules/notifications/providers/providers.module';
 
 const defaultJobOptions = {
   removeOnComplete: 10,
@@ -16,6 +17,7 @@ const defaultJobOptions = {
 
 @Module({
   imports: [
+    ProvidersModule,
     BullModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
