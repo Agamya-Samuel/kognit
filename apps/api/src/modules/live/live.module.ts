@@ -7,6 +7,7 @@ import { EnrollmentsRepository } from '../../db/repositories/enrollments.reposit
 import { LecturesRepository } from '../../db/repositories/lectures.repository';
 import { SectionsRepository } from '../../db/repositories/sections.repository';
 import { NotificationsRepository } from '../../db/repositories/notifications.repository';
+import { CoursesRepository } from '../../db/repositories/courses.repository';
 
 import { LiveKitService } from './services/livekit.service';
 import { ScheduleService } from './services/schedule.service';
@@ -42,6 +43,11 @@ const repositories = [
   {
     provide: NotificationsRepository,
     useFactory: (db: any) => new NotificationsRepository(db),
+    inject: [DRIZZLE_DB],
+  },
+  {
+    provide: CoursesRepository,
+    useFactory: (db: any) => new CoursesRepository(db),
     inject: [DRIZZLE_DB],
   },
 ];

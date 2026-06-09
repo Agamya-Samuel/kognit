@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { LiveClassesRepository } from '../../../db/repositories/live-classes.repository';
 import { LecturesRepository } from '../../../db/repositories/lectures.repository';
 import { MuxService } from '../../media/services/mux.service';
+import { LiveKitService } from './livekit.service';
 import type { LiveClass } from '../../../db/schema';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -43,21 +44,40 @@ export class RecordingService {
   private readonly s3Bucket: string;
   private readonly s3Region: string;
   private readonly s3Endpoint: string;
+  private readonly egressClient: any; // LiveKit EgressClient (typed as any to handle optional SDK)
 
   constructor(
     private readonly configService: ConfigService,
     private readonly liveClassesRepo: LiveClassesRepository,
     private readonly lecturesRepo: LecturesRepository,
     private readonly muxService: MuxService,
+    private readonly liveKitService: LiveKitService,
   ) {
     this.s3Bucket = this.configService.get<string>('AWS_S3_BUCKET') || 'edutech-recordings';
     this.s3Region = this.configService.get<string>('AWS_REGION') || 'ap-south-1';
     this.s3Endpoint = this.configService.get<string>('AWS_S3_ENDPOINT') || `https://${this.s3Bucket}.s3.${this.s3Region}.amazonaws.com`;
+
+    // Initialize LiveKit EgressClient if LiveKit is configured
+    if (this.liveKitService.isConfigured()) {
+      try {
+        const { EgressClient } = require('livekit-server-sdk');
+        const livekitUrl = this.configService.get<string>('LIVEKIT_URL') || '';
+        const apiKey = this.configService.get<string>('LIVEKIT_API_KEY') || '';
+        const apiSecret = this.configService.get<string>('LIVEKIT_API_SECRET') || '';
+        this.egressClient = new EgressClient(livekitUrl, apiKey, apiSecret);
+        this.logger.log('LiveKit EgressClient initialized');
+      } catch (error) {
+        this.logger.warn('Failed to initialize LiveKit EgressClient: ' + error);
+        this.egressClient = null;
+      }
+    } else {
+      this.egressClient = null;
+    }
   }
 
   /**
    * Start recording for a live class.
-   * In production, this would trigger LiveKit's Egress API to start recording to S3.
+   * Triggers LiveKit's Egress API to start recording to S3.
    */
   async startRecording(liveClassId: number): Promise<StartRecordingResult> {
     const liveClass = await this.liveClassesRepo.findById(liveClassId);
@@ -84,8 +104,35 @@ export class RecordingService {
 
     this.logger.log(`Started recording for live class ${liveClassId}, S3 key: ${s3Key}`);
 
-    // In production, trigger LiveKit Egress here:
-    // await this.livekitEgress.startRoomCompositeEgress(...)
+    // Trigger LiveKit Egress if configured
+    if (this.egressClient) {
+      try {
+        await this.egressClient.startRoomCompositeEgress(
+          liveClass.livekitRoomName,
+          {
+            file: {
+              fileType: 1, // MP4
+              filepath: s3Key,
+            },
+          },
+          {
+            s3: {
+              accessKey: this.configService.get<string>('AWS_ACCESS_KEY_ID') || '',
+              secret: this.configService.get<string>('AWS_SECRET_ACCESS_KEY') || '',
+              region: this.s3Region,
+              bucket: this.s3Bucket,
+              endpoint: this.s3Endpoint,
+            },
+          },
+        );
+        this.logger.log(`LiveKit Egress started for room ${liveClass.livekitRoomName}`);
+      } catch (error) {
+        this.logger.error(`Failed to start LiveKit Egress for live class ${liveClassId}:`, error);
+        // Continue — recording status is updated; post-session workflow will handle fallback
+      }
+    } else {
+      this.logger.warn(`LiveKit Egress not configured; recording for live class ${liveClassId} will rely on external trigger`);
+    }
 
     return {
       liveClassId,
@@ -295,17 +342,17 @@ export class RecordingService {
       return null;
     }
 
-    // Simulate S3 URL from the recording key
+    // Build S3 URL from the recording key (Egress uploads to this path)
     const s3Url = liveClass.recordingS3Key
       ? `${this.s3Endpoint}/${liveClass.recordingS3Key}`
-      : null;
+      : liveClass.recordingUrl;
 
     if (!s3Url) {
       await this.liveClassesRepo.update(liveClassId, {
         recordingStatus: 'failed',
-        recordingError: 'No S3 key found for recording',
+        recordingError: 'No S3 key or recording URL found',
       });
-      throw new InternalServerErrorException('No S3 key found for recording');
+      throw new InternalServerErrorException('No recording source found');
     }
 
     return this.handleRecordingComplete(liveClassId, s3Url);
