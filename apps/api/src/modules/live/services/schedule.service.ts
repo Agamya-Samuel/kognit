@@ -3,6 +3,7 @@ import { LiveClassesRepository } from '../../../db/repositories/live-classes.rep
 import { LecturesRepository } from '../../../db/repositories/lectures.repository';
 import { SectionsRepository } from '../../../db/repositories/sections.repository';
 import { EnrollmentsRepository } from '../../../db/repositories/enrollments.repository';
+import { CoursesRepository } from '../../../db/repositories/courses.repository';
 import type { LiveClass } from '../../../db/schema';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -51,6 +52,7 @@ export class ScheduleService {
     private readonly lecturesRepo: LecturesRepository,
     private readonly sectionsRepo: SectionsRepository,
     private readonly enrollmentsRepo: EnrollmentsRepository,
+    private readonly coursesRepo: CoursesRepository,
   ) {}
 
   /**
@@ -327,6 +329,7 @@ export class ScheduleService {
   private async toCalendarEvent(liveClass: LiveClass): Promise<CalendarEvent> {
     const lecture = await this.lecturesRepo.findById(liveClass.lectureId);
     const section = lecture ? await this.sectionsRepo.findById(lecture.sectionId) : null;
+    const course = section ? await this.coursesRepo.findById(section.courseId) : null;
 
     return {
       id: liveClass.id,
@@ -334,7 +337,7 @@ export class ScheduleService {
       lectureTitle: lecture?.title ?? 'Unknown Lecture',
       sectionId: lecture?.sectionId ?? 0,
       courseId: section?.courseId ?? 0,
-      courseTitle: '', // Would need course lookup; can be enriched later
+      courseTitle: course?.title ?? 'Unknown Course',
       instructorId: liveClass.instructorId,
       scheduledAt: liveClass.scheduledAt.toISOString(),
       durationMinutes: liveClass.durationMinutes,
@@ -345,34 +348,19 @@ export class ScheduleService {
     };
   }
 
-  private groupByDate(classes: LiveClass[], timezone: string): CalendarDay[] {
+  private async groupByDate(classes: LiveClass[], timezone: string): Promise<CalendarDay[]> {
     const dayMap = new Map<string, CalendarEvent[]>();
 
     for (const liveClass of classes) {
-      // Format date in target timezone using ISO string manipulation
-      // In production, use a library like date-fns-tz or luxon
+      // Format date in target timezone using Intl API
       const dateStr = this.formatDateInTimezone(liveClass.scheduledAt, timezone);
 
       if (!dayMap.has(dateStr)) {
         dayMap.set(dateStr, []);
       }
 
-      // Create basic calendar event (without enrichment for group operations)
-      dayMap.get(dateStr)!.push({
-        id: liveClass.id,
-        lectureId: liveClass.lectureId,
-        lectureTitle: '',
-        sectionId: 0,
-        courseId: 0,
-        courseTitle: '',
-        instructorId: liveClass.instructorId,
-        scheduledAt: liveClass.scheduledAt.toISOString(),
-        durationMinutes: liveClass.durationMinutes,
-        status: liveClass.status,
-        livekitRoomName: liveClass.livekitRoomName,
-        recordingStatus: liveClass.recordingStatus,
-        recordingUrl: liveClass.recordingUrl,
-      });
+      // Enrich each event with full lecture/course data
+      dayMap.get(dateStr)!.push(await this.toCalendarEvent(liveClass));
     }
 
     const days: CalendarDay[] = [];
@@ -387,18 +375,25 @@ export class ScheduleService {
 
   /**
    * Format a UTC date as YYYY-MM-DD in the target timezone.
-   * IST (Asia/Kolkata) is UTC+5:30. IST does not observe DST.
-   * All timestamps stored as UTC, displayed in IST.
+   * Uses Intl.DateTimeFormat with IANA timezone support (e.g., 'Asia/Kolkata', 'America/New_York').
    */
   private formatDateInTimezone(date: Date, timezone: string): string {
-    // Simple timezone offset handling for IST
-    const istOffsetMs = 5.5 * 60 * 60 * 1000; // UTC+5:30
-    const istDate = new Date(date.getTime() + istOffsetMs);
-
-    const year = istDate.getUTCFullYear();
-    const month = String(istDate.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(istDate.getUTCDate()).padStart(2, '0');
-
-    return `${year}-${month}-${day}`;
+    try {
+      const formatter = new Intl.DateTimeFormat('en-CA', {
+        timeZone: timezone,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      });
+      // en-CA locale produces YYYY-MM-DD format
+      return formatter.format(date);
+    } catch {
+      // Fallback to UTC if timezone is invalid
+      this.logger.warn(`Invalid timezone "${timezone}", falling back to UTC`);
+      const year = date.getUTCFullYear();
+      const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(date.getUTCDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
   }
 }
