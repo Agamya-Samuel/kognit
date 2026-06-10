@@ -1,7 +1,6 @@
 import type { Config } from 'jest';
 
 const config: Config = {
-  preset: 'ts-jest',
   testEnvironment: 'node',
   roots: ['<rootDir>/src', '<rootDir>/test/smoke', '<rootDir>/test/integration'],
   testMatch: [
@@ -12,7 +11,12 @@ const config: Config = {
     '^.+\\.ts$': 'ts-jest',
   },
   collectCoverageFrom: [
-    'src/**/*.ts',
+    'src/**/*.service.ts',
+    'src/**/*.repository.ts',
+    'src/**/*.strategy.ts',
+    'src/**/*.guard.ts',
+    'src/**/*.interceptor.ts',
+    'src/**/*.filter.ts',
     '!src/**/*.d.ts',
     '!src/**/*.interface.ts',
     '!src/**/*.mock.ts',

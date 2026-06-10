@@ -1,5 +1,4 @@
 {
-  "preset": "ts-jest",
   "testEnvironment": "node",
   "rootDir": "..",
   "testMatch": ["<rootDir>/test/e2e/**/*.e2e-spec.ts", "<rootDir>/test/integration/**/*.e2e-spec.ts"],
