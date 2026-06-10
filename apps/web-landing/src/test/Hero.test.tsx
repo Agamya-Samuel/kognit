@@ -14,7 +14,8 @@ vi.mock('@/components/TypingEffect', () => ({ TypingEffect: () => null }));
 describe('Hero', () => {
   it('renders the headline', () => {
     render(<Hero />);
-    expect(screen.getByText(/Launch Your Tech Career/i)).toBeInTheDocument();
+    expect(screen.getByText(/Launch Your/i)).toBeInTheDocument();
+    expect(screen.getByText(/Career with/i)).toBeInTheDocument();
   });
 
   it('renders CTA buttons', () => {
