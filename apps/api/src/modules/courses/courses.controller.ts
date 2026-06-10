@@ -26,6 +26,7 @@ export class CoursesController {
 
   // ─── Public/Authenticated: Browse Courses ────────────────────────────────────
 
+  @Public()
   @Get()
   @ApiResponse({ status: 200, description: 'Paginated course list' })
   @ApiOperation({ summary: 'List courses with pagination, filtering, and search' })

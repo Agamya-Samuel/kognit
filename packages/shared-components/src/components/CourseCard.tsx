@@ -37,7 +37,6 @@ function CourseCard({
     >
       {thumbnailUrl ? (
         <div className="aspect-video overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={thumbnailUrl}
             alt={title}

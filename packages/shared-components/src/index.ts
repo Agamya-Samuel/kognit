@@ -1,3 +1,5 @@
+'use client';
+
 // Components
 export { CourseCard } from './components/CourseCard';
 export type { CourseCardProps } from './components/CourseCard';
