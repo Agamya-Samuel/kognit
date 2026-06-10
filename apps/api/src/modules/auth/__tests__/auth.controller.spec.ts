@@ -1,6 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 import { AuthController } from '../auth.controller';
 import { AuthService } from '../auth.service';
+import { StudentActivationService } from '../services/student-activation.service';
+import { InstructorActivationService } from '../services/instructor-activation.service';
 import { ConflictException, UnauthorizedException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { createUser } from '../../../test/factories';
 
@@ -29,7 +32,12 @@ describe('AuthController', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
-      providers: [{ provide: AuthService, useValue: authService }],
+      providers: [
+        { provide: AuthService, useValue: authService },
+        { provide: StudentActivationService, useValue: {} },
+        { provide: InstructorActivationService, useValue: {} },
+        { provide: ConfigService, useValue: { get: jest.fn() } },
+      ],
     }).compile();
 
     controller = module.get<AuthController>(AuthController);
@@ -41,7 +49,7 @@ describe('AuthController', () => {
     it('should call authService.requestRegistrationVerification', async () => {
       authService.requestRegistrationVerification.mockResolvedValue({ message: 'sent', code: '123456' });
       const result = await controller.requestRegistration({ email: 'new@test.com' });
-      expect(authService.requestRegistrationVerification).toHaveBeenCalledWith('new@test.com');
+      expect(authService.requestRegistrationVerification).toHaveBeenCalledWith('new@test.com', undefined);
       expect(result.code).toBe('123456');
     });
   });
@@ -66,7 +74,7 @@ describe('AuthController', () => {
         name: 'John Doe',
         password: 'Password123',
       });
-      expect(authService.completeRegistration).toHaveBeenCalledWith('new@test.com', '123456', 'John Doe', 'Password123');
+      expect(authService.completeRegistration).toHaveBeenCalledWith('new@test.com', '123456', 'John Doe', 'Password123', undefined);
       expect(result.tokens).toEqual(tokens);
     });
   });
@@ -79,7 +87,7 @@ describe('AuthController', () => {
       const tokens = { accessToken: 'at', refreshToken: 'rt', expiresIn: 900 };
       authService.login.mockResolvedValue({ user, tokens });
       const result = await controller.login({ email: 'user@test.com', password: 'Password123' });
-      expect(authService.login).toHaveBeenCalledWith('user@test.com', 'Password123');
+      expect(authService.login).toHaveBeenCalledWith('user@test.com', 'Password123', undefined);
       expect(result.tokens).toBeDefined();
     });
   });
@@ -110,7 +118,7 @@ describe('AuthController', () => {
 
   describe('getProfile', () => {
     it('should call authService.getProfile with user id', async () => {
-      const user = createUser();
+      const user = createUser({ id: 1 });
       authService.getProfile.mockResolvedValue(user);
       const result = await controller.getProfile({ sub: 1, email: 'test@test.com', role: 'student' });
       expect(authService.getProfile).toHaveBeenCalledWith(1);

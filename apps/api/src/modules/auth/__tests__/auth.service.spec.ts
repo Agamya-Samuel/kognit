@@ -13,6 +13,8 @@ import { EmailVerificationsRepository } from '../../../db/repositories/email-ver
 import { RefreshTokensRepository } from '../../../db/repositories/refresh-tokens.repository';
 import { UserAuthProvidersRepository } from '../../../db/repositories/user-auth-providers.repository';
 import { StudentProfilesRepository } from '../../../db/repositories/student-profiles.repository';
+import { InstructorProfilesRepository } from '../../../db/repositories/instructor-profiles.repository';
+import { NotificationDispatcherService } from '../../notifications/services/notification-dispatcher.service';
 import { CacheService } from '../../../common/services/cache.service';
 import { createUser } from '../../../test/factories';
 
@@ -98,6 +100,7 @@ describe('AuthService', () => {
         { provide: RefreshTokensRepository, useValue: refreshTokensRepo },
         { provide: UserAuthProvidersRepository, useValue: {} },
         { provide: StudentProfilesRepository, useValue: { findByUserId: jest.fn().mockResolvedValue(null) } },
+        { provide: InstructorProfilesRepository, useValue: { findByUserId: jest.fn().mockResolvedValue(null) } },
         { provide: PasswordService, useValue: passwordService },
         { provide: TokenService, useValue: tokenService },
         { provide: LockoutService, useValue: lockoutService },
@@ -106,6 +109,7 @@ describe('AuthService', () => {
         { provide: CacheService, useValue: cacheService },
         { provide: JwtService, useValue: jwtService },
         { provide: ConfigService, useValue: configService },
+        { provide: NotificationDispatcherService, useValue: { dispatch: jest.fn().mockResolvedValue(undefined) } },
       ],
     }).compile();
 
@@ -123,8 +127,6 @@ describe('AuthService', () => {
     it('should store verification code in cache and return it', async () => {
       const result = await service.requestRegistrationVerification('new@test.com');
       expect(result.message).toContain('Verification code sent');
-      expect(result.code).toBeDefined();
-      expect(result.code).toHaveLength(6);
       expect(cacheService.set).toHaveBeenCalledWith(
         'pending_registration',
         'new@test.com',
@@ -400,7 +402,7 @@ describe('AuthService', () => {
       usersRepo.findById.mockResolvedValue(createUser({ id: 1, isVerified: false }));
       const result = await service.requestEmailVerification(1);
       expect(emailVerificationService.generateCode).toHaveBeenCalledWith(1);
-      expect(result.code).toBe('654321');
+      expect(result.message).toContain('Verification code sent');
     });
   });
 

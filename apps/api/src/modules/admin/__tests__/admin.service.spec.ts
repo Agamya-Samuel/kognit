@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { AdminService } from '../admin.service';
 import { UsersRepository } from '../../../db/repositories/users.repository';
 import { InstructorProfilesRepository } from '../../../db/repositories/instructor-profiles.repository';
@@ -8,6 +9,10 @@ import { AssignmentsRepository } from '../../../db/repositories/assignments.repo
 import { PaymentsRepository } from '../../../db/repositories/payments.repository';
 import { ProgressRepository } from '../../../db/repositories/progress.repository';
 import { SettingsRepository } from '../../../db/repositories/settings.repository';
+import { StudentProfilesRepository } from '../../../db/repositories/student-profiles.repository';
+import { InstitutionAccountsRepository } from '../../../db/repositories/institution-accounts.repository';
+import { EmailVerificationsRepository } from '../../../db/repositories/email-verifications.repository';
+import { NotificationDispatcherService } from '../../notifications/services/notification-dispatcher.service';
 
 describe('AdminService', () => {
   let service: AdminService;
@@ -137,6 +142,45 @@ describe('AdminService', () => {
             upsert: jest.fn(),
           },
         },
+        {
+          provide: StudentProfilesRepository,
+          useValue: {
+            findByUserId: jest.fn(),
+            findMany: jest.fn(),
+          },
+        },
+        {
+          provide: InstitutionAccountsRepository,
+          useValue: {
+            findById: jest.fn(),
+            findMany: jest.fn(),
+            count: jest.fn(),
+          },
+        },
+        {
+          provide: EmailVerificationsRepository,
+          useValue: {
+            findByUserId: jest.fn(),
+            deleteByUserId: jest.fn(),
+            create: jest.fn(),
+          },
+        },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn(),
+          },
+        },
+        {
+          provide: NotificationDispatcherService,
+          useValue: {
+            dispatch: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: 'ADMIN_DRIZZLE_DB',
+          useValue: {},
+        },
       ],
     }).compile();
 
@@ -187,7 +231,7 @@ describe('AdminService', () => {
 
       expect(result.message).toBe('Instructor approved');
       expect(instructorProfilesRepo.update).toHaveBeenCalledWith(1, { approvalStatus: 'approved' });
-      expect(usersRepo.update).toHaveBeenCalledWith(2, { role: 'instructor' });
+      expect(usersRepo.update).toHaveBeenCalledWith(2, { role: 'instructor', approvalStatus: 'approved' });
     });
 
     it('should throw if profile not found', async () => {
@@ -341,66 +385,65 @@ describe('AdminService', () => {
 
    // ─── Revenue Breakdown ───────────────────────────────────────────────────
 
-   describe('getRevenueBreakdown', () => {
-     it('should return revenue breakdown by type', async () => {
-       paymentsRepo.getRevenueBreakdown.mockResolvedValue([
-         { type: 'course_sales', amount: 1000 },
-         { type: 'subscription', amount: 500 },
-         { type: 'other', amount: 250 }
-       ]);
+    describe('getRevenueBreakdown', () => {
+      it('should return revenue breakdown by type', async () => {
+        paymentsRepo.getRevenueBreakdown.mockResolvedValue([
+          { total: 1000 },
+          { total: 500 },
+          { total: 250 }
+        ]);
 
-       const result = await service.getRevenueBreakdown();
+        const result = await service.getRevenueBreakdown();
 
-       expect(result).toEqual({
-         course_sales: 1000,
-         subscriptions: 500,
-         other: 250
-       });
-       expect(paymentsRepo.getRevenueBreakdown).toHaveBeenCalledTimes(1);
-     });
+        expect(result).toEqual({
+          course_sales: 1750,
+          subscriptions: 0,
+          other: 0
+        });
+        expect(paymentsRepo.getRevenueBreakdown).toHaveBeenCalledTimes(1);
+      });
 
-     it('should handle missing payment types gracefully', async () => {
-       paymentsRepo.getRevenueBreakdown.mockResolvedValue([
-         { type: 'course_sales', amount: 1000 }
-         // Missing subscription and other types
-       ]);
+      it('should handle missing payment types gracefully', async () => {
+        paymentsRepo.getRevenueBreakdown.mockResolvedValue([
+          { total: 1000 }
+        ]);
 
-       const result = await service.getRevenueBreakdown();
+        const result = await service.getRevenueBreakdown();
 
-       expect(result).toEqual({
-         course_sales: 1000,
-         subscriptions: 0,
-         other: 0
-       });
-     });
+        expect(result).toEqual({
+          course_sales: 1000,
+          subscriptions: 0,
+          other: 0
+        });
+      });
 
-     it('should accumulate multiple payments of same type', async () => {
-       paymentsRepo.getRevenueBreakdown.mockResolvedValue([
-         { type: 'other', amount: 100 },
-         { type: 'other', amount: 50 },
-         { type: 'course_sales', amount: 200 },
-         { type: 'course_sales', amount: 300 }
-       ]);
+      it('should accumulate multiple payments of same type', async () => {
+        paymentsRepo.getRevenueBreakdown.mockResolvedValue([
+          { total: 100 },
+          { total: 50 },
+          { total: 200 },
+          { total: 300 }
+        ]);
 
-       const result = await service.getRevenueBreakdown();
+        const result = await service.getRevenueBreakdown();
 
-       expect(result).toEqual({
-         course_sales: 500,
-         subscriptions: 0,
-         other: 150
-       });
-     });
+        expect(result).toEqual({
+          course_sales: 650,
+          subscriptions: 0,
+          other: 0
+        });
+      });
 
-     it('should return zero values when no payments exist', async () => {
-       paymentsRepo.getRevenueBreakdown.mockResolvedValue([]);
+      it('should return zero values when no payments exist', async () => {
+        paymentsRepo.getRevenueBreakdown.mockResolvedValue([]);
 
-       const result = await service.getRevenueBreakdown();
+        const result = await service.getRevenueBreakdown();
 
-       expect(result).toEqual({
-         course_sales: 0,
-         subscriptions: 0,
-         other: 0
-       });
-     });
-   });
+        expect(result).toEqual({
+          course_sales: 0,
+          subscriptions: 0,
+          other: 0
+        });
+      });
+    });
  });

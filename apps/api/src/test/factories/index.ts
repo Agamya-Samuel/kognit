@@ -291,6 +291,7 @@ export function createProgress(overrides: Partial<Progress> = {}): Progress {
     watchedSeconds: 0,
     isCompleted: false,
     lastWatchedAt: nextDate(),
+    ...overrides,
   };
 }
 
