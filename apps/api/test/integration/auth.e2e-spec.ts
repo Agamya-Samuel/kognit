@@ -5,6 +5,8 @@ import {
 } from '@nestjs/common';
 import { AuthController } from '../../src/modules/auth/auth.controller';
 import { AuthService } from '../../src/modules/auth/auth.service';
+import { StudentActivationService } from '../../src/modules/auth/services/student-activation.service';
+import { InstructorActivationService } from '../../src/modules/auth/services/instructor-activation.service';
 import { ConfigService } from '@nestjs/config';
 import { createE2EApp } from './helpers/e2e-app.helper';
 
@@ -43,6 +45,8 @@ describe('Auth (e2e)', () => {
           },
         },
         { provide: ConfigService, useValue: { get: (key: string) => key === 'CORS_ORIGINS' ? 'http://localhost:3002' : null } },
+        { provide: StudentActivationService, useValue: {} },
+        { provide: InstructorActivationService, useValue: {} },
         // Register mock guards as global APP_GUARD providers
         {
           provide: APP_GUARD,

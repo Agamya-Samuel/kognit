@@ -27,10 +27,10 @@ describe('Health Check (e2e)', () => {
     await e2eApp.close();
   });
 
-  it('GET /health should return 200 with status ok', () => {
+  it('GET /api/v1/health should return 200 with status ok', () => {
     const request = require('supertest');
     return request(e2eApp.getHttpServer())
-      .get('/health')
+      .get('/api/v1/health')
       .expect(200)
       .expect((res: any) => {
         expect(res.body.success).toBe(true);
