@@ -136,7 +136,7 @@ describe('ProgressService', () => {
     });
 
     it('should upsert progress and return result', async () => {
-      const lecture = createLecture();
+      const lecture = createLecture({ durationSeconds: 600 });
       const progressRecord = createProgress({ watchedSeconds: 300, isCompleted: false });
 
       lecturesRepo.findById.mockResolvedValue(lecture);
@@ -175,7 +175,7 @@ describe('ProgressService', () => {
     });
 
     it('should return default progress if no record exists', async () => {
-      lecturesRepo.findById.mockResolvedValue(createLecture());
+      lecturesRepo.findById.mockResolvedValue(createLecture({ durationSeconds: 600 }));
       progressRepo.findByStudentAndLecture.mockResolvedValue(null);
 
       const result = await service.getLectureProgress(100, 1);
@@ -353,7 +353,7 @@ describe('ProgressService', () => {
 
     it('should check enrollment via repository', async () => {
       lecturesRepo.findById.mockResolvedValue(createLecture());
-      sectionsRepo.findById.mockResolvedValue(createSection());
+      sectionsRepo.findById.mockResolvedValue(createSection({ courseId: 5 }));
       enrollmentsRepo.checkEnrollmentExists.mockResolvedValue(true);
 
       const result = await service.verifyEnrollment(100, 1);

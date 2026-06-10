@@ -10,9 +10,6 @@ import { CoursesRepository } from '../../../db/repositories/courses.repository';
 import { createCourse, createSection, createLecture } from '../../../test/factories';
 
 // ─── Mock Helpers ───────────────────────────────────────────────────────
-}
-
-// ─── Mock Helpers ───────────────────────────────────────────────────────
 
 function createMockLecturesRepo(overrides: Partial<Record<string, jest.Mock>> = {}): Record<string, jest.Mock> {
   return {

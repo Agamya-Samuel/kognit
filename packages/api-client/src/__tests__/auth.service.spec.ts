@@ -1,7 +1,7 @@
 import { describe, expect, test, vi } from 'vitest';
 import { authService } from '../services/auth';
+import { getApiClient } from '../index';
 
-// Mock the getApiClient function
 vi.mock('../index', () => ({
   getApiClient: vi.fn(),
 }));
@@ -11,9 +11,9 @@ describe('authService', () => {
 
   beforeEach(() => {
     vi.resetAllMocks();
-    vi.mocked(require('../index').getApiClient).mockReturnValue({
+    vi.mocked(getApiClient).mockReturnValue({
       post: mockPost,
-    });
+    } as any);
   });
 
   describe('login', () => {
