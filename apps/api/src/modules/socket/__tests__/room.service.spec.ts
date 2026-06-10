@@ -1,12 +1,22 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RoomService, RoomType, RoomInfo } from '../services/room.service';
+import { EnrollmentsRepository } from '../../../db/repositories/enrollments.repository';
+import { LiveClassesRepository } from '../../../db/repositories/live-classes.repository';
+import { LecturesRepository } from '../../../db/repositories/lectures.repository';
+import { SectionsRepository } from '../../../db/repositories/sections.repository';
 
 describe('RoomService', () => {
   let service: RoomService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [RoomService],
+      providers: [
+        RoomService,
+        { provide: EnrollmentsRepository, useValue: {} },
+        { provide: LiveClassesRepository, useValue: {} },
+        { provide: LecturesRepository, useValue: {} },
+        { provide: SectionsRepository, useValue: {} },
+      ],
     }).compile();
 
     service = module.get<RoomService>(RoomService);
@@ -84,34 +94,35 @@ describe('RoomService', () => {
   });
 
   describe('canJoinRoom', () => {
-    it('should allow any authenticated user to join course rooms', () => {
-      const result = service.canJoinRoom('course:42', 'student');
+    it('should allow any authenticated user to join course rooms', async () => {
+      const result = await service.canJoinRoom('course:42', 1, 'student');
       expect(result.allowed).toBe(true);
     });
 
-    it('should allow any authenticated user to join general rooms', () => {
-      const result = service.canJoinRoom('general:announcements', 'student');
+    it('should allow any authenticated user to join general rooms', async () => {
+      const result = await service.canJoinRoom('general:announcements', 1, 'student');
       expect(result.allowed).toBe(true);
     });
 
-    it('should allow any authenticated user to join live rooms', () => {
-      const result = service.canJoinRoom('live:class-1', 'student');
+    it('should require valid live class id for student to join live rooms', async () => {
+      const result = await service.canJoinRoom('live:class-1', 1, 'student');
+      expect(result.allowed).toBe(false);
+      expect(result.reason).toBe('Invalid live class ID');
+    });
+
+    it('should allow instructors to join live rooms', async () => {
+      const result = await service.canJoinRoom('live:class-1', 1, 'instructor');
       expect(result.allowed).toBe(true);
     });
 
-    it('should allow instructors to join live rooms', () => {
-      const result = service.canJoinRoom('live:class-1', 'instructor');
-      expect(result.allowed).toBe(true);
-    });
-
-    it('should deny access for invalid room name', () => {
-      const result = service.canJoinRoom('invalid:room', 'student');
+    it('should deny access for invalid room name', async () => {
+      const result = await service.canJoinRoom('invalid:room', 1, 'student');
       expect(result.allowed).toBe(false);
       expect(result.reason).toBe('Invalid room name format');
     });
 
-    it('should deny access for empty room', () => {
-      const result = service.canJoinRoom('', 'student');
+    it('should deny access for empty room', async () => {
+      const result = await service.canJoinRoom('', 1, 'student');
       expect(result.allowed).toBe(false);
     });
   });

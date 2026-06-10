@@ -1,3 +1,4 @@
+process.env.CORS_ORIGINS = 'http://localhost:3001,http://localhost:3002,http://localhost:3003,http://localhost:3004';
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -122,7 +123,30 @@ describe('SocketGateway', () => {
       providers: [
         SocketGateway,
         WsJwtGuard,
-        RoomService,
+        { provide: RoomService, useValue: {
+          buildRoomName: jest.fn().mockImplementation((type: string, id: string) => `${type}:${id}`),
+          parseRoomName: jest.fn().mockImplementation((name: string) => {
+            const parts = name.split(':');
+            if (parts.length !== 2) return null;
+            if (!['course', 'live', 'general'].includes(parts[0])) return null;
+            if (!parts[1] || parts[1].trim().length === 0) return null;
+            return { type: parts[0], id: parts[1], fullName: name };
+          }),
+          isValidRoom: jest.fn().mockImplementation((name: string) => {
+            const parts = name.split(':');
+            if (parts.length !== 2) return false;
+            if (!['course', 'live', 'general'].includes(parts[0])) return false;
+            if (!parts[1] || parts[1].trim().length === 0) return false;
+            return true;
+          }),
+          canJoinRoom: jest.fn().mockImplementation(async (room: string, _userId: number, _role: string) => {
+            const parts = room ? room.split(':') : [];
+            if (parts.length !== 2) return { allowed: false, reason: 'Invalid room name format' };
+            if (!['course', 'live', 'general'].includes(parts[0])) return { allowed: false, reason: 'Unknown room type' };
+            if (!parts[1] || parts[1].trim().length === 0) return { allowed: false, reason: 'Empty room id' };
+            return { allowed: true };
+          }),
+        } },
         { provide: PresenceService, useValue: createMockPresenceService() },
         { provide: SocketRateLimiterService, useValue: createMockRateLimiter() },
         { provide: JwtService, useFactory: createMockJwtService },

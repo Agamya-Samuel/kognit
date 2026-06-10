@@ -28,7 +28,7 @@ import {
   createJob,
   createInstitutionAccount,
   createInstitutionEnrollment,
-} from '../src/test/factories';
+} from '../../src/test/factories';
 
 describe('Mock Factories', () => {
   it('createUser produces a valid user with defaults', () => {

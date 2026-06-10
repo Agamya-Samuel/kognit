@@ -1,4 +1,4 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication, ValidationPipe, VersioningType } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { ResponseInterceptor } from '../../../src/common/interceptors/response.interceptor';
 import { HttpExceptionFilter } from '../../../src/common/filters/http-exception.filter';
@@ -10,9 +10,9 @@ import { HttpExceptionFilter } from '../../../src/common/filters/http-exception.
  * connections), we build a focused test module with only the controller under
  * test + mocked providers.
  *
- * NOTE: Global prefix and URI versioning are NOT set here because
- * AuthController and CoursesController already include `api/v1/` in their
- * @Controller() paths. Only HealthController uses a short path (`health`).
+ * Matches the real app's routing configuration: global prefix `api` + URI
+ * versioning with default version `1`, so routes are exposed as `/api/v1/...`.
+ * Controllers use relative `@Controller('auth')` etc. paths.
  *
  * IMPORTANT: Use plain functions (not jest.fn().mockResolvedValue()) for async
  * mock return values — Jest 30 has issues with mockResolvedValue in NestJS
@@ -32,6 +32,10 @@ export async function createE2EApp(
 
   const app = moduleFixture.createNestApplication();
   app.setGlobalPrefix('api');
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: '1',
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
