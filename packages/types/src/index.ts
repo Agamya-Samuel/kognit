@@ -14,6 +14,28 @@ export type ModerationStatus = 'visible' | 'flagged' | 'hidden';
 export type WaitlistSource = 'landing_page' | 'invite_flow';
 export type PermissionsLevel = 'super_admin' | 'moderator' | 'support';
 
+// ─── Course Creation Types ──────────────────────────────────────────────────
+
+export type CourseStatus = 'draft' | 'in_review' | 'revision_requested' | 'published' | 'archived';
+export type CourseStructure = 'live' | 'normal';
+export type SessionType = 'one_time' | 'recurring';
+export type SessionStatus = 'scheduled' | 'live' | 'ended' | 'cancelled';
+
+export const COURSE_DOMAINS = [
+  'Engineering & Tech',
+  'Design & Creativity',
+  'Business & Management',
+  'Science & Mathematics',
+  'Language & Communication',
+  'Health & Wellness',
+  'Arts & Humanities',
+  'Finance & Accounting',
+  'Personal Development',
+  'Competitive Exams',
+] as const;
+
+export type CourseDomain = typeof COURSE_DOMAINS[number];
+
 // ─── API Response Envelope ─────────────────────────────────────────────────────
 
 export interface ApiResponse<T> {
@@ -173,7 +195,9 @@ export interface Course {
   domain: string;
   pricingType: PricingType;
   priceInr: number;
-  isPublished: boolean;
+  courseStructure: CourseStructure;
+  status: CourseStatus;
+  revisionNotes?: string | null;
   createdAt: Date | string;
   updatedAt: Date | string;
 }
@@ -184,11 +208,12 @@ export interface Section {
   id: number;
   courseId: number;
   title: string;
+  description?: string | null;
   orderIndex: number;
   createdAt: Date | string;
 }
 
-// ─── Lecture ──────────────────────────────────────────────────────────────────
+// ─── Lecture (Lesson) ────────────────────────────────────────────────────────────
 
 export interface Lecture {
   id: number;
@@ -197,11 +222,27 @@ export interface Lecture {
   description: string | null;
   orderIndex: number;
   type: LectureType;
+  uploadId?: number | null;
+  videoUrl?: string | null;
+  externalVideoUrl?: string | null;
   muxAssetId?: string | null;
   muxPlaybackId?: string | null;
   durationSeconds: number;
   isFreePreview: boolean;
   isPublished: boolean;
+  createdAt: Date | string;
+}
+
+// ─── Lesson Attachment ──────────────────────────────────────────────────────────
+
+export interface LessonAttachment {
+  id: number;
+  lectureId: number;
+  fileName: string;
+  fileUrl: string;
+  contentType?: string | null;
+  fileSize?: number | null;
+  orderIndex: number;
   createdAt: Date | string;
 }
 
@@ -212,7 +253,61 @@ export interface CourseWithSections extends Course {
 }
 
 export interface SectionWithLectures extends Section {
-  lectures: Lecture[];
+  lectures: LectureWithAttachments[];
+}
+
+export interface LectureWithAttachments extends Lecture {
+  attachments?: LessonAttachment[];
+}
+
+// ─── Course Session (Live Classes) ──────────────────────────────────────────────
+
+export interface CourseSession {
+  id: number;
+  courseId: number;
+  instructorId: number;
+  recurringScheduleId?: number | null;
+  sessionType: SessionType;
+  title: string;
+  description?: string | null;
+  scheduledAt: Date | string;
+  durationMinutes: number;
+  meetingLink?: string | null;
+  livekitRoomName: string;
+  recordingUrl?: string | null;
+  recordingStatus: RecordingStatus;
+  recordingAvailable: boolean;
+  status: LiveClassStatus;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+}
+
+// ─── Recurring Schedule ────────────────────────────────────────────────────────
+
+export interface RecurringSchedule {
+  id: number;
+  courseId: number;
+  title: string;
+  daysOfWeek: string; // JSON array: '["mon","wed","fri"]'
+  startTime: string;
+  durationMinutes: number;
+  startDate: string;
+  endDate: string;
+  meetingLink?: string | null;
+  livekitRoomPrefix?: string | null;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+}
+
+export interface RecurringScheduleWithSessions extends RecurringSchedule {
+  sessions: CourseSession[];
+}
+
+// ─── Course with Sessions (Live) ─────────────────────────────────────────────────
+
+export interface CourseWithSessions extends Course {
+  sessions: CourseSession[];
+  recurringSchedules: RecurringScheduleWithSessions[];
 }
 
 // ─── Enrollment ───────────────────────────────────────────────────────────────
@@ -264,23 +359,24 @@ export type RecordingStatus = 'none' | 'recording' | 'processing' | 'ready' | 'f
 
 export interface LiveClassSchedule {
   id: number;
-  lectureId: number;
+  courseId: number;
   instructorId: number;
+  title: string;
   scheduledAt: Date | string;
   durationMinutes: number;
   status: LiveClassStatus;
   livekitRoomName: string;
+  meetingLink?: string | null;
   recordingStatus: RecordingStatus;
+  recordingAvailable: boolean;
   recordingUrl: string | null;
 }
 
 export interface CalendarEvent {
   id: number;
-  lectureId: number;
-  lectureTitle: string;
-  sectionId: number;
   courseId: number;
   courseTitle: string;
+  sessionTitle: string;
   instructorId: number;
   scheduledAt: string;
   durationMinutes: number;
@@ -644,23 +740,9 @@ export interface WatchHistoryResponse {
 
 // ─── Live Classes ─────────────────────────────────────────────────────────────
 
-export interface CalendarEvent {
-  id: number;
-  lectureId: number;
-  lectureTitle: string;
-  sectionId: number;
-  courseId: number;
-  courseTitle: string;
-  instructorId: number;
-  scheduledAt: string;
-  durationMinutes: number;
-  status: LiveClassStatus;
-  livekitRoomName: string;
-  recordingStatus: RecordingStatus;
-  recordingUrl: string | null;
-}
+// CalendarEvent is defined above in the Live Class section
 
-export interface CalendarDay {
+export interface CalendarDayAlias {
   date: string; // YYYY-MM-DD
   events: CalendarEvent[];
 }
@@ -696,6 +778,18 @@ export interface AuthResponse {
 
 export interface CourseWithCurriculum extends CourseWithSections {
   instructor?: InstructorProfile;
+}
+
+// ─── Course Validation ───────────────────────────────────────────────────────
+
+export interface CourseValidationResult {
+  isValid: boolean;
+  errors: CourseValidationError[];
+}
+
+export interface CourseValidationError {
+  field: string;
+  message: string;
 }
 
 // ─── Analytics Types ──────────────────────────────────────────────────────
