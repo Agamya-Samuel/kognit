@@ -194,6 +194,8 @@ export const createCourseSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters').max(255, 'Title must be at most 255 characters'),
   description: z.string().max(5000).optional(),
   domain: z.string().min(1, 'Domain is required').max(100),
+  thumbnailUrl: z.string().url('Must be a valid URL').max(500).optional().or(z.literal('')),
+  courseStructure: z.enum(['live', 'normal'], { message: 'Course structure must be live or normal' }),
   pricingType: z.enum(['free', 'paid']),
   priceInr: z.number().int().min(0).default(0),
 });
@@ -201,12 +203,28 @@ export const createCourseSchema = z.object({
 export const updateCourseSchema = z.object({
   title: z.string().min(3).max(255).optional(),
   description: z.string().max(5000).optional(),
-  thumbnailUrl: z.string().url().max(500).optional(),
+  thumbnailUrl: z.string().url().max(500).optional().or(z.literal('')),
   domain: z.string().min(1).max(100).optional(),
   pricingType: z.enum(['free', 'paid']).optional(),
   priceInr: z.number().int().min(0).optional(),
-  isPublished: z.boolean().optional(),
+  status: z.enum(['draft', 'in_review', 'revision_requested', 'published', 'archived']).optional(),
+  revisionNotes: z.string().max(5000).optional(),
 });
+
+// ─── Course Domains ─────────────────────────────────────────────────────────────
+
+export const COURSE_DOMAINS = [
+  'Engineering & Tech',
+  'Design & Creativity',
+  'Business & Management',
+  'Science & Mathematics',
+  'Language & Communication',
+  'Health & Wellness',
+  'Arts & Humanities',
+  'Finance & Accounting',
+  'Personal Development',
+  'Competitive Exams',
+] as const;
 
 // ─── Enrollment Schemas ───────────────────────────────────────────────────────
 
@@ -226,11 +244,13 @@ export const paginationQuerySchema = z.object({
 
 export const createSectionSchema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters').max(255, 'Title must be at most 255 characters'),
+  description: z.string().max(2000).optional(),
   orderIndex: z.number().int().min(0).optional(),
 });
 
 export const updateSectionSchema = z.object({
   title: z.string().min(2).max(255).optional(),
+  description: z.string().max(2000).optional(),
   orderIndex: z.number().int().min(0).optional(),
 });
 
@@ -245,6 +265,8 @@ export const createLectureSchema = z.object({
   description: z.string().max(5000).optional(),
   type: z.enum(['video', 'live', 'text', 'assignment', 'quiz']).default('video'),
   orderIndex: z.number().int().min(0).optional(),
+  videoUrl: z.string().url().max(500).optional().or(z.literal('')),
+  externalVideoUrl: z.string().url().max(500).optional().or(z.literal('')),
   isFreePreview: z.boolean().default(false),
   isPublished: z.boolean().default(false),
 });
@@ -254,6 +276,8 @@ export const updateLectureSchema = z.object({
   description: z.string().max(5000).optional(),
   type: z.enum(['video', 'live', 'text', 'assignment', 'quiz']).optional(),
   orderIndex: z.number().int().min(0).optional(),
+  videoUrl: z.string().url().max(500).optional().or(z.literal('')),
+  externalVideoUrl: z.string().url().max(500).optional().or(z.literal('')),
   isFreePreview: z.boolean().optional(),
   isPublished: z.boolean().optional(),
 });
@@ -268,9 +292,66 @@ export const courseQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(20),
   domain: z.string().optional(),
-  isPublished: z.coerce.boolean().optional(),
+  status: z.string().optional(),
+  courseStructure: z.enum(['live', 'normal']).optional(),
   instructorId: z.coerce.number().int().positive().optional(),
   search: z.string().optional(),
+});
+
+// ─── Course Session Schemas ───────────────────────────────────────────────────
+
+export const createCourseSessionSchema = z.object({
+  title: z.string().min(2, 'Title must be at least 2 characters').max(255),
+  description: z.string().max(2000).optional(),
+  scheduledAt: z.string().min(1, 'Date/time is required'),
+  durationMinutes: z.number().int().min(15, 'Duration must be at least 15 minutes').max(480),
+  meetingLink: z.string().url().max(500).optional().or(z.literal('')),
+});
+
+export const updateCourseSessionSchema = z.object({
+  title: z.string().min(2).max(255).optional(),
+  description: z.string().max(2000).optional(),
+  scheduledAt: z.string().optional(),
+  durationMinutes: z.number().int().min(15).max(480).optional(),
+  meetingLink: z.string().url().max(500).optional().or(z.literal('')),
+});
+
+// ─── Recurring Schedule Schemas ───────────────────────────────────────────
+
+export const createRecurringScheduleSchema = z.object({
+  title: z.string().min(2, 'Title must be at least 2 characters').max(255),
+  daysOfWeek: z.array(z.enum(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'])).min(1, 'At least one day must be selected'),
+  startTime: z.string().min(1, 'Start time is required'),
+  durationMinutes: z.number().int().min(15, 'Duration must be at least 15 minutes').max(480),
+  startDate: z.string().min(1, 'Start date is required'),
+  endDate: z.string().min(1, 'End date is required'),
+  meetingLink: z.string().url().max(500).optional().or(z.literal('')),
+});
+
+export const updateRecurringScheduleSchema = z.object({
+  title: z.string().min(2).max(255).optional(),
+  daysOfWeek: z.array(z.enum(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'])).min(1).optional(),
+  startTime: z.string().optional(),
+  durationMinutes: z.number().int().min(15).max(480).optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  meetingLink: z.string().url().max(500).optional().or(z.literal('')),
+});
+
+// ─── Lesson Attachment Schemas ──────────────────────────────────────────────
+
+export const createLessonAttachmentSchema = z.object({
+  fileName: z.string().min(1, 'File name is required').max(255),
+  fileUrl: z.string().url('Must be a valid URL').max(500),
+  contentType: z.string().max(100).optional(),
+  fileSize: z.number().int().min(0).optional(),
+  orderIndex: z.number().int().min(0).optional().default(0),
+});
+
+// ─── Request Revision Schema ───────────────────────────────────────────────
+
+export const requestRevisionSchema = z.object({
+  notes: z.string().min(10, 'Revision notes must be at least 10 characters').max(5000),
 });
 
 // ─── Inferred Types ───────────────────────────────────────────────────────────
@@ -306,3 +387,9 @@ export type CreateLectureInput = z.infer<typeof createLectureSchema>;
 export type UpdateLectureInput = z.infer<typeof updateLectureSchema>;
 export type ReorderLecturesInput = z.infer<typeof reorderLecturesSchema>;
 export type CourseQueryInput = z.infer<typeof courseQuerySchema>;
+export type CreateCourseSessionInput = z.infer<typeof createCourseSessionSchema>;
+export type UpdateCourseSessionInput = z.infer<typeof updateCourseSessionSchema>;
+export type CreateRecurringScheduleInput = z.infer<typeof createRecurringScheduleSchema>;
+export type UpdateRecurringScheduleInput = z.infer<typeof updateRecurringScheduleSchema>;
+export type CreateLessonAttachmentInput = z.infer<typeof createLessonAttachmentSchema>;
+export type RequestRevisionInput = z.infer<typeof requestRevisionSchema>;
