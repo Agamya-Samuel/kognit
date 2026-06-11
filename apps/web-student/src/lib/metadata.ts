@@ -65,7 +65,7 @@ export function generateCourseStructuredData(course: Course) {
       '@type': 'Offer',
       price: course.pricingType === 'paid' ? (course.priceInr / 100).toFixed(2) : '0',
       priceCurrency: 'INR',
-      availability: course.isPublished ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      availability: course.status === 'published' ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
       category: course.domain,
     },
     courseCode: course.id.toString(),

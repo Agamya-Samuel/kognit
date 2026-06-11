@@ -16,7 +16,7 @@ export function CourseCard({ course }: CourseCardProps) {
         thumbnailUrl={course.thumbnailUrl ?? undefined}
         pricingType={course.pricingType}
         priceInr={course.priceInr}
-        isPublished={course.isPublished}
+        isPublished={course.status === 'published'}
       />
     </Link>
   );
