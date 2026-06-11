@@ -26,12 +26,30 @@
     "@livekit/components-react": "^2.0.0",
     "livekit-client": "^2.0.0"
   },
+  "peerDependencies": {
+    "@hookform/resolvers": "^5.4.0",
+    "jotai": "^2.20.0",
+    "lucide-react": "^0.504.0",
+    "next": "^16.2.6",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-hook-form": "^7.77.0",
+    "zod": "^4.4.3"
+  },
   "devDependencies": {
+    "@hookform/resolvers": "^5.4.0",
     "@types/node": "^20.0.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "jotai": "^2.20.0",
+    "lucide-react": "^0.504.0",
+    "next": "^16.2.6",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-hook-form": "^7.77.0",
     "typescript": "^6.0.3",
     "tsup": "^8.5.1",
-    "eslint": "^10.3.0"
+    "eslint": "^10.3.0",
+    "zod": "^4.4.3"
   }
 }
