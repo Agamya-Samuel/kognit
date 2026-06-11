@@ -8,13 +8,21 @@ import {
 import { CoursesRepository } from '../../db/repositories/courses.repository';
 import { SectionsRepository } from '../../db/repositories/sections.repository';
 import { LecturesRepository } from '../../db/repositories/lectures.repository';
+import { CourseSessionsRepository } from '../../db/repositories/course-sessions.repository';
 import type { Course } from '../../db/schema';
+// Domain list - must match @edutech/validation COURSE_DOMAINS
+const COURSE_DOMAINS = [
+  'Engineering & Tech', 'Design & Creativity', 'Business & Management',
+  'Science & Mathematics', 'Language & Communication', 'Health & Wellness',
+  'Arts & Humanities', 'Finance & Accounting', 'Personal Development', 'Competitive Exams',
+] as const;
 
 export interface CourseListOptions {
   page?: number;
   limit?: number;
   domain?: string;
-  isPublished?: boolean;
+  status?: string;
+  courseStructure?: string;
   instructorId?: number;
   search?: string;
 }
@@ -36,13 +44,11 @@ export class CoursesService {
     private readonly coursesRepo: CoursesRepository,
     private readonly sectionsRepo: SectionsRepository,
     private readonly lecturesRepo: LecturesRepository,
+    private readonly courseSessionsRepo: CourseSessionsRepository,
   ) {}
 
-  // ─── Course CRUD ────────────────────────────────────────────────────────
+  // --- Course CRUD ---
 
-  /**
-   * Create a new course. Only instructors and admins can create courses.
-   */
   async createCourse(
     userId: number,
     userRole: string,
@@ -52,13 +58,14 @@ export class CoursesService {
       domain: string;
       pricingType: 'free' | 'paid';
       priceInr?: number;
+      courseStructure: 'live' | 'normal';
+      thumbnailUrl?: string;
     },
   ): Promise<Course> {
     if (userRole !== 'instructor' && userRole !== 'admin') {
       throw new ForbiddenException('Only instructors and admins can create courses.');
     }
 
-    // Validate pricing: paid courses must have a price > 0
     if (data.pricingType === 'paid' && (!data.priceInr || data.priceInr <= 0)) {
       throw new BadRequestException('Paid courses must have a price greater than 0.');
     }
@@ -67,11 +74,13 @@ export class CoursesService {
       instructorId: userId,
       title: data.title,
       description: data.description ?? null,
-      thumbnailUrl: null,
+      thumbnailUrl: data.thumbnailUrl ?? null,
       domain: data.domain,
       pricingType: data.pricingType,
       priceInr: data.pricingType === 'paid' ? (data.priceInr ?? 0) : 0,
-      isPublished: false,
+      courseStructure: data.courseStructure,
+      status: 'draft',
+      revisionNotes: null,
       deletedAt: null,
     });
 
@@ -79,10 +88,6 @@ export class CoursesService {
     return course;
   }
 
-  /**
-   * Get a course by ID. Returns full details if user is the owner or admin.
-   * For other users, only returns published courses.
-   */
   async getCourseById(
     courseId: number,
     userId?: number,
@@ -93,8 +98,8 @@ export class CoursesService {
       throw new NotFoundException('Course not found.');
     }
 
-    // If not the owner or admin, only show published courses
-    if (course.isPublished === false) {
+    // Non-published courses: only owner or admin can see
+    if (course.status !== 'published') {
       if (!userId || (course.instructorId !== userId && userRole !== 'admin')) {
         throw new NotFoundException('Course not found.');
       }
@@ -103,10 +108,6 @@ export class CoursesService {
     return course;
   }
 
-  /**
-   * Get a course with its sections and lectures (full curriculum).
-   * Respects free preview rules for non-enrolled students.
-   */
   async getCourseWithCurriculum(
     courseId: number,
     userId?: number,
@@ -115,32 +116,26 @@ export class CoursesService {
   ) {
     const course = await this.getCourseById(courseId, userId, userRole);
 
-    // Get sections for this course
     const sectionsResult = await this.sectionsRepo.findByCourseId(courseId, { limit: 1000 });
     const sections = sectionsResult.data;
 
-    // Get lectures for all sections
     const sectionsWithLectures = await Promise.all(
       sections.map(async (section) => {
         const lecturesResult = await this.lecturesRepo.findBySectionId(section.id, { limit: 1000 });
         const lectures = lecturesResult.data;
 
-        // Apply free preview logic for non-enrolled students
         const filteredLectures = lectures.map((lecture) => {
           const isOwner = userId && course.instructorId === userId;
           const isAdmin = userRole === 'admin';
 
           if (isOwner || isAdmin || isEnrolled) {
-            // Full access: return all lecture data
             return lecture;
           }
 
-          // Non-enrolled user: only show title/meta for non-preview lectures
           if (lecture.isFreePreview) {
             return lecture;
           }
 
-          // Hide media details for non-preview lectures
           return {
             ...lecture,
             muxAssetId: null,
@@ -163,9 +158,6 @@ export class CoursesService {
     };
   }
 
-  /**
-   * List courses with pagination, filtering, and search.
-   */
   async listCourses(options: CourseListOptions): Promise<PaginatedCoursesResponse> {
     const page = options.page ?? 1;
     const limit = options.limit ?? 20;
@@ -175,7 +167,8 @@ export class CoursesService {
       offset,
       limit,
       instructorId: options.instructorId,
-      isPublished: options.isPublished,
+      status: options.status,
+      courseStructure: options.courseStructure,
       domain: options.domain,
       search: options.search,
     });
@@ -192,9 +185,6 @@ export class CoursesService {
     };
   }
 
-  /**
-   * Update a course. Only the course owner (instructor) or admin can update.
-   */
   async updateCourse(
     courseId: number,
     userId: number,
@@ -206,7 +196,8 @@ export class CoursesService {
       domain?: string;
       pricingType?: 'free' | 'paid';
       priceInr?: number;
-      isPublished?: boolean;
+      status?: string;
+      revisionNotes?: string;
     },
   ): Promise<Course> {
     const course = await this.coursesRepo.findById(courseId);
@@ -216,37 +207,29 @@ export class CoursesService {
 
     this.assertCanManage(course, userId, userRole);
 
+    // Cannot edit a course that is in review (unless admin requesting revision)
+    if (course.status === 'in_review' && userRole !== 'admin') {
+      throw new ForbiddenException('Cannot edit a course that is currently in review.');
+    }
+
+    // Cannot edit an archived course
+    if (course.status === 'archived') {
+      throw new ForbiddenException('Cannot edit an archived course.');
+    }
+
     // Validate pricing if being updated
     if (data.pricingType === 'paid' && data.priceInr !== undefined && data.priceInr <= 0) {
       throw new BadRequestException('Paid courses must have a price greater than 0.');
     }
 
-    // If switching to free, reset price
     if (data.pricingType === 'free') {
       data.priceInr = 0;
     }
 
-    // If publishing, validate course has at least one section with a lecture
-    if (data.isPublished === true && !course.isPublished) {
-      const sections = await this.sectionsRepo.findByCourseId(courseId, { limit: 1000 });
-      if (sections.data.length === 0) {
-        throw new BadRequestException('Cannot publish a course without any sections.');
-      }
+    // Build the update payload — exclude status and revisionNotes from regular update
+    const { status: _status, revisionNotes: _revisionNotes, ...updateData } = data;
 
-      let hasLectures = false;
-      for (const section of sections.data) {
-        const lectures = await this.lecturesRepo.findBySectionId(section.id, { limit: 1 });
-        if (lectures.data.length > 0) {
-          hasLectures = true;
-          break;
-        }
-      }
-      if (!hasLectures) {
-        throw new BadRequestException('Cannot publish a course without any lectures.');
-      }
-    }
-
-    const updated = await this.coursesRepo.update(courseId, data);
+    const updated = await this.coursesRepo.update(courseId, updateData);
     if (!updated) {
       throw new NotFoundException('Course not found after update.');
     }
@@ -255,9 +238,6 @@ export class CoursesService {
     return updated;
   }
 
-  /**
-   * Soft-delete a course. Only the course owner or admin can delete.
-   */
   async deleteCourse(courseId: number, userId: number, userRole: string): Promise<void> {
     const course = await this.coursesRepo.findById(courseId);
     if (!course) {
@@ -274,12 +254,156 @@ export class CoursesService {
     this.logger.log(`Course deleted: ${courseId} by user ${userId}`);
   }
 
-  // ─── RBAC Helpers ───────────────────────────────────────────────────────
+  // --- Lifecycle Actions ---
 
-  /**
-   * Assert that the user can manage (update/delete) the course.
-   * Instructors can only manage their own courses. Admins can manage all.
-   */
+  async submitForReview(courseId: number, userId: number, userRole: string): Promise<Course> {
+    const course = await this.coursesRepo.findById(courseId);
+    if (!course) {
+      throw new NotFoundException('Course not found.');
+    }
+
+    this.assertCanManage(course, userId, userRole);
+
+    if (course.status !== 'draft' && course.status !== 'revision_requested') {
+      throw new BadRequestException(`Cannot submit for review from status: ${course.status}`);
+    }
+
+    // Validate pre-submission
+    const validation = await this.validatePreSubmission(courseId);
+    if (!validation.isValid) {
+      throw new BadRequestException(
+        `Course is not ready for review: ${validation.errors.map(e => e.message).join(', ')}`,
+      );
+    }
+
+    const updated = await this.coursesRepo.updateStatus(courseId, 'in_review');
+    if (!updated) {
+      throw new NotFoundException('Course not found after status update.');
+    }
+
+    this.logger.log(`Course submitted for review: ${courseId} by user ${userId}`);
+    return updated;
+  }
+
+  async approveCourse(courseId: number, adminId: number): Promise<Course> {
+    const course = await this.coursesRepo.findById(courseId);
+    if (!course) {
+      throw new NotFoundException('Course not found.');
+    }
+
+    if (course.status !== 'in_review') {
+      throw new BadRequestException(`Cannot approve a course with status: ${course.status}`);
+    }
+
+    const updated = await this.coursesRepo.updateStatus(courseId, 'published');
+    if (!updated) {
+      throw new NotFoundException('Course not found after status update.');
+    }
+
+    this.logger.log(`Course approved: ${courseId} by admin ${adminId}`);
+    return updated;
+  }
+
+  async requestRevision(courseId: number, adminId: number, notes: string): Promise<Course> {
+    const course = await this.coursesRepo.findById(courseId);
+    if (!course) {
+      throw new NotFoundException('Course not found.');
+    }
+
+    if (course.status !== 'in_review') {
+      throw new BadRequestException(`Cannot request revision for a course with status: ${course.status}`);
+    }
+
+    const updated = await this.coursesRepo.updateStatus(courseId, 'revision_requested', notes);
+    if (!updated) {
+      throw new NotFoundException('Course not found after status update.');
+    }
+
+    this.logger.log(`Revision requested for course: ${courseId} by admin ${adminId}`);
+    return updated;
+  }
+
+  async archiveCourse(courseId: number, userId: number, userRole: string): Promise<Course> {
+    const course = await this.coursesRepo.findById(courseId);
+    if (!course) {
+      throw new NotFoundException('Course not found.');
+    }
+
+    this.assertCanManage(course, userId, userRole);
+
+    if (course.status === 'archived') {
+      throw new BadRequestException('Course is already archived.');
+    }
+
+    const updated = await this.coursesRepo.updateStatus(courseId, 'archived');
+    if (!updated) {
+      throw new NotFoundException('Course not found after status update.');
+    }
+
+    this.logger.log(`Course archived: ${courseId} by user ${userId}`);
+    return updated;
+  }
+
+  async validatePreSubmission(courseId: number): Promise<{
+    isValid: boolean;
+    errors: Array<{ field: string; message: string }>;
+  }> {
+    const course = await this.coursesRepo.findById(courseId);
+    if (!course) {
+      throw new NotFoundException('Course not found.');
+    }
+
+    const errors: Array<{ field: string; message: string }> = [];
+
+    // Basic info checks
+    if (!course.description || course.description.trim().length === 0) {
+      errors.push({ field: 'description', message: 'Course description is required.' });
+    }
+
+    if (!course.thumbnailUrl || course.thumbnailUrl.trim().length === 0) {
+      errors.push({ field: 'thumbnailUrl', message: 'Course thumbnail is required.' });
+    }
+
+    if (course.courseStructure === 'normal') {
+      // Must have at least one section with at least one lecture
+      const sectionsResult = await this.sectionsRepo.findByCourseId(courseId, { limit: 1000 });
+      if (sectionsResult.data.length === 0) {
+        errors.push({ field: 'sections', message: 'At least one section is required.' });
+      } else {
+        let totalLectures = 0;
+        for (const section of sectionsResult.data) {
+          const lecturesResult = await this.lecturesRepo.findBySectionId(section.id, { limit: 1000 });
+          totalLectures += lecturesResult.data.length;
+        }
+        if (totalLectures === 0) {
+          errors.push({ field: 'lectures', message: 'At least one lesson is required.' });
+        }
+      }
+    } else if (course.courseStructure === 'live') {
+      // Must have at least one scheduled session
+      const sessionCount = await this.courseSessionsRepo.countByCourse(courseId);
+      if (sessionCount === 0) {
+        errors.push({ field: 'sessions', message: 'At least one session is required for live courses.' });
+      }
+    }
+
+    // Paid courses must have a price
+    if (course.pricingType === 'paid' && (!course.priceInr || course.priceInr <= 0)) {
+      errors.push({ field: 'priceInr', message: 'Paid courses must have a price greater than 0.' });
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+    };
+  }
+
+  getDomains(): string[] {
+    return [...COURSE_DOMAINS];
+  }
+
+  // --- RBAC Helpers ---
+
   private assertCanManage(course: Course, userId: number, userRole: string): void {
     if (userRole === 'admin') return;
 
