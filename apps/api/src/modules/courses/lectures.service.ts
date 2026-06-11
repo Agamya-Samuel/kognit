@@ -56,6 +56,8 @@ export class LecturesService {
       orderIndex: data.orderIndex,
       type: data.type ?? 'video',
       uploadId: null,
+      videoUrl: null,
+      externalVideoUrl: null,
       muxAssetId: null,
       muxPlaybackId: null,
       durationSeconds: 0,
@@ -87,7 +89,7 @@ export class LecturesService {
     }
 
     // Access check
-    if (!course.isPublished) {
+    if (course.status !== 'published') {
       if (!userId || (course.instructorId !== userId && userRole !== 'admin')) {
         throw new NotFoundException('Section not found.');
       }
@@ -130,7 +132,7 @@ export class LecturesService {
     const course = await this.getCourseFromSection(lecture.sectionId);
 
     // Access check
-    if (!course.isPublished) {
+    if (course.status !== 'published') {
       if (!userId || (course.instructorId !== userId && userRole !== 'admin')) {
         throw new NotFoundException('Lecture not found.');
       }

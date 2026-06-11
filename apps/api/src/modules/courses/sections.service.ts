@@ -24,7 +24,7 @@ export class SectionsService {
     courseId: number,
     userId: number,
     userRole: string,
-    data: { title: string; orderIndex?: number },
+    data: { title: string; description?: string; orderIndex?: number },
   ): Promise<Section> {
     const course = await this.coursesRepo.findById(courseId);
     if (!course) {
@@ -42,6 +42,7 @@ export class SectionsService {
     const section = await this.sectionsRepo.create({
       courseId,
       title: data.title,
+      description: data.description ?? null,
       orderIndex: data.orderIndex,
     });
 
@@ -63,7 +64,7 @@ export class SectionsService {
     }
 
     // Allow access to published courses or if user is owner/admin
-    if (!course.isPublished) {
+    if (course.status !== 'published') {
       if (!userId || (course.instructorId !== userId && userRole !== 'admin')) {
         throw new NotFoundException('Course not found.');
       }
@@ -92,7 +93,7 @@ export class SectionsService {
       throw new NotFoundException('Course not found.');
     }
 
-    if (!course.isPublished) {
+    if (course.status !== 'published') {
       if (!userId || (course.instructorId !== userId && userRole !== 'admin')) {
         throw new NotFoundException('Section not found.');
       }
