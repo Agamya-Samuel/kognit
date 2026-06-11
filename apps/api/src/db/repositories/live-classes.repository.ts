@@ -1,12 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository, PaginatedResult } from './base.repository';
 import { liveClasses } from '../schema';
-import { eq, and, desc, gte, lte, sql } from 'drizzle-orm';
+import { eq, and, desc, gte, lte, sql, count } from 'drizzle-orm';
 import type { LiveClass } from '../schema';
 import { users } from '../schema/users';
 import { courses } from '../schema/courses';
-import { lectures } from '../schema/lectures';
-import { sections } from '../schema/sections';
 
 @Injectable()
 export class LiveClassesRepository extends BaseRepository<LiveClass> {
@@ -28,17 +26,17 @@ export class LiveClassesRepository extends BaseRepository<LiveClass> {
     }
   }
 
-  async findByLectureId(lectureId: number): Promise<LiveClass | null> {
+  async findByCourseId(courseId: number): Promise<LiveClass[]> {
     try {
       const result = await this.db
         .select()
         .from(liveClasses)
-        .where(eq(liveClasses.lectureId, lectureId))
-        .limit(1);
-      return result[0] || null;
+        .where(eq(liveClasses.courseId, courseId))
+        .orderBy(desc(liveClasses.scheduledAt));
+      return result;
     } catch (error) {
-      this.handleError(error, 'findByLectureId');
-      return null;
+      this.handleError(error, 'findByCourseId');
+      return [];
     }
   }
 
@@ -51,6 +49,7 @@ export class LiveClassesRepository extends BaseRepository<LiveClass> {
     limit?: number;
     instructorId?: number;
     status?: string;
+    courseId?: number;
   } = {}): Promise<PaginatedResult<LiveClass>> {
     const defaultLimit = 10;
     const defaultOffset = 0;
@@ -65,6 +64,9 @@ export class LiveClassesRepository extends BaseRepository<LiveClass> {
       if (options.status) {
         conditions.push(eq(liveClasses.status, options.status as any));
       }
+      if (options.courseId) {
+        conditions.push(eq(liveClasses.courseId, options.courseId));
+      }
 
       const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
@@ -76,17 +78,17 @@ export class LiveClassesRepository extends BaseRepository<LiveClass> {
           .orderBy(desc(liveClasses.scheduledAt))
           .limit(limit)
           .offset(offset),
-        this.db.select({ count: liveClasses.id }).from(liveClasses).where(whereClause),
+        this.db.select({ count: count(liveClasses.id) }).from(liveClasses).where(whereClause),
       ]);
 
-      return { data, total: totalResult.length, limit, offset };
+      return { data, total: totalResult[0]?.count ?? 0, limit, offset };
     } catch (error) {
       this.handleError(error, 'findMany');
       return { data: [], total: 0, limit: options.limit || defaultLimit, offset: options.offset || defaultOffset };
     }
   }
 
-  async create(data: Omit<LiveClass, 'id' | 'createdAt'>): Promise<LiveClass> {
+  async create(data: Omit<LiveClass, 'id' | 'createdAt' | 'updatedAt'>): Promise<LiveClass> {
     try {
       const result = await this.db.insert(liveClasses).values(data).returning();
       return result[0];
@@ -96,11 +98,11 @@ export class LiveClassesRepository extends BaseRepository<LiveClass> {
     }
   }
 
-  async update(id: number, data: Partial<Omit<LiveClass, 'id' | 'createdAt'>>): Promise<LiveClass | null> {
+  async update(id: number, data: Partial<Omit<LiveClass, 'id' | 'createdAt' | 'updatedAt'>>): Promise<LiveClass | null> {
     try {
       const result = await this.db
         .update(liveClasses)
-        .set(data)
+        .set({ ...data, updatedAt: new Date() })
         .where(eq(liveClasses.id, id))
         .returning();
       return result[0] || null;
@@ -110,7 +112,7 @@ export class LiveClassesRepository extends BaseRepository<LiveClass> {
     }
   }
 
-  async count(filters?: { instructorId?: number; status?: string }): Promise<number> {
+  async count(filters?: { instructorId?: number; status?: string; courseId?: number }): Promise<number> {
     try {
       const conditions = [];
       if (filters?.instructorId) {
@@ -119,9 +121,12 @@ export class LiveClassesRepository extends BaseRepository<LiveClass> {
       if (filters?.status) {
         conditions.push(eq(liveClasses.status, filters.status as any));
       }
+      if (filters?.courseId) {
+        conditions.push(eq(liveClasses.courseId, filters.courseId));
+      }
       const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-      const result = await this.db.select({ count: liveClasses.id }).from(liveClasses).where(whereClause);
-      return result.length;
+      const result = await this.db.select({ count: count(liveClasses.id) }).from(liveClasses).where(whereClause);
+      return result[0]?.count ?? 0;
     } catch (error) {
       this.handleError(error, 'count');
       return 0;
@@ -193,35 +198,20 @@ export class LiveClassesRepository extends BaseRepository<LiveClass> {
     }
   }
 
-  async findByLectureIds(lectureIds: number[]): Promise<LiveClass[]> {
-    try {
-      if (lectureIds.length === 0) return [];
-      const result = await this.db
-        .select()
-        .from(liveClasses)
-        .where(sql`${liveClasses.lectureId} IN (${sql.join(lectureIds.map(id => sql`${id}`), sql`, `)})`);
-      return result;
-    } catch (error) {
-      this.handleError(error, 'findByLectureIds');
-      return [];
-    }
-  }
-
-// New methods for dashboard metrics
+  // Dashboard metrics
   async countUpcomingForInstructor(instructorId: number): Promise<number> {
     try {
       const result = await this.db
-        .select({ count: liveClasses.id })
+        .select({ count: count(liveClasses.id) })
         .from(liveClasses)
         .where(
           and(
             eq(liveClasses.instructorId, instructorId),
             gte(liveClasses.scheduledAt, new Date()),
-            eq(liveClasses.status, 'scheduled' as any)
-          )
+            eq(liveClasses.status, 'scheduled' as any),
+          ),
         );
-       
-      return result.length;
+      return result[0]?.count ?? 0;
     } catch (error) {
       this.handleError(error, 'countUpcomingForInstructor');
       return 0;
@@ -240,15 +230,13 @@ export class LiveClassesRepository extends BaseRepository<LiveClass> {
         .select({
           id: liveClasses.id,
           scheduledAt: liveClasses.scheduledAt,
-          title: lectures.title,
+          title: liveClasses.title,
           instructorName: users.name,
           courseTitle: courses.title,
         })
         .from(liveClasses)
         .innerJoin(users, eq(liveClasses.instructorId, users.id))
-        .innerJoin(lectures, eq(liveClasses.lectureId, lectures.id))
-        .innerJoin(sections, eq(lectures.sectionId, sections.id))
-        .innerJoin(courses, eq(sections.courseId, courses.id))
+        .innerJoin(courses, eq(liveClasses.courseId, courses.id))
         .where(eq(liveClasses.instructorId, instructorId))
         .orderBy(desc(liveClasses.scheduledAt))
         .limit(limit);

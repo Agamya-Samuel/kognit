@@ -29,7 +29,8 @@ export class CoursesRepository extends BaseRepository<Course> {
     offset?: number;
     limit?: number;
     instructorId?: number;
-    isPublished?: boolean;
+    status?: string;
+    courseStructure?: string;
     domain?: string;
     search?: string;
   } = {}): Promise<PaginatedResult<Course>> {
@@ -45,8 +46,12 @@ export class CoursesRepository extends BaseRepository<Course> {
         conditions.push(eq(courses.instructorId, options.instructorId));
       }
 
-      if (options.isPublished !== undefined) {
-        conditions.push(eq(courses.isPublished, options.isPublished));
+      if (options.status) {
+        conditions.push(eq(courses.status, options.status as any));
+      }
+
+      if (options.courseStructure) {
+        conditions.push(eq(courses.courseStructure, options.courseStructure as any));
       }
 
       if (options.domain) {
@@ -131,7 +136,26 @@ export class CoursesRepository extends BaseRepository<Course> {
     return this.findMany({ ...options, instructorId });
   }
 
-   async count(filters?: { instructorId?: number; isPublished?: boolean; domain?: string; deletedAt?: any }): Promise<number> {
+  async updateStatus(id: number, status: string, revisionNotes?: string | null): Promise<Course | null> {
+    try {
+      const updateData: any = { status, updatedAt: new Date() };
+      if (revisionNotes !== undefined) {
+        updateData.revisionNotes = revisionNotes;
+      }
+      const result = await this.db
+        .update(courses)
+        .set(updateData)
+        .where(and(eq(courses.id, id), eq(courses.deletedAt, null as any)))
+        .returning();
+
+      return result[0] || null;
+    } catch (error) {
+      this.handleError(error, 'updateStatus');
+      return null;
+    }
+  }
+
+   async count(filters?: { instructorId?: number; status?: string; courseStructure?: string; domain?: string; deletedAt?: any }): Promise<number> {
      try {
        const conditions = [];
 
@@ -152,8 +176,12 @@ export class CoursesRepository extends BaseRepository<Course> {
          conditions.push(eq(courses.instructorId, filters.instructorId));
        }
 
-       if (filters?.isPublished !== undefined) {
-         conditions.push(eq(courses.isPublished, filters.isPublished));
+       if (filters?.status) {
+         conditions.push(eq(courses.status, filters.status as any));
+       }
+
+       if (filters?.courseStructure) {
+         conditions.push(eq(courses.courseStructure, filters.courseStructure as any));
        }
 
        if (filters?.domain) {
