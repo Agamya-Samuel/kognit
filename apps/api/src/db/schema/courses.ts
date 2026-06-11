@@ -1,7 +1,7 @@
-import { pgTable, serial, integer, text, timestamp, varchar, boolean, index } from 'drizzle-orm/pg-core';
+import { pgTable, serial, integer, text, timestamp, varchar, index } from 'drizzle-orm/pg-core';
 import type { InferSelectModel } from 'drizzle-orm';
 import { users } from './users';
-import { pricingType } from './enums';
+import { pricingType, courseStatus, courseStructure } from './enums';
 
 export const courses = pgTable('courses', {
   id: serial('id').primaryKey(),
@@ -12,15 +12,18 @@ export const courses = pgTable('courses', {
   domain: varchar('domain', { length: 100 }).notNull(),
   pricingType: pricingType('pricing_type').notNull().default('free'),
   priceInr: integer('price_inr').notNull().default(0),
-  isPublished: boolean('is_published').notNull().default(false),
+  courseStructure: courseStructure('course_structure').notNull(),
+  status: courseStatus('status').notNull().default('draft'),
+  revisionNotes: text('revision_notes'),
   deletedAt: timestamp('deleted_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 }, (table) => [
   index('courses_instructor_id_idx').on(table.instructorId),
-  index('courses_is_published_idx').on(table.isPublished),
+  index('courses_status_idx').on(table.status),
   index('courses_deleted_at_idx').on(table.deletedAt),
   index('courses_domain_idx').on(table.domain),
+  index('courses_course_structure_idx').on(table.courseStructure),
 ]);
 
 export type Course = InferSelectModel<typeof courses>;

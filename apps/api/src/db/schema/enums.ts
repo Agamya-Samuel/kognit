@@ -40,3 +40,13 @@ export const permissionsLevel = pgEnum('permissions_level', ['super_admin', 'mod
 
 export const uploadStatus = pgEnum('upload_status', ['pending', 'uploading', 'complete', 'failed', 'cancelled']);
 export const emailVerificationPurpose = pgEnum('email_verification_purpose', ['email_verify', 'student_activation', 'instructor_activation']);
+
+// ─── Course Creation Enums ───────────────────────────────────────────────────
+
+export const courseStatus = pgEnum('course_status', ['draft', 'in_review', 'revision_requested', 'published', 'archived']);
+
+export const courseStructure = pgEnum('course_structure', ['live', 'normal']);
+
+export const sessionType = pgEnum('session_type', ['one_time', 'recurring']);
+
+export const dayOfWeek = pgEnum('day_of_week', ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']);

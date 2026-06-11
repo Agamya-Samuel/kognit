@@ -7,6 +7,8 @@ import { courses } from './courses';
 import { sections } from './sections';
 import { lectures } from './lectures';
 import { liveClasses } from './live-classes';
+import { recurringSchedules } from './recurring-schedules';
+import { lessonAttachments } from './lesson-attachments';
 import { enrollments } from './enrollments';
 import { progress } from './progress';
 import { certificates } from './certificates';
@@ -101,6 +103,8 @@ export const coursesRelations = relations(courses, ({ one, many }) => ({
   reviews: many(reviews),
   jobs: many(jobs),
   channels: many(channels),
+  liveClasses: many(liveClasses),
+  recurringSchedules: many(recurringSchedules),
 }));
 
 // Section relations
@@ -120,21 +124,39 @@ export const lecturesRelations = relations(lectures, ({ one, many }) => ({
   }),
   assignments: many(assignments),
   progress: many(progress),
-  liveClass: one(liveClasses, {
-    fields: [lectures.id],
-    references: [liveClasses.lectureId],
-  }),
+  attachments: many(lessonAttachments),
 }));
 
-// Live class relations
+// Live class (session) relations
 export const liveClassesRelations = relations(liveClasses, ({ one }) => ({
-  lecture: one(lectures, {
-    fields: [liveClasses.lectureId],
-    references: [lectures.id],
+  course: one(courses, {
+    fields: [liveClasses.courseId],
+    references: [courses.id],
   }),
   instructor: one(users, {
     fields: [liveClasses.instructorId],
     references: [users.id],
+  }),
+  recurringSchedule: one(recurringSchedules, {
+    fields: [liveClasses.recurringScheduleId],
+    references: [recurringSchedules.id],
+  }),
+}));
+
+// Recurring schedule relations
+export const recurringSchedulesRelations = relations(recurringSchedules, ({ one, many }) => ({
+  course: one(courses, {
+    fields: [recurringSchedules.courseId],
+    references: [courses.id],
+  }),
+  sessions: many(liveClasses),
+}));
+
+// Lesson attachment relations
+export const lessonAttachmentsRelations = relations(lessonAttachments, ({ one }) => ({
+  lecture: one(lectures, {
+    fields: [lessonAttachments.lectureId],
+    references: [lectures.id],
   }),
 }));
 

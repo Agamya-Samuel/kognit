@@ -114,7 +114,8 @@ async function seed() {
         domain: 'tech',
         pricingType: 'paid',
         priceInr: 49900, // ₹499.00 in paise
-        isPublished: true,
+        courseStructure: 'normal',
+        status: 'published',
       })
       .returning();
     console.log('✅ Created course:', course.title);
