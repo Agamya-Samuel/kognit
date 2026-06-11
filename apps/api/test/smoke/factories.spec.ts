@@ -50,7 +50,8 @@ describe('Mock Factories', () => {
     const course = createCourse({ instructorId: 42 });
     expect(course.instructorId).toBe(42);
     expect(course.pricingType).toBe('free');
-    expect(course.isPublished).toBe(false);
+    expect(course.status).toBe('draft');
+    expect(course.courseStructure).toBe('normal');
   });
 
   it('createSection produces a valid section', () => {

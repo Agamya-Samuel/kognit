@@ -30,7 +30,7 @@ describe('CoursesController', () => {
   // ─── Public: Browse Courses ─────────────────────────────────────────
 
   describe('listCourses', () => {
-    it('should call coursesService.listCourses with default isPublished=true', async () => {
+    it('should call coursesService.listCourses with default status=published', async () => {
       const mockResult = { courses: [], total: 0, page: 1, limit: 20, hasNext: false, hasPrev: false };
       coursesService.listCourses.mockResolvedValue(mockResult);
 
@@ -45,7 +45,7 @@ describe('CoursesController', () => {
         page: 1,
         limit: 20,
         domain: 'Programming',
-        isPublished: true,
+        status: 'published',
         search: 'test',
       });
       expect(result.success).toBe(true);
@@ -59,13 +59,13 @@ describe('CoursesController', () => {
       });
     });
 
-    it('should respect isPublished query param', async () => {
+    it('should respect status query param', async () => {
       coursesService.listCourses.mockResolvedValue({ courses: [], total: 0, page: 1, limit: 20, hasNext: false, hasPrev: false });
 
-      await controller.listCourses({ isPublished: false });
+      await controller.listCourses({ status: 'draft' });
 
       expect(coursesService.listCourses).toHaveBeenCalledWith(
-        expect.objectContaining({ isPublished: false }),
+        expect.objectContaining({ status: 'draft' }),
       );
     });
   });
@@ -119,12 +119,14 @@ describe('CoursesController', () => {
         title: 'New Course',
         domain: 'Programming',
         pricingType: 'free',
+        courseStructure: 'normal',
       });
 
       expect(coursesService.createCourse).toHaveBeenCalledWith(10, 'instructor', expect.objectContaining({
         title: 'New Course',
         domain: 'Programming',
         pricingType: 'free',
+        courseStructure: 'normal',
       }));
       expect(result.success).toBe(true);
       expect(result.data).toEqual(mockCourse);

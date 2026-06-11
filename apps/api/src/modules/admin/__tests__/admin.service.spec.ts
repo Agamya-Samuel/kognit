@@ -58,7 +58,9 @@ describe('AdminService', () => {
     domain: 'Programming',
     pricingType: 'free' as const,
     priceInr: 0,
-    isPublished: false,
+    courseStructure: 'normal' as const,
+    status: 'draft' as const,
+    revisionNotes: null,
     deletedAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -95,6 +97,7 @@ describe('AdminService', () => {
             findById: jest.fn(),
             findMany: jest.fn(),
             update: jest.fn(),
+            updateStatus: jest.fn(),
             softDelete: jest.fn(),
             count: jest.fn(),
           },
@@ -288,16 +291,16 @@ describe('AdminService', () => {
 
   describe('approveCourse', () => {
     it('should publish a course', async () => {
-      coursesRepo.update.mockResolvedValue({ ...mockCourse, isPublished: true });
+      coursesRepo.updateStatus.mockResolvedValue({ ...mockCourse, status: 'published' });
 
       const result = await service.approveCourse(1);
 
       expect(result.message).toBe('Course approved');
-      expect(coursesRepo.update).toHaveBeenCalledWith(1, { isPublished: true });
+      expect(coursesRepo.updateStatus).toHaveBeenCalledWith(1, 'published');
     });
 
     it('should throw if course not found', async () => {
-      coursesRepo.update.mockResolvedValue(null);
+      coursesRepo.updateStatus.mockResolvedValue(null);
 
       await expect(service.approveCourse(999)).rejects.toThrow(NotFoundException);
     });
@@ -326,17 +329,17 @@ describe('AdminService', () => {
   });
 
   describe('suspendCourse', () => {
-    it('should unpublish a course', async () => {
-      coursesRepo.update.mockResolvedValue({ ...mockCourse, isPublished: false });
+    it('should archive a course', async () => {
+      coursesRepo.updateStatus.mockResolvedValue({ ...mockCourse, status: 'archived' });
 
       const result = await service.suspendCourse(1);
 
       expect(result.message).toBe('Course suspended');
-      expect(coursesRepo.update).toHaveBeenCalledWith(1, { isPublished: false });
+      expect(coursesRepo.updateStatus).toHaveBeenCalledWith(1, 'archived');
     });
 
     it('should throw if course not found', async () => {
-      coursesRepo.update.mockResolvedValue(null);
+      coursesRepo.updateStatus.mockResolvedValue(null);
 
       await expect(service.suspendCourse(999)).rejects.toThrow(NotFoundException);
     });
@@ -359,10 +362,10 @@ describe('AdminService', () => {
         archived: 2,
       });
       expect(coursesRepo.count).toHaveBeenCalledTimes(3);
-      // First call: active courses (isPublished: true)
-      expect(coursesRepo.count).toHaveBeenNthCalledWith(1, { isPublished: true });
-      // Second call: draft courses (isPublished: false)
-      expect(coursesRepo.count).toHaveBeenNthCalledWith(2, { isPublished: false });
+      // First call: active courses (status: 'published', not deleted)
+      expect(coursesRepo.count).toHaveBeenNthCalledWith(1, { status: 'published', deletedAt: null });
+      // Second call: draft courses (status: 'draft', not deleted)
+      expect(coursesRepo.count).toHaveBeenNthCalledWith(2, { status: 'draft', deletedAt: null });
       // Third call: archived courses (deletedAt: true)
       expect(coursesRepo.count).toHaveBeenNthCalledWith(3, { deletedAt: true });
    });

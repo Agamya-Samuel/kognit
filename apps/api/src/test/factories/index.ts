@@ -75,7 +75,9 @@ export function createCourse(overrides: Partial<Course> = {}): Course {
     domain: 'Programming',
     pricingType: 'free',
     priceInr: 0,
-    isPublished: false,
+    courseStructure: 'normal',
+    status: 'draft',
+    revisionNotes: null,
     deletedAt: null,
     createdAt: nextDate(),
     updatedAt: nextDate(),
@@ -91,6 +93,7 @@ export function createSection(overrides: Partial<Section> = {}): Section {
     id,
     courseId: overrides.courseId ?? nextId(),
     title: `Test Section ${id}`,
+    description: null,
     orderIndex: 0,
     createdAt: nextDate(),
     ...overrides,
@@ -109,6 +112,8 @@ export function createLecture(overrides: Partial<Lecture> = {}): Lecture {
     orderIndex: 0,
     type: 'video',
     uploadId: null,
+    videoUrl: null,
+    externalVideoUrl: null,
     muxAssetId: null,
     muxPlaybackId: null,
     durationSeconds: 0,
@@ -301,10 +306,15 @@ export function createLiveClass(overrides: Partial<LiveClass> = {}): LiveClass {
   const id = nextId();
   return {
     id,
-    lectureId: overrides.lectureId ?? nextId(),
+    courseId: overrides.courseId ?? nextId(),
     instructorId: overrides.instructorId ?? nextId(),
+    recurringScheduleId: null,
+    sessionType: 'one_time',
+    title: `Test Live Class ${id}`,
+    description: null,
     scheduledAt: nextDate(new Date(), 24 * 60 * 60 * 1000), // Tomorrow
     durationMinutes: 60,
+    meetingLink: null,
     livekitRoomName: `room-${id}`,
     recordingUrl: null,
     recordingStatus: 'none',
@@ -312,8 +322,11 @@ export function createLiveClass(overrides: Partial<LiveClass> = {}): LiveClass {
     recordingMuxPlaybackId: null,
     recordingS3Key: null,
     recordingError: null,
+    recordingAvailable: true,
     status: 'scheduled',
     createdAt: nextDate(),
+    updatedAt: nextDate(),
+    ...overrides,
   };
 }
 

@@ -2,8 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { RoomService, RoomType, RoomInfo } from '../services/room.service';
 import { EnrollmentsRepository } from '../../../db/repositories/enrollments.repository';
 import { LiveClassesRepository } from '../../../db/repositories/live-classes.repository';
-import { LecturesRepository } from '../../../db/repositories/lectures.repository';
-import { SectionsRepository } from '../../../db/repositories/sections.repository';
 
 describe('RoomService', () => {
   let service: RoomService;
@@ -14,8 +12,6 @@ describe('RoomService', () => {
         RoomService,
         { provide: EnrollmentsRepository, useValue: {} },
         { provide: LiveClassesRepository, useValue: {} },
-        { provide: LecturesRepository, useValue: {} },
-        { provide: SectionsRepository, useValue: {} },
       ],
     }).compile();
 

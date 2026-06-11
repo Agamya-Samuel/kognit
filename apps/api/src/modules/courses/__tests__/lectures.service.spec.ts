@@ -173,14 +173,14 @@ describe('LecturesService', () => {
 
     it('should throw NotFoundException for unpublished course when not owner/admin', async () => {
       sectionsRepo.findById.mockResolvedValue(createSection({ courseId: 1 }));
-      coursesRepo.findById.mockResolvedValue(createCourse({ isPublished: false, instructorId: 10 }));
+      coursesRepo.findById.mockResolvedValue(createCourse({ status: 'draft', instructorId: 10 }));
 
       await expect(service.getLecturesBySection(1, 5, 'student')).rejects.toThrow(NotFoundException);
     });
 
     it('should hide media fields for non-preview lectures for non-enrolled users', async () => {
       const section = createSection({ id: 1, courseId: 1 });
-      const course = createCourse({ id: 1, instructorId: 10, isPublished: true });
+      const course = createCourse({ id: 1, instructorId: 10, status: 'published' });
       const previewLecture = createLecture({ id: 1, sectionId: 1, isFreePreview: true, muxAssetId: 'preview-asset', durationSeconds: 200 });
       const restrictedLecture = createLecture({ id: 2, sectionId: 1, isFreePreview: false, muxAssetId: 'restricted-asset', durationSeconds: 600, description: 'Secret' });
 
@@ -200,7 +200,7 @@ describe('LecturesService', () => {
 
     it('should return full lecture data to owner', async () => {
       const section = createSection({ id: 1, courseId: 1 });
-      const course = createCourse({ id: 1, instructorId: 10, isPublished: true });
+      const course = createCourse({ id: 1, instructorId: 10, status: 'published' });
       const lecture = createLecture({ id: 1, sectionId: 1, isFreePreview: false, muxAssetId: 'full-asset', durationSeconds: 600 });
 
       sectionsRepo.findById.mockResolvedValue(section);
@@ -213,7 +213,7 @@ describe('LecturesService', () => {
 
     it('should return full lecture data to enrolled users', async () => {
       const section = createSection({ id: 1, courseId: 1 });
-      const course = createCourse({ id: 1, instructorId: 10, isPublished: true });
+      const course = createCourse({ id: 1, instructorId: 10, status: 'published' });
       const lecture = createLecture({ id: 1, sectionId: 1, isFreePreview: false, muxAssetId: 'full-asset' });
 
       sectionsRepo.findById.mockResolvedValue(section);
@@ -236,7 +236,7 @@ describe('LecturesService', () => {
     it('should throw NotFoundException for unpublished course when not owner/admin', async () => {
       lecturesRepo.findById.mockResolvedValue(createLecture({ sectionId: 1 }));
       sectionsRepo.findById.mockResolvedValue(createSection({ courseId: 1 }));
-      coursesRepo.findById.mockResolvedValue(createCourse({ isPublished: false, instructorId: 10 }));
+      coursesRepo.findById.mockResolvedValue(createCourse({ status: 'draft', instructorId: 10 }));
 
       await expect(service.getLectureById(1, 5, 'student')).rejects.toThrow(NotFoundException);
     });
@@ -244,7 +244,7 @@ describe('LecturesService', () => {
     it('should hide media details for non-preview, non-enrolled lecture', async () => {
       const lecture = createLecture({ id: 1, sectionId: 1, isFreePreview: false, muxAssetId: 'secret-asset', description: 'Secret desc' });
       sectionsRepo.findById.mockResolvedValue(createSection({ courseId: 1 }));
-      coursesRepo.findById.mockResolvedValue(createCourse({ id: 1, instructorId: 10, isPublished: true }));
+      coursesRepo.findById.mockResolvedValue(createCourse({ id: 1, instructorId: 10, status: 'published' }));
 
       lecturesRepo.findById.mockResolvedValue(lecture);
       sectionsRepo.findById.mockResolvedValue(createSection({ id: 1, courseId: 1 }));
@@ -260,7 +260,7 @@ describe('LecturesService', () => {
     it('should return full data for preview lecture', async () => {
       const lecture = createLecture({ id: 1, sectionId: 1, isFreePreview: true, muxAssetId: 'preview-asset', durationSeconds: 200 });
       sectionsRepo.findById.mockResolvedValue(createSection({ courseId: 1 }));
-      coursesRepo.findById.mockResolvedValue(createCourse({ id: 1, instructorId: 10, isPublished: true }));
+      coursesRepo.findById.mockResolvedValue(createCourse({ id: 1, instructorId: 10, status: 'published' }));
 
       lecturesRepo.findById.mockResolvedValue(lecture);
       sectionsRepo.findById.mockResolvedValue(createSection({ id: 1, courseId: 1 }));
@@ -273,7 +273,7 @@ describe('LecturesService', () => {
     it('should return full data to owner', async () => {
       const lecture = createLecture({ id: 1, sectionId: 1, isFreePreview: false, muxAssetId: 'owner-asset' });
       sectionsRepo.findById.mockResolvedValue(createSection({ courseId: 1 }));
-      coursesRepo.findById.mockResolvedValue(createCourse({ id: 1, instructorId: 10, isPublished: true }));
+      coursesRepo.findById.mockResolvedValue(createCourse({ id: 1, instructorId: 10, status: 'published' }));
 
       lecturesRepo.findById.mockResolvedValue(lecture);
       sectionsRepo.findById.mockResolvedValue(createSection({ id: 1, courseId: 1 }));

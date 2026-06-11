@@ -21,7 +21,7 @@ describe('PaymentsService', () => {
     id: 1,
     title: 'React Masterclass',
     pricingType: 'paid',
-    isPublished: true,
+    status: 'published',
     priceInr: 1999,
   };
 
@@ -29,7 +29,7 @@ describe('PaymentsService', () => {
     id: 2,
     title: 'Free Course',
     pricingType: 'free',
-    isPublished: true,
+    status: 'published',
     priceInr: 0,
   };
 
@@ -37,7 +37,7 @@ describe('PaymentsService', () => {
     id: 3,
     title: 'Draft Course',
     pricingType: 'paid',
-    isPublished: false,
+    status: 'draft',
     priceInr: 999,
   };
 

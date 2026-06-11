@@ -133,13 +133,13 @@ describe('SectionsService', () => {
     });
 
     it('should throw NotFoundException for unpublished course when not owner/admin', async () => {
-      coursesRepo.findById.mockResolvedValue(createCourse({ isPublished: false, instructorId: 10 }));
+      coursesRepo.findById.mockResolvedValue(createCourse({ status: 'draft', instructorId: 10 }));
       await expect(service.getSectionsByCourse(1, 5, 'student')).rejects.toThrow(NotFoundException);
     });
 
     it('should return sections for published course to anyone', async () => {
       const sections = [createSection({ courseId: 1 }), createSection({ courseId: 1 })];
-      coursesRepo.findById.mockResolvedValue(createCourse({ isPublished: true }));
+      coursesRepo.findById.mockResolvedValue(createCourse({ status: 'published' }));
       sectionsRepo.findByCourseId.mockResolvedValue({ data: sections, total: 2, limit: 1000, offset: 0 });
 
       const result = await service.getSectionsByCourse(1);
@@ -148,7 +148,7 @@ describe('SectionsService', () => {
 
     it('should return sections for unpublished course to owner', async () => {
       const sections = [createSection({ courseId: 1 })];
-      coursesRepo.findById.mockResolvedValue(createCourse({ isPublished: false, instructorId: 10 }));
+      coursesRepo.findById.mockResolvedValue(createCourse({ status: 'draft', instructorId: 10 }));
       sectionsRepo.findByCourseId.mockResolvedValue({ data: sections, total: 1, limit: 1000, offset: 0 });
 
       const result = await service.getSectionsByCourse(1, 10, 'instructor');
@@ -172,7 +172,7 @@ describe('SectionsService', () => {
 
     it('should throw NotFoundException for unpublished course when not owner/admin', async () => {
       sectionsRepo.findById.mockResolvedValue(createSection({ courseId: 1 }));
-      coursesRepo.findById.mockResolvedValue(createCourse({ isPublished: false, instructorId: 10 }));
+      coursesRepo.findById.mockResolvedValue(createCourse({ status: 'draft', instructorId: 10 }));
 
       await expect(service.getSectionById(1, 5, 'student')).rejects.toThrow(NotFoundException);
     });
@@ -180,7 +180,7 @@ describe('SectionsService', () => {
     it('should return section for published course', async () => {
       const section = createSection({ id: 1, courseId: 1 });
       sectionsRepo.findById.mockResolvedValue(section);
-      coursesRepo.findById.mockResolvedValue(createCourse({ isPublished: true }));
+      coursesRepo.findById.mockResolvedValue(createCourse({ status: 'published' }));
 
       const result = await service.getSectionById(1);
       expect(result).toEqual(section);
