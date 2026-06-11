@@ -1,211 +1,286 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@edutech/ui';
+import { useRouter } from 'next/navigation';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@edutech/ui';
 import { Button } from '@edutech/ui';
-import { CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
-import { CourseDetailsStep } from '@/components/course-creation/CourseDetailsStep';
-import { SectionsStep } from '@/components/course-creation/SectionsStep';
-import { LecturesStep } from '@/components/course-creation/LecturesStep';
-import { PricingStep } from '@/components/course-creation/PricingStep';
-import { ReviewStep } from '@/components/course-creation/ReviewStep';
+import { Input } from '@edutech/ui';
+import { Label } from '@edutech/ui';
+import { Textarea } from '@edutech/ui';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@edutech/ui';
+import { BookOpen, Radio, DollarSign } from 'lucide-react';
 import { useCreateCourse } from '@/hooks/useCourses';
 
-type Step = 'details' | 'sections' | 'lectures' | 'pricing' | 'review';
-
-const steps = [
-  { id: 'details' as Step, label: 'Course Details', description: 'Basic information' },
-  { id: 'sections' as Step, label: 'Sections', description: 'Organize content' },
-  { id: 'lectures' as Step, label: 'Lectures', description: 'Add lessons' },
-  { id: 'pricing' as Step, label: 'Pricing', description: 'Set price' },
-  { id: 'review' as Step, label: 'Review', description: 'Preview & publish' },
-];
+const COURSE_DOMAINS = [
+  'Engineering & Tech',
+  'Design & Creativity',
+  'Business & Management',
+  'Science & Mathematics',
+  'Language & Communication',
+  'Health & Wellness',
+  'Arts & Humanities',
+  'Finance & Accounting',
+  'Personal Development',
+  'Competitive Exams',
+] as const;
 
 export default function CreateCoursePage() {
-  const [currentStep, setCurrentStep] = useState<Step>('details');
-  const [courseData, setCourseData] = useState({
+  const router = useRouter();
+  const { mutate: createCourse, isPending: isCreating } = useCreateCourse();
+
+  const [formData, setFormData] = useState({
     title: '',
     description: '',
     domain: '',
     thumbnailUrl: '',
-    sections: [],
-    lectures: [],
+    courseStructure: 'normal' as 'live' | 'normal',
     pricingType: 'free' as 'free' | 'paid',
     priceInr: 0,
-    isPublished: false,
   });
 
-  const createCourseMutation = useCreateCourse();
-  const { mutate: createCourse, isPending: isCreating } = createCourseMutation;
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const currentStepIndex = steps.findIndex((step) => step.id === currentStep);
-
-  const handleNext = () => {
-    if (currentStepIndex < steps.length - 1) {
-      setCurrentStep(steps[currentStepIndex + 1].id);
+  const validate = () => {
+    const newErrors: Record<string, string> = {};
+    if (!formData.title.trim() || formData.title.length < 3) {
+      newErrors.title = 'Title must be at least 3 characters';
     }
+    if (!formData.domain) {
+      newErrors.domain = 'Please select a domain';
+    }
+    if (formData.pricingType === 'paid' && (!formData.priceInr || formData.priceInr <= 0)) {
+      newErrors.priceInr = 'Paid courses must have a price greater than 0';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  const handlePrevious = () => {
-    if (currentStepIndex > 0) {
-      setCurrentStep(steps[currentStepIndex - 1].id);
-    }
-  };
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate()) return;
 
-  const handleSubmit = () => {
-    if (!courseData.title || !courseData.domain) {
-      console.error('Please fill in all required fields');
-      return;
-    }
-
-    const createData = {
-      title: courseData.title,
-      description: courseData.description,
-      domain: courseData.domain,
-      pricingType: courseData.pricingType,
-      priceInr: courseData.priceInr,
-    };
-
-    createCourse(createData, {
-      onSuccess: (data) => {
-        console.log('Course created successfully');
-        window.location.href = `/dashboard/courses/${data.id}`;
+    createCourse(
+      {
+        title: formData.title,
+        description: formData.description || undefined,
+        domain: formData.domain,
+        courseStructure: formData.courseStructure,
+        pricingType: formData.pricingType,
+        priceInr: formData.pricingType === 'paid' ? formData.priceInr : 0,
+        thumbnailUrl: formData.thumbnailUrl || undefined,
       },
-      onError: (error) => {
-        console.error('Failed to create course:', error);
+      {
+        onSuccess: (data) => {
+          router.push(`/dashboard/courses/${data.id}`);
+        },
       },
-    });
-  };
-
-  const renderStep = () => {
-    switch (currentStep) {
-      case 'details':
-        return <CourseDetailsStep data={courseData} onChange={setCourseData} />;
-      case 'sections':
-        return <SectionsStep data={courseData} onChange={setCourseData} />;
-      case 'lectures':
-        return <LecturesStep data={courseData} onChange={setCourseData} />;
-      case 'pricing':
-        return <PricingStep data={courseData} onChange={setCourseData} />;
-      case 'review':
-        return <ReviewStep data={courseData} onChange={setCourseData} />;
-      default:
-        return null;
-    }
+    );
   };
 
   return (
-    <div className="container mx-auto space-y-6">
-      {/* Page Header */}
+    <div className="container mx-auto max-w-3xl space-y-6 py-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">Create Course</h1>
           <p className="mt-2 text-muted-foreground">
-            Follow these steps to create a new course.
+            Set up your course details. You can add content after creation.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => window.history.back()}>
-            Cancel
-          </Button>
-        </div>
+        <Button variant="outline" onClick={() => router.back()}>
+          Cancel
+        </Button>
       </div>
 
-      {/* Progress Steps */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Course Creation Steps</CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            {steps.map((step, index) => (
-              <div key={step.id} className="flex items-center flex-1">
-                <div className="flex flex-col items-center">
-                  <div
-                    className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium ${
-                      index === currentStepIndex
-                        ? 'bg-primary text-primary-foreground'
-                        : index < currentStepIndex
-                          ? 'bg-emerald-600 text-white'
-                          : 'bg-muted text-muted-foreground'
-                    }`}
-                  >
-                    {index < currentStepIndex ? <CheckCircle2 className="h-5 w-5" /> : index + 1}
-                  </div>
-                  <div className="mt-2 text-center">
-                    <div
-                      className={`text-sm font-medium ${
-                        index === currentStepIndex
-                          ? 'text-foreground'
-                          : index < currentStepIndex
-                            ? 'text-emerald-600 dark:text-emerald-400'
-                            : 'text-muted-foreground'
-                      }`}
-                    >
-                      {step.label}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {step.description}
-                    </div>
-                  </div>
-                </div>
-                {index < steps.length - 1 && (
-                  <div
-                    className={`mx-2 h-0.5 flex-1 ${
-                      index < currentStepIndex ? 'bg-emerald-600' : 'bg-muted'
-                    }`}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Basic Info */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5" />
+              Course Details
+            </CardTitle>
+            <CardDescription>Basic information about your course</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Course Title *</Label>
+              <Input
+                id="title"
+                placeholder="e.g. Introduction to React"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              />
+              {errors.title && <p className="text-sm text-destructive">{errors.title}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                placeholder="Describe what students will learn..."
+                rows={4}
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="domain">Domain *</Label>
+              <Select
+                value={formData.domain}
+                onValueChange={(value) => setFormData({ ...formData, domain: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a domain" />
+                </SelectTrigger>
+                <SelectContent>
+                  {COURSE_DOMAINS.map((domain) => (
+                    <SelectItem key={domain} value={domain}>
+                      {domain}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.domain && <p className="text-sm text-destructive">{errors.domain}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="thumbnailUrl">Thumbnail URL</Label>
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <Input
+                    id="thumbnailUrl"
+                    placeholder="https://example.com/image.jpg"
+                    value={formData.thumbnailUrl}
+                    onChange={(e) => setFormData({ ...formData, thumbnailUrl: e.target.value })}
                   />
+                </div>
+                {formData.thumbnailUrl && (
+                  <div className="h-16 w-24 overflow-hidden rounded border">
+                    <img
+                      src={formData.thumbnailUrl}
+                      alt="Thumbnail preview"
+                      className="h-full w-full object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                    />
+                  </div>
                 )}
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Current Step Content */}
-      <Card>
-        <CardContent className="p-6">
-          {renderStep()}
-        </CardContent>
-      </Card>
+        {/* Course Structure */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Radio className="h-5 w-5" />
+              Course Structure
+            </CardTitle>
+            <CardDescription>Choose how you want to deliver your content</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, courseStructure: 'normal' })}
+                className={`rounded-lg border-2 p-4 text-left transition-colors ${
+                  formData.courseStructure === 'normal'
+                    ? 'border-primary bg-primary/5'
+                    : 'border-muted hover:border-muted-foreground/50'
+                }`}
+              >
+                <div className="font-semibold">Normal Course</div>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Pre-recorded video lessons organized in sections
+                </p>
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, courseStructure: 'live' })}
+                className={`rounded-lg border-2 p-4 text-left transition-colors ${
+                  formData.courseStructure === 'live'
+                    ? 'border-primary bg-primary/5'
+                    : 'border-muted hover:border-muted-foreground/50'
+                }`}
+              >
+                <div className="font-semibold">Live Course</div>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Scheduled live sessions with students
+                </p>
+              </button>
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Action Buttons */}
-      <div className="flex items-center justify-between">
-        <Button
-          variant="outline"
-          onClick={handlePrevious}
-          disabled={currentStepIndex === 0}
-          className="gap-2"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          Previous
-        </Button>
-        <div className="flex items-center gap-2">
-          {currentStepIndex === steps.length - 1 ? (
-            <Button onClick={handleSubmit} disabled={isCreating} className="gap-2">
-              {isCreating ? (
-                <>
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-primary border-r-transparent" />
-                  Creating...
-                </>
-              ) : (
-                <>
-                  <CheckCircle2 className="h-4 w-4" />
-                  Create Course
-                </>
-              )}
-            </Button>
-          ) : (
-            <Button onClick={handleNext} className="gap-2">
-              Next
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          )}
-          <Button variant="outline" onClick={() => window.history.back()}>
+        {/* Pricing */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5" />
+              Pricing
+            </CardTitle>
+            <CardDescription>Set your course pricing</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex gap-4">
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, pricingType: 'free' })}
+                className={`flex-1 rounded-lg border-2 p-4 text-center transition-colors ${
+                  formData.pricingType === 'free'
+                    ? 'border-primary bg-primary/5'
+                    : 'border-muted hover:border-muted-foreground/50'
+                }`}
+              >
+                <div className="font-semibold">Free</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, pricingType: 'paid' })}
+                className={`flex-1 rounded-lg border-2 p-4 text-center transition-colors ${
+                  formData.pricingType === 'paid'
+                    ? 'border-primary bg-primary/5'
+                    : 'border-muted hover:border-muted-foreground/50'
+                }`}
+              >
+                <div className="font-semibold">Paid</div>
+              </button>
+            </div>
+
+            {formData.pricingType === 'paid' && (
+              <div className="space-y-2">
+                <Label htmlFor="priceInr">Price (INR) *</Label>
+                <Input
+                  id="priceInr"
+                  type="number"
+                  min={1}
+                  placeholder="e.g. 999"
+                  value={formData.priceInr || ''}
+                  onChange={(e) => setFormData({ ...formData, priceInr: parseInt(e.target.value) || 0 })}
+                />
+                {errors.priceInr && <p className="text-sm text-destructive">{errors.priceInr}</p>}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Submit */}
+        <div className="flex items-center justify-end gap-3">
+          <Button type="button" variant="outline" onClick={() => router.back()}>
             Cancel
           </Button>
+          <Button type="submit" disabled={isCreating}>
+            {isCreating ? 'Creating...' : 'Create Course'}
+          </Button>
         </div>
-      </div>
+      </form>
     </div>
   );
 }
