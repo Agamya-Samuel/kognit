@@ -1,129 +1,35 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@edutech/ui';
-import { Button } from '@edutech/ui';
-import { Input } from '@edutech/ui';
-import { Label } from '@edutech/ui';
-import { Textarea } from '@edutech/ui';
-import { Badge } from '@edutech/ui';
-import { ArrowLeft, Save, Eye, Users, DollarSign, TrendingUp, Clock, BookOpen, AlertCircle } from 'lucide-react';
-import { StatCard, StatsRow } from '@/components/StatsRow';
-import { useCourse, useUpdateCourse, useInstructorAnalytics } from '@/hooks/useCourses';
+import { Card, CardContent, Button, Badge, Tabs, TabsList, TabsTrigger, TabsContent, Skeleton } from '@edutech/ui';
+import { ArrowLeft, BookOpen, Calendar, Users, BarChart3, Star, Settings } from 'lucide-react';
+import { useCourse } from '@/hooks/useCourses';
+import { ContentBuilder } from '@/components/content-builder/ContentBuilder';
+import { SessionScheduler } from '@/components/session-scheduler/SessionScheduler';
+import { CourseInfoTab } from '@/components/course-detail/CourseInfoTab';
+import { PublishActions } from '@/components/course-detail/PublishActions';
+import { RevisionNotesBanner, StatusBadge } from '@/components/course-detail/RevisionNotesBanner';
 import Link from 'next/link';
 
 export default function EditCoursePage() {
   const params = useParams();
   const courseId = params.id as string;
-
-  const { data: courseData, isLoading, error } = useCourse(courseId);
-  const { data: analytics } = useInstructorAnalytics();
-  const updateCourse = useUpdateCourse();
-
-  const [course, setCourse] = useState({
-    title: '',
-    description: '',
-    domain: '',
-    pricingType: 'free' as 'free' | 'paid',
-    priceInr: 0,
-    isPublished: false,
-  });
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
-
-  // Populate form from API data
-  useEffect(() => {
-    if (courseData) {
-      setCourse({
-        title: courseData.title || '',
-        description: courseData.description || '',
-        domain: courseData.domain || '',
-        pricingType: (courseData.priceInr && courseData.priceInr > 0) ? 'paid' : 'free',
-        priceInr: courseData.priceInr || 0,
-        isPublished: courseData.isPublished || false,
-      });
-    }
-  }, [courseData]);
-
-  // Get course-specific stats from analytics
-  const courseAnalytics = analytics?.courseAnalytics?.find(
-    (c) => String(c.courseId) === courseId
-  );
-
-  const courseStats = [
-    {
-      title: 'Enrollments',
-      value: (courseAnalytics?.enrollmentCount ?? 0).toString(),
-      icon: Users,
-    },
-    {
-      title: 'Revenue',
-      value: `₹${(courseAnalytics?.revenue ?? 0).toLocaleString('en-IN')}`,
-      icon: DollarSign,
-    },
-    {
-      title: 'Completion Rate',
-      value: `${courseAnalytics?.completionRate ?? 0}%`,
-      icon: TrendingUp,
-    },
-    {
-      title: 'Certificates',
-      value: (courseAnalytics?.certificateCount ?? 0).toString(),
-      icon: BookOpen,
-    },
-  ];
-
-  const handleSave = async () => {
-    setIsSaving(true);
-    setSaveSuccess(false);
-    try {
-      await updateCourse.mutateAsync({
-        id: courseId,
-        dto: {
-          title: course.title,
-          description: course.description,
-          domain: course.domain,
-          priceInr: course.pricingType === 'paid' ? course.priceInr : 0,
-        },
-      });
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
-    } catch (err) {
-      console.error('Failed to save course:', err);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const togglePublish = () => {
-    const newPublished = !course.isPublished;
-    setCourse({ ...course, isPublished: newPublished });
-    // Also persist via API
-    updateCourse.mutate({
-      id: courseId,
-      dto: { isPublished: newPublished },
-    });
-  };
+  const { data: course, isLoading, error } = useCourse(courseId);
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-[60vh]">
-        <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent" />
-          <p className="mt-4 text-sm text-muted-foreground">Loading course...</p>
-        </div>
+      <div className="container mx-auto space-y-6">
+        <Skeleton className="h-10 w-64" />
+        <Skeleton className="h-48 w-full" />
+        <Skeleton className="h-96 w-full" />
       </div>
     );
   }
 
-  if (error || !courseData) {
+  if (error || !course) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
         <div className="text-center">
-          <div className="rounded-full bg-destructive/10 p-3 mx-auto mb-3">
-            <AlertCircle className="h-6 w-6 text-destructive" />
-          </div>
           <p className="text-sm font-medium text-foreground">Failed to load course</p>
           <p className="text-xs text-muted-foreground mt-1">
             {error ? 'An error occurred' : 'Course not found'}
@@ -139,216 +45,127 @@ export default function EditCoursePage() {
     );
   }
 
+  const courseData = course as any;
+  const status = courseData.status || 'draft';
+  const courseStructure = courseData.courseStructure || 'normal';
+
   return (
     <div className="container mx-auto space-y-6">
-      {/* Stats Row */}
-      <StatsRow>
-        {courseStats.map((stat) => (
-          <StatCard
-            key={stat.title}
-            title={stat.title}
-            value={stat.value}
-            icon={stat.icon}
-          />
-        ))}
-      </StatsRow>
-
-      {/* Page Header */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link href="/dashboard/courses">
             <Button variant="outline" size="sm" className="gap-2">
               <ArrowLeft className="h-4 w-4" />
-              Back to Courses
+              Courses
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Edit Course</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">{courseData.title}</h1>
+              <StatusBadge status={status} />
+              <Badge variant="outline">{courseStructure}</Badge>
+            </div>
             <p className="text-sm text-muted-foreground">
-              Course ID: {courseId} {course.domain ? `• ${course.domain}` : ''}
+              {courseData.domain || 'No domain'} • ID: {courseId}
             </p>
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Link href={`/courses/${courseId}`}>
-            <Button variant="outline" size="sm" className="gap-2">
-              <Eye className="h-4 w-4" />
-              Preview
-            </Button>
-          </Link>
-          <Button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="gap-2"
-          >
-            <Save className="h-4 w-4" />
-            {isSaving ? 'Saving...' : saveSuccess ? 'Saved!' : 'Save Changes'}
-          </Button>
         </div>
       </div>
 
-      {saveSuccess && (
-        <div className="rounded-lg border border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950 p-3 text-sm text-emerald-700 dark:text-emerald-300">
-          Course updated successfully.
-        </div>
-      )}
+      {/* Revision Notes Banner */}
+      <RevisionNotesBanner status={status} revisionNotes={courseData.revisionNotes} />
 
-      {/* Course Details Card */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Course Details</CardTitle>
-            <Badge variant={course.isPublished ? 'default' : 'secondary'}>
-              {course.isPublished ? 'Published' : 'Draft'}
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">Course Title</Label>
-              <Input
-                id="title"
-                value={course.title}
-                onChange={(e) => setCourse({ ...course, title: e.target.value })}
-                placeholder="Course title"
-              />
-            </div>
+      {/* Main Content Tabs */}
+      <Tabs defaultValue="info" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="info" className="gap-2">
+            <Settings className="h-4 w-4" />
+            Course Info
+          </TabsTrigger>
+          <TabsTrigger value="content" className="gap-2">
+            {courseStructure === 'live' ? <Calendar className="h-4 w-4" /> : <BookOpen className="h-4 w-4" />}
+            {courseStructure === 'live' ? 'Sessions' : 'Content'}
+          </TabsTrigger>
+          <TabsTrigger value="students" className="gap-2">
+            <Users className="h-4 w-4" />
+            Students
+          </TabsTrigger>
+          <TabsTrigger value="reviews" className="gap-2">
+            <Star className="h-4 w-4" />
+            Reviews
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Analytics
+          </TabsTrigger>
+          <TabsTrigger value="publish" className="gap-2">
+            Publish
+          </TabsTrigger>
+        </TabsList>
 
-            <div className="space-y-2">
-              <Label htmlFor="domain">Domain</Label>
-              <Input
-                id="domain"
-                value={course.domain}
-                onChange={(e) => setCourse({ ...course, domain: e.target.value })}
-                placeholder="e.g., Programming, Design"
-              />
-            </div>
-          </div>
+        {/* Course Info Tab */}
+        <TabsContent value="info">
+          <CourseInfoTab course={courseData} />
+        </TabsContent>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              value={course.description}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCourse({ ...course, description: e.target.value })}
-              placeholder="Course description"
-              rows={4}
-            />
-          </div>
-
-          <div className="flex items-center justify-between p-4 border rounded-lg">
-            <div className="flex items-center gap-3">
-              <div className="rounded-md bg-primary/10 p-2">
-                <BookOpen className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <h4 className="font-medium text-foreground">Publish Status</h4>
-                <p className="text-sm text-muted-foreground">
-                  Make your course visible to students
-                </p>
-              </div>
-            </div>
-            <Button
-              variant={course.isPublished ? 'default' : 'outline'}
-              onClick={togglePublish}
-            >
-              {course.isPublished ? 'Published' : 'Draft'}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Pricing Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Pricing</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <button
-              type="button"
-              onClick={() => setCourse({ ...course, pricingType: 'free', priceInr: 0 })}
-              className={`p-6 border-2 rounded-lg transition-colors text-left ${
-                course.pricingType === 'free'
-                  ? 'border-primary bg-primary/5'
-                  : 'border-input hover:bg-accent'
-              }`}
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="rounded-md bg-emerald-100 p-2">
-                  <Users className="h-5 w-5 text-emerald-600" />
-                </div>
-                <h3 className="font-semibold">Free</h3>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Students can access for free
-              </p>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setCourse({ ...course, pricingType: 'paid' })}
-              className={`p-6 border-2 rounded-lg transition-colors text-left ${
-                course.pricingType === 'paid'
-                  ? 'border-primary bg-primary/5'
-                  : 'border-input hover:bg-accent'
-              }`}
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="rounded-md bg-blue-100 p-2">
-                  <DollarSign className="h-5 w-5 text-blue-600" />
-                </div>
-                <h3 className="font-semibold">Paid</h3>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Set a price for your course
-              </p>
-            </button>
-          </div>
-
-          {course.pricingType === 'paid' && (
-            <div className="space-y-2">
-              <Label htmlFor="price">Price (INR)</Label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
-                  ₹
-                </span>
-                <Input
-                  id="price"
-                  type="number"
-                  min="99"
-                  value={course.priceInr}
-                  onChange={(e) => setCourse({ ...course, priceInr: Number(e.target.value) })}
-                  className="pl-8"
-                />
-              </div>
-            </div>
+        {/* Content Tab - Conditional based on course structure */}
+        <TabsContent value="content">
+          {courseStructure === 'live' ? (
+            <SessionScheduler courseId={courseId} />
+          ) : (
+            <ContentBuilder courseId={courseId} />
           )}
-        </CardContent>
-      </Card>
+        </TabsContent>
 
-      {/* Course Content Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Course Content</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-12 border-2 border-dashed rounded-lg">
-            <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground mb-2">
-              Section and lecture management coming soon
-            </p>
-            <p className="text-sm text-muted-foreground/70 mb-4">
-              You'll be able to add sections, lectures, and reorder content here
-            </p>
-            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-              <Clock className="h-4 w-4" />
-              <span>Estimated setup time: 15-20 minutes</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+        {/* Students Tab */}
+        <TabsContent value="students">
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <Users className="h-12 w-12 text-muted-foreground mb-4" />
+              <p className="text-muted-foreground mb-2">Enrolled Students</p>
+              <p className="text-sm text-muted-foreground/70">
+                Student management will be available once students enroll in your course.
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Reviews Tab */}
+        <TabsContent value="reviews">
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <Star className="h-12 w-12 text-muted-foreground mb-4" />
+              <p className="text-muted-foreground mb-2">Student Reviews</p>
+              <p className="text-sm text-muted-foreground/70">
+                Reviews from enrolled students will appear here.
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Analytics Tab */}
+        <TabsContent value="analytics">
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <BarChart3 className="h-12 w-12 text-muted-foreground mb-4" />
+              <p className="text-muted-foreground mb-2">Course Analytics</p>
+              <p className="text-sm text-muted-foreground/70">
+                Enrollment, revenue, and completion analytics will be available here.
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Publish Tab */}
+        <TabsContent value="publish">
+          <Card>
+            <CardContent className="pt-6">
+              <PublishActions courseId={courseId} status={status} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
