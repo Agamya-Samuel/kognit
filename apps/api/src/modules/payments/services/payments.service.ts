@@ -54,7 +54,7 @@ export class PaymentsService {
       throw new BadRequestException('This course is free. No payment required.');
     }
 
-    if (!course.isPublished) {
+    if (course.status !== 'published') {
       throw new BadRequestException('This course is not available for purchase.');
     }
 

@@ -31,7 +31,7 @@ export interface AdminListCoursesQuery {
   page?: number;
   limit?: number;
   search?: string;
-  isPublished?: boolean;
+  status?: string;
 }
 
 export interface AdminListAssignmentsQuery {
@@ -306,7 +306,7 @@ export class AdminService {
       limit,
       offset,
       search: query.search,
-      isPublished: query.isPublished,
+      status: query.status,
     });
 
     const enriched = await Promise.all(
@@ -328,7 +328,7 @@ export class AdminService {
   }
 
   async approveCourse(courseId: number) {
-    const course = await this.coursesRepo.update(courseId, { isPublished: true });
+    const course = await this.coursesRepo.updateStatus(courseId, 'published');
     if (!course) throw new NotFoundException('Course not found');
     return { message: 'Course approved' };
   }
@@ -345,7 +345,7 @@ export class AdminService {
   }
 
   async suspendCourse(courseId: number) {
-    const course = await this.coursesRepo.update(courseId, { isPublished: false });
+    const course = await this.coursesRepo.updateStatus(courseId, 'archived');
     if (!course) throw new NotFoundException('Course not found');
     return { message: 'Course suspended' };
   }
@@ -456,8 +456,8 @@ export class AdminService {
 
    async getCourseCountsByStatus(): Promise<CourseCountByStatus> {
      const [active, draft, archived] = await Promise.all([
-       this.coursesRepo.count({ isPublished: true }), // Active: published and not deleted
-       this.coursesRepo.count({ isPublished: false }), // Draft: unpublished and not deleted
+       this.coursesRepo.count({ status: 'published', deletedAt: null }), // Active: published and not deleted
+       this.coursesRepo.count({ status: 'draft', deletedAt: null }), // Draft: unpublished and not deleted
        this.coursesRepo.count({ deletedAt: true }), // Archived: deleted (regardless of publish state)
      ]);
 

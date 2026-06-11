@@ -58,7 +58,7 @@ export class DashboardMetricsService {
 
     return {
       totalStudents: totalEnrollments,
-      activeCourses: courses.filter(c => c.isPublished).length,
+      activeCourses: courses.filter(c => c.status === "published").length,
       totalRevenue,
       upcomingClasses,
       recentActivity,

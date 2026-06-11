@@ -1,8 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EnrollmentsRepository } from '../../../db/repositories/enrollments.repository';
 import { LiveClassesRepository } from '../../../db/repositories/live-classes.repository';
-import { LecturesRepository } from '../../../db/repositories/lectures.repository';
-import { SectionsRepository } from '../../../db/repositories/sections.repository';
 
 /**
  * Room naming conventions:
@@ -26,8 +24,6 @@ export class RoomService {
   constructor(
     private readonly enrollmentsRepo: EnrollmentsRepository,
     private readonly liveClassesRepo: LiveClassesRepository,
-    private readonly lecturesRepo: LecturesRepository,
-    private readonly sectionsRepo: SectionsRepository,
   ) {}
 
   /**
@@ -117,18 +113,8 @@ export class RoomService {
       return { allowed: false, reason: 'Live class not found' };
     }
 
-    // Find the course via lecture → section → course
-    const lecture = await this.lecturesRepo.findById(liveClass.lectureId);
-    if (!lecture) {
-      return { allowed: false, reason: 'Associated lecture not found' };
-    }
-
-    const section = await this.sectionsRepo.findById(lecture.sectionId);
-    if (!section) {
-      return { allowed: false, reason: 'Associated section not found' };
-    }
-
-    const courseId = section.courseId;
+    // Use the courseId directly from the live class (now linked to course, not lecture)
+    const courseId = liveClass.courseId;
 
     // Check if student is enrolled in the course
     const enrollment = await this.enrollmentsRepo.findByStudentAndCourse(userId, courseId);

@@ -131,13 +131,13 @@ export class AdminController {
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('search') search?: string,
-    @Query('isPublished') isPublished?: string,
+    @Query('status') status?: string,
   ) {
     return this.adminService.listCourses({
       page: page ? parseInt(page, 10) : undefined,
       limit: limit ? parseInt(limit, 10) : undefined,
       search,
-      isPublished: isPublished === 'true' ? true : isPublished === 'false' ? false : undefined,
+      status,
     });
   }
 
