@@ -18,6 +18,10 @@ export const coursesService = {
     return getApiClient().get<CourseWithSections>(`/courses/${id}/curriculum`);
   },
 
+  async getValidation(id: number | string) {
+    return getApiClient().get<{ isValid: boolean; errors: Array<{ field: string; message: string }> }>(`/courses/${id}/validation`);
+  },
+
   async getInstructorProfile(instructorId: number) {
     return getApiClient().get<InstructorProfile>(`/instructors/${instructorId}`);
   },
@@ -32,5 +36,21 @@ export const coursesService = {
 
   async delete(id: number | string) {
     return getApiClient().delete<void>(`/courses/${id}`);
+  },
+
+  async submitForReview(id: number | string) {
+    return getApiClient().post<Course>(`/courses/${id}/submit`);
+  },
+
+  async approve(id: number | string) {
+    return getApiClient().post<Course>(`/courses/${id}/approve`);
+  },
+
+  async requestRevision(id: number | string, notes: string) {
+    return getApiClient().post<Course>(`/courses/${id}/request-revision`, { notes });
+  },
+
+  async archive(id: number | string) {
+    return getApiClient().post<Course>(`/courses/${id}/archive`);
   },
 };

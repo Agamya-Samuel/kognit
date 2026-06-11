@@ -264,6 +264,8 @@ export * from './services/progress';
 export * from './services/admin';
 export * from './services/auth';
 export * from './services/schedule';
+export * from './services/attachments';
+export * from './services/sections';
 export * from './services/recordings';
 export * from './services/users';
 export * from './services/notifications';
