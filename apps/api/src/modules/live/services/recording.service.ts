@@ -1,7 +1,6 @@
 import { Injectable, Logger, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { LiveClassesRepository } from '../../../db/repositories/live-classes.repository';
-import { LecturesRepository } from '../../../db/repositories/lectures.repository';
 import { MuxService } from '../../media/services/mux.service';
 import { LiveKitService } from './livekit.service';
 import type { LiveClass } from '../../../db/schema';
@@ -29,11 +28,11 @@ export interface StartRecordingResult {
 
 export interface PostSessionWorkflowResult {
   liveClassId: number;
-  lectureId: number;
+  courseId: number;
   recordingStatus: RecordingStatus;
   muxAssetId: string | null;
   muxPlaybackId: string | null;
-  lectureUpdated: boolean;
+  courseUpdated: boolean;
 }
 
 // ─── Recording Service ───────────────────────────────────────────────────────
@@ -49,7 +48,6 @@ export class RecordingService {
   constructor(
     private readonly configService: ConfigService,
     private readonly liveClassesRepo: LiveClassesRepository,
-    private readonly lecturesRepo: LecturesRepository,
     private readonly muxService: MuxService,
     private readonly liveKitService: LiveKitService,
   ) {
@@ -94,7 +92,7 @@ export class RecordingService {
     }
 
     // Generate S3 key for the recording
-    const s3Key = `recordings/${liveClass.lectureId}/${liveClassId}-${Date.now()}.mp4`;
+    const s3Key = `recordings/${liveClass.courseId}/${liveClassId}-${Date.now()}.mp4`;
 
     // Update status to recording
     await this.liveClassesRepo.update(liveClassId, {
@@ -180,11 +178,11 @@ export class RecordingService {
 
       return {
         liveClassId,
-        lectureId: liveClass.lectureId,
+        courseId: liveClass.courseId,
         recordingStatus: 'processing',
         muxAssetId: muxResult.assetId,
         muxPlaybackId: muxResult.playbackId,
-        lectureUpdated: false, // Will be updated when Mux webhook fires
+        courseUpdated: false,
       };
     } catch (error) {
       this.logger.error(`Mux ingestion failed for live class ${liveClassId}:`, error);
@@ -196,11 +194,11 @@ export class RecordingService {
 
       return {
         liveClassId,
-        lectureId: liveClass.lectureId,
+        courseId: liveClass.courseId,
         recordingStatus: 'failed',
         muxAssetId: null,
         muxPlaybackId: null,
-        lectureUpdated: false,
+        courseUpdated: false,
       };
     }
   }
@@ -226,32 +224,29 @@ export class RecordingService {
       recordingError: null,
     });
 
-    // Update the associated lecture with playback info
-    let lectureUpdated = false;
+    // Update the live class with playback info
+    let courseUpdated = false;
     try {
       const playbackUrl = this.muxService.getPlaybackUrl(playbackId);
-      await this.lecturesRepo.update(liveClass.lectureId, {
-        muxAssetId,
-        muxPlaybackId: playbackId,
-        durationSeconds: Math.round(duration),
-        isPublished: true,
+      await this.liveClassesRepo.update(liveClass.id, {
+        recordingUrl: playbackUrl,
       });
-      lectureUpdated = true;
+      courseUpdated = true;
 
       this.logger.log(
-        `Lecture ${liveClass.lectureId} updated with recording: ${playbackUrl}`,
+        `Live class ${liveClass.id} updated with recording: ${playbackUrl}`,
       );
     } catch (error) {
-      this.logger.error(`Failed to update lecture ${liveClass.lectureId}:`, error);
+      this.logger.error(`Failed to update live class ${liveClass.id}:`, error);
     }
 
     return {
       liveClassId: liveClass.id,
-      lectureId: liveClass.lectureId,
+      courseId: liveClass.courseId,
       recordingStatus: 'ready',
       muxAssetId,
       muxPlaybackId: playbackId,
-      lectureUpdated,
+      courseUpdated,
     };
   }
 

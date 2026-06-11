@@ -4,8 +4,7 @@ import { Queue } from 'bullmq';
 import { NotificationsRepository } from '../../../db/repositories/notifications.repository';
 import { LiveClassesRepository } from '../../../db/repositories/live-classes.repository';
 import { EnrollmentsRepository } from '../../../db/repositories/enrollments.repository';
-import { LecturesRepository } from '../../../db/repositories/lectures.repository';
-import { SectionsRepository } from '../../../db/repositories/sections.repository';
+import { CoursesRepository } from '../../../db/repositories/courses.repository';
 import type { LiveClass } from '../../../db/schema';
 
 export interface NotificationPayload {
@@ -26,8 +25,7 @@ export class LiveNotificationService {
     private readonly notificationsRepo: NotificationsRepository,
     private readonly liveClassesRepo: LiveClassesRepository,
     private readonly enrollmentsRepo: EnrollmentsRepository,
-    private readonly lecturesRepo: LecturesRepository,
-    private readonly sectionsRepo: SectionsRepository,
+    private readonly coursesRepo: CoursesRepository,
   ) {}
 
   async scheduleClassNotifications(liveClass: LiveClass): Promise<void> {
@@ -71,9 +69,7 @@ export class LiveNotificationService {
 
   async notifyClassScheduled(liveClass: LiveClass): Promise<number> {
     const studentIds = await this.getEnrolledStudentIds(liveClass);
-
-    const lecture = await this.lecturesRepo.findById(liveClass.lectureId);
-    const lectureTitle = lecture?.title ?? 'Live Class';
+    const sessionTitle = liveClass.title || 'Live Class';
 
     let notified = 0;
     for (const studentId of studentIds) {
@@ -82,7 +78,7 @@ export class LiveNotificationService {
           userId: studentId,
           type: 'class_scheduled',
           title: 'New Live Class Scheduled',
-          body: `"${lectureTitle}" has been scheduled for ${this.formatDateIST(liveClass.scheduledAt)}`,
+          body: `"${sessionTitle}" has been scheduled for ${this.formatDateIST(liveClass.scheduledAt)}`,
           isRead: false,
           deliveredVia: 'both',
           emailSentAt: null,
@@ -102,9 +98,7 @@ export class LiveNotificationService {
 
   async notifyClassCancelled(liveClass: LiveClass): Promise<number> {
     const studentIds = await this.getEnrolledStudentIds(liveClass);
-
-    const lecture = await this.lecturesRepo.findById(liveClass.lectureId);
-    const lectureTitle = lecture?.title ?? 'Live Class';
+    const sessionTitle = liveClass.title || 'Live Class';
 
     let notified = 0;
     for (const studentId of studentIds) {
@@ -113,7 +107,7 @@ export class LiveNotificationService {
           userId: studentId,
           type: 'class_cancelled',
           title: 'Live Class Cancelled',
-          body: `"${lectureTitle}" scheduled for ${this.formatDateIST(liveClass.scheduledAt)} has been cancelled.`,
+          body: `"${sessionTitle}" scheduled for ${this.formatDateIST(liveClass.scheduledAt)} has been cancelled.`,
           isRead: false,
           deliveredVia: 'both',
           emailSentAt: null,
@@ -132,9 +126,7 @@ export class LiveNotificationService {
 
   async notifyClassStarted(liveClass: LiveClass): Promise<number> {
     const studentIds = await this.getEnrolledStudentIds(liveClass);
-
-    const lecture = await this.lecturesRepo.findById(liveClass.lectureId);
-    const lectureTitle = lecture?.title ?? 'Live Class';
+    const sessionTitle = liveClass.title || 'Live Class';
 
     let notified = 0;
     for (const studentId of studentIds) {
@@ -143,7 +135,7 @@ export class LiveNotificationService {
           userId: studentId,
           type: 'class_started',
           title: 'Live Class Started!',
-          body: `"${lectureTitle}" is now live. Join now!`,
+          body: `"${sessionTitle}" is now live. Join now!`,
           isRead: false,
           deliveredVia: 'in_app',
           emailSentAt: null,
@@ -160,9 +152,7 @@ export class LiveNotificationService {
 
   async notifyRecordingReady(liveClass: LiveClass): Promise<number> {
     const studentIds = await this.getEnrolledStudentIds(liveClass);
-
-    const lecture = await this.lecturesRepo.findById(liveClass.lectureId);
-    const lectureTitle = lecture?.title ?? 'Live Class';
+    const sessionTitle = liveClass.title || 'Live Class';
 
     let notified = 0;
     for (const studentId of studentIds) {
@@ -171,7 +161,7 @@ export class LiveNotificationService {
           userId: studentId,
           type: 'recording_ready',
           title: 'Recording Available',
-          body: `The recording for "${lectureTitle}" is now available for playback.`,
+          body: `The recording for "${sessionTitle}" is now available for playback.`,
           isRead: false,
           deliveredVia: 'both',
           emailSentAt: null,
@@ -199,8 +189,7 @@ export class LiveNotificationService {
     }
 
     const studentIds = await this.getEnrolledStudentIds(liveClass);
-    const lecture = await this.lecturesRepo.findById(liveClass.lectureId);
-    const lectureTitle = lecture?.title ?? 'Live Class';
+    const sessionTitle = liveClass.title || 'Live Class';
 
     const timeLabel = type === 'class_reminder_1hr' ? '1 hour' : '15 minutes';
     const title = type === 'class_reminder_1hr'
@@ -214,7 +203,7 @@ export class LiveNotificationService {
           userId: studentId,
           type,
           title,
-          body: `"${lectureTitle}" starts in ${timeLabel} at ${this.formatTimeIST(liveClass.scheduledAt)}.`,
+          body: `"${sessionTitle}" starts in ${timeLabel} at ${this.formatTimeIST(liveClass.scheduledAt)}.`,
           isRead: false,
           deliveredVia: 'both',
           emailSentAt: null,
@@ -229,16 +218,10 @@ export class LiveNotificationService {
     return notified;
   }
 
-  // ─── Private Helpers ────────────────────────────────────────────────────
+  // --- Private Helpers ---
 
   private async getEnrolledStudentIds(liveClass: LiveClass): Promise<number[]> {
-    const lecture = await this.lecturesRepo.findById(liveClass.lectureId);
-    if (!lecture) return [];
-
-    const section = await this.sectionsRepo.findById(lecture.sectionId);
-    if (!section) return [];
-
-    const enrollments = await this.enrollmentsRepo.findByCourse(section.courseId, { limit: 500 });
+    const enrollments = await this.enrollmentsRepo.findByCourse(liveClass.courseId, { limit: 500 });
     return enrollments.data.map(e => e.studentId);
   }
 

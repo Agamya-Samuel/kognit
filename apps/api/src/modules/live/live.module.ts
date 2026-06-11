@@ -4,8 +4,6 @@ import { DRIZZLE_DB } from '../../db/database.module';
 
 import { LiveClassesRepository } from '../../db/repositories/live-classes.repository';
 import { EnrollmentsRepository } from '../../db/repositories/enrollments.repository';
-import { LecturesRepository } from '../../db/repositories/lectures.repository';
-import { SectionsRepository } from '../../db/repositories/sections.repository';
 import { NotificationsRepository } from '../../db/repositories/notifications.repository';
 import { CoursesRepository } from '../../db/repositories/courses.repository';
 
@@ -28,16 +26,6 @@ const repositories = [
   {
     provide: EnrollmentsRepository,
     useFactory: (db: any) => new EnrollmentsRepository(db),
-    inject: [DRIZZLE_DB],
-  },
-  {
-    provide: LecturesRepository,
-    useFactory: (db: any) => new LecturesRepository(db),
-    inject: [DRIZZLE_DB],
-  },
-  {
-    provide: SectionsRepository,
-    useFactory: (db: any) => new SectionsRepository(db),
     inject: [DRIZZLE_DB],
   },
   {

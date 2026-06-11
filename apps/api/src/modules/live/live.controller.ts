@@ -23,8 +23,6 @@ import { RecordingService } from './services/recording.service';
 import { LiveNotificationService } from './services/live-notification.service';
 import { LiveClassesRepository } from '../../db/repositories/live-classes.repository';
 import { EnrollmentsRepository } from '../../db/repositories/enrollments.repository';
-import { LecturesRepository } from '../../db/repositories/lectures.repository';
-import { SectionsRepository } from '../../db/repositories/sections.repository';
 import { ConfigService } from '@nestjs/config';
 import {
   StartLiveClassDto,
@@ -58,8 +56,6 @@ export class LiveController {
     private readonly notificationService: LiveNotificationService,
     private readonly liveClassesRepo: LiveClassesRepository,
     private readonly enrollmentsRepo: EnrollmentsRepository,
-    private readonly lecturesRepo: LecturesRepository,
-    private readonly sectionsRepo: SectionsRepository,
     private readonly configService: ConfigService,
   ) {
     this.logger.log('LiveController initialized');
@@ -105,7 +101,7 @@ export class LiveController {
       maxParticipants: 100,
       metadata: JSON.stringify({
         liveClassId: liveClass.id,
-        lectureId: liveClass.lectureId,
+        courseId: liveClass.courseId,
         instructorId: liveClass.instructorId,
       }),
     });
@@ -160,20 +156,10 @@ export class LiveController {
       );
     }
 
-    // Verify enrollment: find lecture → section → course → enrollment
-    const lecture = await this.lecturesRepo.findById(liveClass.lectureId);
-    if (!lecture) {
-      throw new NotFoundException('Associated lecture not found');
-    }
-
-    const section = await this.sectionsRepo.findById(lecture.sectionId);
-    if (!section) {
-      throw new NotFoundException('Associated section not found');
-    }
-
+    // Verify enrollment via courseId directly
     const isEnrolled = await this.enrollmentsRepo.checkEnrollmentExists(
       user.sub,
-      section.courseId,
+      liveClass.courseId,
     );
 
     if (!isEnrolled) {
@@ -326,10 +312,12 @@ export class LiveController {
     @Body() dto: CreateScheduleDto,
   ): Promise<CalendarEventResponseDto> {
     const liveClass = await this.scheduleService.createSchedule({
-      lectureId: dto.lectureId,
+      courseId: dto.courseId,
       instructorId: user.sub,
+      title: dto.title,
       scheduledAt: dto.scheduledAt,
       durationMinutes: dto.durationMinutes,
+      meetingLink: dto.meetingLink,
     });
 
     // Notify enrolled students

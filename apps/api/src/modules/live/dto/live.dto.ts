@@ -98,9 +98,14 @@ export class RoomInfoResponseDto {
 // ─── Scheduling DTOs ──────────────────────────────────────────────────────────
 
 export class CreateScheduleDto {
-  @ApiProperty({ description: 'Lecture ID to attach the live class to' })
+  @ApiProperty({ description: 'Course ID to attach the live class to' })
   @IsNumber()
-  lectureId: number;
+  courseId: number;
+
+  @ApiProperty({ description: 'Session title' })
+  @IsString()
+  @MinLength(1)
+  title: string;
 
   @ApiProperty({ description: 'Scheduled start time (ISO 8601)' })
   @IsDateString()
@@ -110,6 +115,11 @@ export class CreateScheduleDto {
   @IsNumber()
   @Min(15)
   durationMinutes: number;
+
+  @ApiPropertyOptional({ description: 'Meeting link (optional, auto-generated if not provided)' })
+  @IsOptional()
+  @IsString()
+  meetingLink?: string;
 }
 
 export class UpdateScheduleDto {
@@ -177,19 +187,13 @@ export class CalendarEventResponseDto {
   id: number;
 
   @ApiProperty()
-  lectureId: number;
-
-  @ApiProperty()
-  lectureTitle: string;
-
-  @ApiProperty()
-  sectionId: number;
-
-  @ApiProperty()
   courseId: number;
 
   @ApiProperty()
   courseTitle: string;
+
+  @ApiProperty()
+  title: string;
 
   @ApiProperty()
   instructorId: number;
@@ -211,6 +215,9 @@ export class CalendarEventResponseDto {
 
   @ApiPropertyOptional()
   recordingUrl?: string | null;
+
+  @ApiPropertyOptional()
+  meetingLink?: string | null;
 }
 
 export class CalendarDayResponseDto {
@@ -251,7 +258,7 @@ export class PostSessionResultResponseDto {
   liveClassId: number;
 
   @ApiProperty()
-  lectureId: number;
+  courseId: number;
 
   @ApiProperty()
   recordingStatus: string;
@@ -263,5 +270,5 @@ export class PostSessionResultResponseDto {
   muxPlaybackId?: string | null;
 
   @ApiProperty()
-  lectureUpdated: boolean;
+  courseUpdated: boolean;
 }
