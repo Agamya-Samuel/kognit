@@ -33,6 +33,8 @@ describe('AdminService', () => {
     avatarUrl: null,
     isVerified: true,
     isActive: true,
+    approvalStatus: 'approved' as const,
+    onboardingCompleted: true,
     deletedAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -391,9 +393,9 @@ describe('AdminService', () => {
     describe('getRevenueBreakdown', () => {
       it('should return revenue breakdown by type', async () => {
         paymentsRepo.getRevenueBreakdown.mockResolvedValue([
-          { total: 1000 },
-          { total: 500 },
-          { total: 250 }
+          { courseId: 1, total: 1000 },
+          { courseId: 2, total: 500 },
+          { courseId: 3, total: 250 }
         ]);
 
         const result = await service.getRevenueBreakdown();
@@ -408,7 +410,7 @@ describe('AdminService', () => {
 
       it('should handle missing payment types gracefully', async () => {
         paymentsRepo.getRevenueBreakdown.mockResolvedValue([
-          { total: 1000 }
+          { courseId: 1, total: 1000 }
         ]);
 
         const result = await service.getRevenueBreakdown();
@@ -422,10 +424,10 @@ describe('AdminService', () => {
 
       it('should accumulate multiple payments of same type', async () => {
         paymentsRepo.getRevenueBreakdown.mockResolvedValue([
-          { total: 100 },
-          { total: 50 },
-          { total: 200 },
-          { total: 300 }
+          { courseId: 1, total: 100 },
+          { courseId: 2, total: 50 },
+          { courseId: 3, total: 200 },
+          { courseId: 4, total: 300 }
         ]);
 
         const result = await service.getRevenueBreakdown();

@@ -160,7 +160,7 @@ describe('PaymentsService', () => {
       enrollmentsRepo.checkEnrollmentExists.mockResolvedValue(false);
       paymentsRepo.findMany.mockResolvedValue({ data: [], total: 0 } as any);
       razorpayService.createOrder.mockResolvedValue(mockOrderResult as any);
-      paymentsRepo.create.mockResolvedValue({ id: 11, ...mockPayment, id: 11 } as any);
+      paymentsRepo.create.mockResolvedValue({ ...mockPayment, id: 11 } as any);
 
       const result = await service.createOrder(1, 1);
       expect(result.orderId).toBe('order_abc123');
