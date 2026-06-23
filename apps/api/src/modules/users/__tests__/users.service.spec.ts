@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { InternalServerErrorException, ForbiddenException } from '@nestjs/common';
+import { InternalServerErrorException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { UsersService } from '../services/users.service';
 import { UsersRepository } from '../../../db/repositories/users.repository';
 import { StudentProfilesRepository } from '../../../db/repositories/student-profiles.repository';
@@ -64,18 +64,18 @@ describe('UsersService', () => {
       expect(result).toEqual(mockStudent);
     });
 
-    it('should throw InternalServerErrorException when user not found', async () => {
+    it('should throw NotFoundException when user not found', async () => {
       usersRepo.findById.mockResolvedValue(null);
 
-      await expect(service.getProfile(999)).rejects.toThrow(InternalServerErrorException);
+      await expect(service.getProfile(999)).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('updateProfile', () => {
-    it('should throw InternalServerErrorException when user not found', async () => {
+    it('should throw NotFoundException when user not found', async () => {
       usersRepo.findById.mockResolvedValue(null);
 
-      await expect(service.updateProfile(999, { name: 'New' })).rejects.toThrow(InternalServerErrorException);
+      await expect(service.updateProfile(999, { name: 'New' })).rejects.toThrow(NotFoundException);
     });
 
     it('should throw ForbiddenException when student tries to change name after onboarding', async () => {
