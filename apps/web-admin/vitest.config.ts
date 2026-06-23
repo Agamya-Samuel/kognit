@@ -4,6 +4,9 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  define: {
+    'process.env.NEXT_PUBLIC_API_URL': JSON.stringify('http://localhost:3000/api/v1'),
+  },
   test: {
     globals: true,
     environment: 'jsdom',

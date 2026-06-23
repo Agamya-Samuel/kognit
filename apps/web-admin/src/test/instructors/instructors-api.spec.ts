@@ -8,11 +8,8 @@ describe('Admin Instructors API', () => {
   afterAll(() => server.close());
 
   it('should fetch pending instructors', async () => {
-    const { data } = await api.get('/admin/instructors', {
-      params: { status: 'pending' },
-    });
+    const result = await api.get('/admin/instructors', { status: 'pending' });
 
-    const result = data.data ?? data;
     expect(result.instructors).toHaveLength(2);
     expect(result.instructors[0].userName).toBe('Test Instructor');
     expect(result.instructors[0].approvalStatus).toBe('pending');
@@ -20,47 +17,34 @@ describe('Admin Instructors API', () => {
   });
 
   it('should fetch instructors with pagination', async () => {
-    const { data } = await api.get('/admin/instructors', {
-      params: { status: 'pending', page: 1, limit: 1 },
-    });
+    const result = await api.get('/admin/instructors', { status: 'pending', page: 1, limit: 1 });
 
-    const result = data.data ?? data;
     expect(result.instructors).toHaveLength(1);
     expect(result.page).toBe(1);
     expect(result.limit).toBe(1);
   });
 
   it('should return empty for approved instructors', async () => {
-    const { data } = await api.get('/admin/instructors', {
-      params: { status: 'approved' },
-    });
+    const result = await api.get('/admin/instructors', { status: 'approved' });
 
-    const result = data.data ?? data;
     expect(result.instructors).toHaveLength(0);
     expect(result.total).toBe(0);
   });
 
   it('should approve an instructor', async () => {
-    const { data } = await api.patch('/admin/instructors/1/approve');
-
-    expect(data.success).toBe(true);
-    expect(data.data.message).toBe('Instructor approved');
+    const result = await api.patch('/admin/instructors/1/approve');
+    expect(result.message).toBe('Instructor approved');
 
     // Verify status changed
-    const { data: checkData } = await api.get('/admin/instructors', {
-      params: { status: 'pending' },
-    });
-    const result = checkData.data ?? checkData;
-    expect(result.instructors).toHaveLength(1);
+    const check = await api.get('/admin/instructors', { status: 'pending' });
+    expect(check.instructors).toHaveLength(1);
   });
 
   it('should reject an instructor', async () => {
-    const { data } = await api.patch('/admin/instructors/2/reject', {
+    const result = await api.patch('/admin/instructors/2/reject', {
       reason: 'Insufficient qualifications',
     });
-
-    expect(data.success).toBe(true);
-    expect(data.data.message).toBe('Instructor rejected');
+    expect(result.message).toBe('Instructor rejected');
   });
 
   it('should return 404 for non-existent instructor', async () => {
