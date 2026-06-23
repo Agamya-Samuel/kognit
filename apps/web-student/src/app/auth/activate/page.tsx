@@ -81,8 +81,9 @@ function ActivationContent() {
       });
       setEditableName(response.name);
       setStep('password');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Invalid or expired activation token.');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      setError(e?.response?.data?.message || 'Invalid or expired activation token.');
     } finally {
       setIsLoading(false);
     }
@@ -109,8 +110,9 @@ function ActivationContent() {
         data.country,
       );
       router.push('/dashboard');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to activate account. Please try again.');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      setError(e?.response?.data?.message || 'Failed to activate account. Please try again.');
     } finally {
       setIsLoading(false);
     }
