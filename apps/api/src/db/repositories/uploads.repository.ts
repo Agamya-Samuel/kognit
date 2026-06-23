@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository, PaginatedResult } from './base.repository';
 import { uploads } from '../schema';
-import { eq, and, desc, or } from 'drizzle-orm';
+import { eq, and, desc, or, count } from 'drizzle-orm';
 import type { Upload } from '../schema';
 
 @Injectable()
@@ -102,12 +102,12 @@ export class UploadsRepository extends BaseRepository<Upload> {
           .orderBy(desc(uploads.createdAt))
           .limit(limit)
           .offset(offset),
-        this.db.select({ count: uploads.id }).from(uploads).where(whereClause),
+        this.db.select({ count: count(uploads.id) }).from(uploads).where(whereClause),
       ]);
 
       return {
         data,
-        total: totalResult.length,
+        total: Number(totalResult[0]?.count ?? 0),
         limit,
         offset,
       };
@@ -179,8 +179,8 @@ export class UploadsRepository extends BaseRepository<Upload> {
 
       const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-      const result = await this.db.select({ count: uploads.id }).from(uploads).where(whereClause);
-      return result.length;
+      const result = await this.db.select({ count: count(uploads.id) }).from(uploads).where(whereClause);
+      return Number(result[0]?.count ?? 0);
     } catch (error) {
       this.handleError(error, 'count');
       return 0;
