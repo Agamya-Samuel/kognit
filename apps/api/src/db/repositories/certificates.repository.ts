@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository, PaginatedResult } from './base.repository';
 import { certificates } from '../schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, count } from 'drizzle-orm';
 import type { Certificate } from '../schema';
 
 @Injectable()
@@ -82,10 +82,10 @@ export class CertificatesRepository extends BaseRepository<Certificate> {
           .orderBy(desc(certificates.issuedAt))
           .limit(limit)
           .offset(offset),
-        this.db.select({ count: certificates.id }).from(certificates).where(whereClause),
+        this.db.select({ count: count(certificates.id) }).from(certificates).where(whereClause),
       ]);
 
-      return { data, total: totalResult.length, limit, offset };
+      return { data, total: Number(totalResult[0]?.count ?? 0), limit, offset };
     } catch (error) {
       this.handleError(error, 'findMany');
       return { data: [], total: 0, limit: options.limit || defaultLimit, offset: options.offset || defaultOffset };
@@ -98,6 +98,37 @@ export class CertificatesRepository extends BaseRepository<Certificate> {
       return result[0];
     } catch (error) {
       this.handleError(error, 'create');
+      throw error;
+    }
+  }
+
+  /**
+   * Atomically insert a certificate only if no certificate already exists
+   * for (studentId, courseId). Returns the inserted row, or the existing
+   * row if a certificate is already on file.
+   *
+   * This prevents the race where two concurrent autoIssueCertificate calls
+   * for the same (student, course) both pass the "does it exist?" check and
+   * both insert — leaving duplicate rows.
+   */
+  async createIfNotExists(data: Omit<Certificate, 'id' | 'issuedAt'>): Promise<Certificate> {
+    try {
+      const result = await this.db
+        .insert(certificates)
+        .values(data)
+        .onConflictDoNothing({ target: [certificates.studentId, certificates.courseId] })
+        .returning();
+
+      if (result[0]) return result[0];
+
+      // Another request inserted first. Return the existing row.
+      const existing = await this.findByStudentAndCourse(data.studentId, data.courseId);
+      if (!existing) {
+        throw new Error('Certificate createIfNotExists: insert silently failed and no existing row found');
+      }
+      return existing;
+    } catch (error) {
+      this.handleError(error, 'createIfNotExists');
       throw error;
     }
   }
@@ -120,8 +151,8 @@ export class CertificatesRepository extends BaseRepository<Certificate> {
         conditions.push(eq(certificates.courseId, filters.courseId));
       }
       const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-      const result = await this.db.select({ count: certificates.id }).from(certificates).where(whereClause);
-      return result.length;
+      const result = await this.db.select({ count: count(certificates.id) }).from(certificates).where(whereClause);
+      return Number(result[0]?.count ?? 0);
     } catch (error) {
       this.handleError(error, 'count');
       return 0;
