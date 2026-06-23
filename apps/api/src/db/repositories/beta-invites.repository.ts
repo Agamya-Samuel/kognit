@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository, PaginatedResult } from './base.repository';
 import { betaInvites } from '../schema';
-import { eq, and, desc, gt, lt, sql } from 'drizzle-orm';
+import { eq, and, desc, gt, lt, sql, count } from 'drizzle-orm';
 import type { BetaInvite } from '../schema';
 
 @Injectable()
@@ -68,10 +68,10 @@ export class BetaInvitesRepository extends BaseRepository<BetaInvite> {
           .orderBy(desc(betaInvites.createdAt))
           .limit(limit)
           .offset(offset),
-        this.db.select({ count: betaInvites.id }).from(betaInvites).where(whereClause),
+        this.db.select({ count: count(betaInvites.id) }).from(betaInvites).where(whereClause),
       ]);
 
-      return { data, total: totalResult.length, limit, offset };
+      return { data, total: Number(totalResult[0]?.count ?? 0), limit, offset };
     } catch (error) {
       this.handleError(error, 'findMany');
       return { data: [], total: 0, limit: options.limit || defaultLimit, offset: options.offset || defaultOffset };
@@ -90,10 +90,14 @@ export class BetaInvitesRepository extends BaseRepository<BetaInvite> {
 
   async incrementUseCount(id: number): Promise<BetaInvite | null> {
     try {
+      // Atomic: only increment if useCount is still below maxUses.
+      // Prevents the race where two concurrent redemptions both pass an
+      // app-level `isCodeValid` check and both increment past maxUses.
+      // Returns the updated row, or null if the invite is already exhausted.
       const result = await this.db
         .update(betaInvites)
         .set({ useCount: sql`${betaInvites.useCount} + 1` })
-        .where(eq(betaInvites.id, id))
+        .where(and(eq(betaInvites.id, id), lt(betaInvites.useCount, betaInvites.maxUses)))
         .returning();
       return result[0] || null;
     } catch (error) {
@@ -104,10 +108,12 @@ export class BetaInvitesRepository extends BaseRepository<BetaInvite> {
 
   async markAsUsed(id: number, usedBy: number): Promise<BetaInvite | null> {
     try {
+      // Atomic check-and-set: only marks used + increments if useCount is
+      // still below maxUses. Same race-prevention as incrementUseCount.
       const result = await this.db
         .update(betaInvites)
         .set({ usedBy, useCount: sql`${betaInvites.useCount} + 1` })
-        .where(eq(betaInvites.id, id))
+        .where(and(eq(betaInvites.id, id), lt(betaInvites.useCount, betaInvites.maxUses)))
         .returning();
       return result[0] || null;
     } catch (error) {
@@ -141,8 +147,8 @@ export class BetaInvitesRepository extends BaseRepository<BetaInvite> {
         conditions.push(eq(betaInvites.invitedBy, filters.invitedBy));
       }
       const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-      const result = await this.db.select({ count: betaInvites.id }).from(betaInvites).where(whereClause);
-      return result.length;
+      const result = await this.db.select({ count: count(betaInvites.id) }).from(betaInvites).where(whereClause);
+      return Number(result[0]?.count ?? 0);
     } catch (error) {
       this.handleError(error, 'count');
       return 0;
