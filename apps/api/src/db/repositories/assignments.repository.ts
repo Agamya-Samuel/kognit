@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository, PaginatedResult } from './base.repository';
 import { assignments, lectures, sections, courses } from '../schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, count, isNull } from 'drizzle-orm';
 import type { Assignment } from '../schema';
 
 @Injectable()
@@ -15,7 +15,7 @@ export class AssignmentsRepository extends BaseRepository<Assignment> {
       const result = await this.db
         .select()
         .from(assignments)
-        .where(eq(assignments.id, id))
+        .where(and(eq(assignments.id, id), isNull(assignments.deletedAt)))
         .limit(1);
       return result[0] || null;
     } catch (error) {
@@ -29,7 +29,7 @@ export class AssignmentsRepository extends BaseRepository<Assignment> {
       const result = await this.db
         .select()
         .from(assignments)
-        .where(eq(assignments.lectureId, lectureId))
+        .where(and(eq(assignments.lectureId, lectureId), isNull(assignments.deletedAt)))
         .limit(1);
       return result[0] || null;
     } catch (error) {
@@ -50,7 +50,7 @@ export class AssignmentsRepository extends BaseRepository<Assignment> {
       const offset = options.offset ?? defaultOffset;
       const limit = options.limit ?? defaultLimit;
 
-      const conditions = [];
+      const conditions = [isNull(assignments.deletedAt)];
       if (options.lectureId) {
         conditions.push(eq(assignments.lectureId, options.lectureId));
       }
@@ -68,9 +68,9 @@ export class AssignmentsRepository extends BaseRepository<Assignment> {
           .orderBy(desc(assignments.createdAt))
           .limit(limit)
           .offset(offset),
-        this.db.select({ count: assignments.id }).from(assignments).where(whereClause),
+        this.db.select({ count: count(assignments.id) }).from(assignments).where(whereClause),
       ]);
-      return { data, total: totalResult.length, limit, offset };
+      return { data, total: Number(totalResult[0]?.count ?? 0), limit, offset };
     } catch (error) {
       this.handleError(error, 'findMany');
       return { data: [], total: 0, limit: options.limit || defaultLimit, offset: options.offset || defaultOffset };
@@ -110,14 +110,14 @@ export class AssignmentsRepository extends BaseRepository<Assignment> {
           .limit(limit)
           .offset(offset),
         this.db
-          .select({ count: assignments.id })
+          .select({ count: count(assignments.id) })
           .from(assignments)
           .innerJoin(lectures, eq(assignments.lectureId, lectures.id))
           .innerJoin(sections, eq(lectures.sectionId, sections.id))
           .innerJoin(courses, eq(sections.courseId, courses.id)),
       ]);
 
-      return { data, total: totalResult.length, limit, offset };
+      return { data, total: Number(totalResult[0]?.count ?? 0), limit, offset };
     } catch (error) {
       this.handleError(error, 'findManyWithCourseName');
       return { data: [], total: 0, limit: options.limit || defaultLimit, offset: options.offset || defaultOffset };
@@ -151,12 +151,30 @@ export class AssignmentsRepository extends BaseRepository<Assignment> {
   async delete(id: number): Promise<boolean> {
     try {
       const result = await this.db
-        .delete(assignments)
+        .update(assignments)
+        .set({ deletedAt: new Date() })
         .where(eq(assignments.id, id))
         .returning();
       return result.length > 0;
     } catch (error) {
       this.handleError(error, 'delete');
+      return false;
+    }
+  }
+
+  /**
+   * Soft-delete an assignment by setting `deleted_at`.
+   */
+  async softDelete(id: number): Promise<boolean> {
+    try {
+      const result = await this.db
+        .update(assignments)
+        .set({ deletedAt: new Date() })
+        .where(eq(assignments.id, id))
+        .returning();
+      return result.length > 0;
+    } catch (error) {
+      this.handleError(error, 'softDelete');
       return false;
     }
   }
