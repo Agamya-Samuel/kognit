@@ -740,21 +740,14 @@ export interface WatchHistoryResponse {
 
 // ─── Live Classes ─────────────────────────────────────────────────────────────
 
-// CalendarEvent is defined above in the Live Class section
-
-export interface CalendarDayAlias {
-  date: string; // YYYY-MM-DD
-  events: CalendarEvent[];
-}
+// `CalendarEvent` and `CalendarDay` are defined in the Live Class section above.
+// (Previously duplicated here, then renamed to `CalendarDayAlias` as a workaround
+// for the duplicate-identifier TS error. The duplicates have been removed;
+// consumers should import `CalendarDay` directly.)
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
-export interface RegisterPayload {
-  email: string;
-  password: string;
-  name: string;
-  role?: UserRole;
-}
+// `RegisterPayload` is defined above in the Auth section.
 
 export interface ForgotPasswordPayload {
   email: string;
