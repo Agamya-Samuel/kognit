@@ -13,8 +13,8 @@ const envSchema = z.object({
   // Database
   DATABASE_HOST: z.string().default('localhost'),
   DATABASE_PORT: z.string().transform(Number).default(5432),
-  DATABASE_USER: z.string().default('postgres'),
-  DATABASE_PASSWORD: z.string().default('postgres'),
+  DATABASE_USER: z.string().default('edutech'),
+  DATABASE_PASSWORD: z.string().default('edutech_password'),
   DATABASE_NAME: z.string().default('edutech'),
   DATABASE_SSL: z.enum(['true', 'false']).transform(val => val === 'true').default(false),
 
@@ -25,9 +25,11 @@ const envSchema = z.object({
   REDIS_DB: z.string().transform(Number).default(0),
 
   // JWT
-  JWT_SECRET: z.string().min(32).default('your-super-secret-jwt-key-change-in-production'),
+  // No defaults — the app must fail at startup if these are unset rather than
+  // silently using known-publicly strings. `.min(32)` enforces length.
+  JWT_SECRET: z.string().min(32),
   JWT_EXPIRY: z.string().default('15m'),
-  JWT_REFRESH_SECRET: z.string().min(32).default('your-super-secret-refresh-key-change-in-production'),
+  JWT_REFRESH_SECRET: z.string().min(32),
   JWT_REFRESH_EXPIRY: z.string().default('30d'),
 
   // AWS S3
