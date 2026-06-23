@@ -24,6 +24,19 @@ export class PlatformSettingsRepository extends BaseRepository<PlatformSetting> 
     }
   }
 
+  /**
+   * Return ALL settings (no pagination). Used by admin dashboard to display
+   * every platform setting at once.
+   */
+  async getAll(): Promise<PlatformSetting[]> {
+    try {
+      return await this.db.select().from(platformSettings);
+    } catch (error) {
+      this.handleError(error, 'getAll');
+      return [];
+    }
+  }
+
   async findMany(options: {
     offset?: number;
     limit?: number;
@@ -90,6 +103,24 @@ export class PlatformSettingsRepository extends BaseRepository<PlatformSetting> 
     } catch (error) {
       this.handleError(error, 'update');
       return null;
+    }
+  }
+
+  /**
+   * Insert or update a setting by its primary key. Used by admin.service to
+   * persist platform configuration values.
+   */
+  async upsert(id: string, value: string, description?: string): Promise<PlatformSetting> {
+    try {
+      const result = await this.db
+        .insert(platformSettings)
+        .values({ id, value, description })
+        .onConflictDoUpdate({ target: platformSettings.id, set: { value, updatedAt: new Date() } })
+        .returning();
+      return result[0];
+    } catch (error) {
+      this.handleError(error, 'upsert');
+      throw error;
     }
   }
 

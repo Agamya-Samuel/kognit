@@ -15,5 +15,6 @@ const repositories = [
 @Module({
   controllers: [PlatformSettingsController],
   providers: [...repositories, PlatformSettingsService],
+  exports: [PlatformSettingsRepository],
 })
 export class PlatformSettingsModule {}
