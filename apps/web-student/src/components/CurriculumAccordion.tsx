@@ -59,6 +59,7 @@ export function CurriculumAccordion({ sections }: CurriculumAccordionProps) {
         >
           <button
             onClick={() => toggleSection(section.id)}
+            aria-expanded={expandedSections.has(section.id)}
             className="flex w-full items-center justify-between border-b bg-muted/50 px-4 py-4 text-left transition-colors hover:bg-muted"
           >
             <div className="flex items-center gap-3">

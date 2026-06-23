@@ -251,6 +251,7 @@ export function ChatPanel({
             onChange={(e) => handleInputChange(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={replyTo ? `Reply to message...` : editingMessage ? `Edit message...` : `Type a message...`}
+            aria-label={replyTo ? 'Reply to message' : editingMessage ? 'Edit message' : 'Type a message'}
             className="flex-1 resize-none rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             rows={1}
           />
