@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Query,
+  BadRequestException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { AnalyticsService } from './analytics.service';
@@ -64,10 +65,19 @@ export class AnalyticsController {
     @Query('event') event: string,
     @Query('properties') properties?: string,
   ) {
+    let parsedProperties: Record<string, unknown> | undefined;
+    if (properties) {
+      try {
+        parsedProperties = JSON.parse(properties);
+      } catch {
+        throw new BadRequestException('Invalid JSON in properties query parameter');
+      }
+    }
+
     await this.analyticsService.capture({
       distinctId: String(user.sub),
       event,
-      properties: properties ? JSON.parse(properties) : undefined,
+      properties: parsedProperties,
     });
 
     return { success: true };

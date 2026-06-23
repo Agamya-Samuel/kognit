@@ -150,6 +150,17 @@ export class DevEmailPreviewController {
   ) {
     this.guardDev();
 
+    // Escape user-controlled URL parameter before embedding in HTML. Without
+    // this, a request like /dev/email-preview/<script>...</script> would
+    // execute the script in the browser if this endpoint is ever exposed
+    // outside a development-only guard.
+    const safeTemplateName = String(templateName)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+
     const data = mockData[templateName];
     if (!data) {
       const html = `<!DOCTYPE html>
@@ -158,7 +169,7 @@ export class DevEmailPreviewController {
 <body style="font-family: system-ui, sans-serif; max-width: 600px; margin: 40px auto; padding: 0 16px; color: #1e293b;">
   <h1 style="font-size: 24px; margin-bottom: 8px;">Template Not Found</h1>
   <p style="color: #64748b;">
-    The template <strong>${templateName}</strong> was not found.
+    The template <strong>${safeTemplateName}</strong> was not found.
     <a href="/dev/email-preview" style="color: #4F46E5;">View all templates</a>
   </p>
 </body>
