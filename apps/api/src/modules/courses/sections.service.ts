@@ -44,6 +44,7 @@ export class SectionsService {
       title: data.title,
       description: data.description ?? null,
       orderIndex: data.orderIndex,
+      deletedAt: null,
     });
 
     this.logger.log(`Section created: ${section.id} in course ${courseId}`);

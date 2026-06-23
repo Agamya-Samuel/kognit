@@ -98,6 +98,7 @@ export class AssignmentService {
       dueAt: dueDate,
       lateWindowHours: data.lateWindowHours ?? null,
       latePenaltyPercent: data.latePenaltyPercent ?? 0,
+      deletedAt: null,
     });
 
     this.logger.log(`Assignment created: ${assignment.id} by user ${userId}`);

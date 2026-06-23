@@ -63,6 +63,7 @@ export class LecturesService {
       durationSeconds: 0,
       isFreePreview: data.isFreePreview ?? false,
       isPublished: data.isPublished ?? false,
+      deletedAt: null,
     });
 
     this.logger.log(`Lecture created: ${lecture.id} in section ${sectionId}`);
