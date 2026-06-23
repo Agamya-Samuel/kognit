@@ -26,7 +26,7 @@ export class CreateCourseDto {
   @IsEnum(['free', 'paid'], { message: 'Pricing type must be free or paid' })
   pricingType: 'free' | 'paid';
 
-  @ApiPropertyOptional({ example: 0, description: 'Price in INR (only for paid courses)' })
+  @ApiPropertyOptional({ example: 0, description: 'Price in paise (1 INR = 100 paise, e.g. 999 = ₹9.99). Only for paid courses.' })
   @IsNumber()
   @Min(0)
   @IsOptional()
@@ -75,7 +75,7 @@ export class UpdateCourseDto {
   @IsOptional()
   pricingType?: 'free' | 'paid';
 
-  @ApiPropertyOptional({ example: 499 })
+  @ApiPropertyOptional({ example: 499, description: 'Price in paise (1 INR = 100 paise, e.g. 499 = ₹4.99)' })
   @IsNumber()
   @Min(0)
   @IsOptional()
