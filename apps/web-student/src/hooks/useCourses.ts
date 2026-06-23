@@ -18,17 +18,32 @@ export function useCourses(filters: any = {}) {
       if (search) params.search = search;
       if (pricingType && pricingType !== 'all') params.pricingType = pricingType;
 
-      const courses = await coursesService.list(params);
-      if (Array.isArray(courses)) {
+      const response = await coursesService.list(params);
+
+      // The API returns a paginated response: { courses, total, page, limit, hasNext, hasPrev }
+      if (response && typeof response === 'object' && !Array.isArray(response) && 'courses' in response) {
         return {
-          courses: courses as Course[],
-          total: (courses as Course[]).length,
+          courses: (response as any).courses as Course[],
+          total: (response as any).total ?? 0,
+          page: (response as any).page ?? page,
+          limit: (response as any).limit ?? limit,
+          hasNext: (response as any).hasNext ?? false,
+          hasPrev: (response as any).hasPrev ?? false,
+        } as CoursesListResponse;
+      }
+
+      // Fallback for legacy array responses
+      if (Array.isArray(response)) {
+        return {
+          courses: response as Course[],
+          total: (response as Course[]).length,
           page,
           limit,
           hasNext: false,
           hasPrev: false,
         } as CoursesListResponse;
       }
+
       return {
         courses: [],
         total: 0,

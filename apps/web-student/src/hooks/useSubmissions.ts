@@ -35,8 +35,8 @@ export function useSubmitAssignment() {
         const result = await submissionsService.submit(assignmentId, { content });
         queryClient.invalidateQueries({ queryKey: ['submissions'] });
         return { success: true, submission: result.submission, lateStatus: result.lateStatus, error: null };
-      } catch (err: any) {
-        const msg = err.message || 'Failed to submit assignment';
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'Failed to submit assignment';
         return { success: false, submission: null, lateStatus: null, error: msg };
       }
     },
