@@ -57,6 +57,9 @@ export class ApiClient {
   private onTokenRefreshed?: (accessToken: string, refreshToken: string) => void;
   private onUnauthorized?: () => void;
   private refreshPromise: Promise<{ accessToken: string; refreshToken: string }> | null = null;
+  // Internal token store — used when onTokenRefreshed is not provided.
+  // The request interceptor prefers this over getToken() after a silent refresh.
+  private internalAccessToken: string | null = null;
 
   constructor(config: ApiClientConfig) {
     this.getToken = config.getToken;
@@ -66,6 +69,7 @@ export class ApiClient {
 
     this.client = axios.create({
       baseURL: config.baseURL,
+      withCredentials: true,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -76,10 +80,20 @@ export class ApiClient {
 
   private setupInterceptors() {
     this.client.interceptors.request.use((config) => {
-      const token = this.getToken?.();
+      // Prefer internally-stored token (set by silent refresh when onTokenRefreshed
+      // is not provided); fall back to the consumer-supplied getter.
+      const token = this.internalAccessToken ?? this.getToken?.();
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
+
+      // CSRF double-submit cookie: read the XSRF-TOKEN cookie and echo it
+      // back as the X-XSRF-TOKEN header on state-changing requests.
+      const xsrfToken = this.readCookie('XSRF-TOKEN');
+      if (xsrfToken) {
+        config.headers['X-XSRF-TOKEN'] = xsrfToken;
+      }
+
       return config;
     });
 
@@ -105,7 +119,9 @@ export class ApiClient {
         if (error.response?.status === 401) {
           const isRefreshEndpoint = originalRequest.url?.includes('/auth/refresh');
 
-          if (!isRefreshEndpoint && this.getRefreshToken && this.onTokenRefreshed && !originalRequest._retry) {
+          // Attempt refresh whenever we have a refresh token, regardless of
+          // whether onTokenRefreshed is provided (MED-24 fix).
+          if (!isRefreshEndpoint && this.getRefreshToken && !originalRequest._retry) {
             const refreshToken = this.getRefreshToken();
 
             if (refreshToken && !this.refreshPromise) {
@@ -114,7 +130,13 @@ export class ApiClient {
               try {
                 const { accessToken: newAccessToken, refreshToken: newRefreshToken } = await this.refreshPromise;
 
-                this.onTokenRefreshed(newAccessToken, newRefreshToken);
+                if (this.onTokenRefreshed) {
+                  this.onTokenRefreshed(newAccessToken, newRefreshToken);
+                } else {
+                  // No consumer callback — store internally so the request
+                  // interceptor picks it up on the retry below.
+                  this.internalAccessToken = newAccessToken;
+                }
                 this.refreshPromise = null;
 
                 originalRequest.headers = {
@@ -124,15 +146,21 @@ export class ApiClient {
                 originalRequest._retry = true;
 
                 return this.client.request(originalRequest);
-              } catch (refreshError) {
+              } catch {
                 this.refreshPromise = null;
                 this.onUnauthorized?.();
                 throw error;
               }
-            } else if (!refreshToken || !this.getRefreshToken) {
+            } else if (!refreshToken) {
+              // No refresh token available — log out.
               this.onUnauthorized?.();
             }
-          } else {
+            // else: a refresh is already in-flight (this.refreshPromise set by
+            // another concurrent 401). Let the original error propagate so the
+            // caller can handle it; the concurrent refresh will eventually succeed
+            // and subsequent requests will use the new token.
+          } else if (!isRefreshEndpoint && !originalRequest._retry) {
+            // No getRefreshToken configured — cannot refresh, log out.
             this.onUnauthorized?.();
           }
 
@@ -218,6 +246,16 @@ export class ApiClient {
   getAxiosInstance(): AxiosInstance {
     return this.client;
   }
+
+  /**
+   * Read a cookie value from document.cookie (browser only).
+   * Returns undefined in SSR or when the cookie is not present.
+   */
+  private readCookie(name: string): string | undefined {
+    if (typeof document === 'undefined') return undefined;
+    const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
+    return match ? decodeURIComponent(match[1]) : undefined;
+  }
 }
 
 // ─── Factory ──────────────────────────────────────────────────────────────────
@@ -265,6 +303,7 @@ export * from './services/admin';
 export * from './services/auth';
 export * from './services/schedule';
 export * from './services/attachments';
+export * from './services/platform-settings';
 export * from './services/sections';
 export * from './services/recordings';
 export * from './services/users';
