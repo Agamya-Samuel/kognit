@@ -11,10 +11,12 @@ import { CacheHeadersInterceptor } from './common/interceptors/cache-headers.int
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ThrottlerExceptionFilter as CustomThrottlerFilter } from './common/filters/throttler-exception.filter';
 import { ConfigService } from '@nestjs/config';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, new ExpressAdapter(), {
     bufferLogs: true,
+    rawBody: true,
   });
 
   // Use Pino as the application logger
@@ -24,6 +26,36 @@ async function bootstrap() {
   const PORT = configService.get<number>('PORT') || 3000;
   const NODE_ENV = configService.get<string>('NODE_ENV') || 'development';
   const logger = new Logger('Bootstrap');
+
+  // Security headers (helmet). crossOriginResourcePolicy: 'cross-origin' is
+  // required so the API can serve S3-hosted assets via signed URLs.
+  // CSP is configured for an API-only server: JSON responses + Swagger docs.
+  // 'unsafe-inline' for styles/scripts is required by Swagger UI's inline CSS and JS.
+  // In production the policy is enforced; in development it is also applied so
+  // issues surface early.
+  app.use(helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        imgSrc: ["'self'", "data:", "https:"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        connectSrc: ["'self'"],
+        frameSrc: ["'none'"],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        formAction: ["'self'"],
+      },
+    },
+    // HSTS: enforce HTTPS for 1 year, include subdomains
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true,
+    },
+  }));
 
   // Response compression (gzip)
   app.use(require('compression')({ threshold: 1024 }));
@@ -47,6 +79,7 @@ async function bootstrap() {
   app.enableCors({
     origin: corsOrigins,
     credentials: true,
+    exposedHeaders: ['X-XSRF-TOKEN'],
   });
 
   // Global Validation Pipe with Zod-like detailed errors
