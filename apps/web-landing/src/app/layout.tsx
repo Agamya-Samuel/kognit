@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import { WebVitalsReporter } from '@/components/WebVitalsReporter';
 import './globals.css';
 
 const inter = localFont({
@@ -41,7 +42,7 @@ export const metadata: Metadata = {
     'career growth',
   ],
   authors: [{ name: 'EduTech' }],
-  metadataBase: new URL('https://eduplatform.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3003'),
   openGraph: {
     type: 'website',
     locale: 'en_IN',
@@ -73,6 +74,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${jakarta.variable} ${mono.variable} font-sans antialiased`}
       >
+        <WebVitalsReporter />
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
