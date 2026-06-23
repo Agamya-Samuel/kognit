@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository } from '../../../db/repositories/base.repository';
-import { userNotificationPreferences } from '../../../db/schema/user-notification-preferences';
 import { eq } from 'drizzle-orm';
+import { userNotificationPreferences } from '../../../db/schema/user-notification-preferences';
 import type { UserNotificationPreferences } from '../../../db/schema/user-notification-preferences';
 
 @Injectable()
@@ -27,27 +27,19 @@ export class UserNotificationPreferencesRepository extends BaseRepository<UserNo
 
   async upsert(userId: number, preferences: Partial<Omit<UserNotificationPreferences, 'id' | 'createdAt' | 'updatedAt'>>): Promise<UserNotificationPreferences> {
     try {
-      // Check if preferences already exist for this user
-      const existing = await this.findByUserId(userId);
-      
-      if (existing) {
-        // Update existing record
-        const result = await this.db
-          .update(userNotificationPreferences)
-          .set({ ...preferences, updatedAt: new Date() })
-          .where(eq(userNotificationPreferences.userId, userId))
-          .returning();
-        
-        return result[0];
-      } else {
-        // Create new record
-        const result = await this.db
-          .insert(userNotificationPreferences)
-          .values({ userId, ...preferences })
-          .returning();
-        
-        return result[0];
-      }
+      // Atomic upsert using the unique constraint on userId.
+      // onConflictDoUpdate avoids the SELECT-then-INSERT race condition
+      // where two concurrent requests could both INSERT duplicate rows.
+      const result = await this.db
+        .insert(userNotificationPreferences)
+        .values({ userId, ...preferences })
+        .onConflictDoUpdate({
+          target: userNotificationPreferences.userId,
+          set: { ...preferences, updatedAt: new Date() },
+        })
+        .returning();
+
+      return result[0];
     } catch (error) {
       this.handleError(error, 'upsert');
       throw error;
