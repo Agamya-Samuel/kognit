@@ -1,19 +1,19 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, Button, Spinner, Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, Input, Field, FieldGroup, FieldLabel } from '@edutech/ui';
 import { ChevronLeft, ChevronRight, Building2, Plus } from 'lucide-react';
 import { adminService } from '@edutech/api-client';
 import { PageHeader } from '@/components/PageHeader';
 import { EmptyState } from '@/components/EmptyState';
+import { useInstitutions } from '@/hooks/useInstitutions';
 import Link from 'next/link';
 
 export default function InstitutionsPage() {
-  const [institutions, setInstitutions] = useState<any[]>([]);
-  const [total, setTotal] = useState(0);
+  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
-  const [loading, setLoading] = useState(true);
 
   // Create institution dialog state
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -27,26 +27,11 @@ export default function InstitutionsPage() {
   const [createError, setCreateError] = useState('');
   const [createSuccess, setCreateSuccess] = useState('');
 
-  const fetchInstitutions = useCallback(async () => {
-    setLoading(true);
-    try {
-      const result = await adminService.getInstitutions({
-        page,
-        limit,
-      }) as any;
-      setInstitutions(result?.institutions ?? []);
-      setTotal(result?.total ?? 0);
-    } catch {
-      setInstitutions([]);
-      setTotal(0);
-    } finally {
-      setLoading(false);
-    }
-  }, [page, limit]);
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['admin', 'institutions'] });
 
-  useEffect(() => {
-    fetchInstitutions();
-  }, [fetchInstitutions]);
+  const { data, isLoading: loading } = useInstitutions({ page, limit });
+  const institutions = data?.institutions ?? [];
+  const total = data?.total ?? 0;
 
   const totalPages = Math.ceil(total / limit);
 
@@ -71,9 +56,10 @@ export default function InstitutionsPage() {
         activeUntil: createForm.activeUntil,
       });
       setCreateSuccess('Institution created successfully!');
-      fetchInstitutions();
-    } catch (err: any) {
-      setCreateError(err.response?.data?.message || 'Failed to create institution. Please try again.');
+      invalidate();
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      setCreateError(e?.response?.data?.message || 'Failed to create institution. Please try again.');
     } finally {
       setIsCreating(false);
     }
@@ -122,7 +108,7 @@ export default function InstitutionsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
-                    {institutions.map((inst) => (
+                    {institutions.map((inst: any) => (
                       <tr key={inst.id} className="hover:bg-accent/50 transition-colors">
                         <td className="py-3 text-muted-foreground">
                           {inst.id}

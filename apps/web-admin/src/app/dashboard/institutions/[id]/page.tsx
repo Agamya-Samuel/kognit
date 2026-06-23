@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, Spinner, Badge, Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, Field, FieldGroup, FieldLabel, FieldDescription } from '@edutech/ui';
 import { Building2, Mail, Calendar, ArrowLeft, Upload, FileText, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
 import { adminService } from '@edutech/api-client';
 import { PageHeader } from '@/components/PageHeader';
+import { useInstitution } from '@/hooks/useInstitution';
 import Link from 'next/link';
 
 interface ImportError {
@@ -23,9 +24,9 @@ interface ImportResult {
 export default function InstitutionDetailPage() {
   const params = useParams();
   const id = Number(params.id);
-  const [institution, setInstitution] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
+  const { data: institution, isLoading: loading, error: queryError } = useInstitution(id);
+  const error = queryError ? 'Failed to load institution' : null;
 
   // CSV Import state
   const [showImportDialog, setShowImportDialog] = useState(false);
@@ -34,25 +35,6 @@ export default function InstitutionDetailPage() {
   const [importError, setImportError] = useState('');
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (id) {
-      fetchInstitution();
-    }
-  }, [id]);
-
-  const fetchInstitution = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await adminService.getInstitution(id) as any;
-      setInstitution(data);
-    } catch {
-      setError('Failed to load institution');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const parseCSV = (text: string): { name: string; email: string }[] => {
     const lines = text.trim().split('\n');
@@ -120,8 +102,9 @@ export default function InstitutionDetailPage() {
         failureCount: result.failureCount ?? 0,
         errors: result.errors ?? [],
       });
-    } catch (err: any) {
-      setImportError(err.response?.data?.message || 'Failed to import students. Please try again.');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      setImportError(e?.response?.data?.message || 'Failed to import students. Please try again.');
     } finally {
       setIsImporting(false);
     }
