@@ -32,7 +32,7 @@ export function Navbar() {
           : 'bg-transparent'
       }`}
     >
-      <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <nav aria-label="Main navigation" className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <a
           href="#"
@@ -96,6 +96,7 @@ export function Navbar() {
             size="icon"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
+            aria-expanded={mobileOpen}
             className="h-9 w-9"
           >
             {mobileOpen ? <X size={18} /> : <Menu size={18} />}

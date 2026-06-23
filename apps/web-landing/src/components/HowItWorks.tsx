@@ -1,5 +1,6 @@
 import { UserPlus, BookOpen, GraduationCap, ArrowRight, Sparkles } from 'lucide-react';
 import { Badge } from '@edutech/ui';
+import Image from 'next/image';
 
 const steps = [
   {
@@ -68,10 +69,11 @@ export function HowItWorks() {
             >
               {/* Image */}
               <div className="img-zoom relative w-full max-w-md rounded-3xl lg:w-1/2">
-                <img
+                <Image
                   src={item.image}
                   alt={item.imageAlt}
-                  className="aspect-[4/3] w-full rounded-3xl object-cover shadow-lg"
+                  fill
+                  className="object-cover rounded-3xl shadow-lg"
                 />
                 {/* Step number overlay badge */}
                 <div className="absolute -top-4 -left-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--accent))] font-heading text-lg font-bold text-white shadow-xl">

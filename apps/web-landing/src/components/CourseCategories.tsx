@@ -1,5 +1,8 @@
+'use client';
+
 import { Badge } from '@edutech/ui';
 import { Button } from '@edutech/ui';
+import Image from 'next/image';
 import {
   Monitor,
   Briefcase,
@@ -105,15 +108,20 @@ export function CourseCategories() {
           {categories.map((cat, index) => (
             <div
               key={cat.name}
-              className="group relative cursor-pointer overflow-hidden rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl animate-fade-in-up"
+              className="group relative cursor-pointer overflow-hidden rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl animate-fade-in-up focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--primary))] focus-visible:ring-offset-2"
               style={{ animationDelay: `${index * 80}ms` }}
+              tabIndex={0}
+              role="link"
+              aria-label={`${cat.name} - ${cat.count} courses`}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); window.location.hash = 'courses'; } }}
             >
               {/* Image */}
               <div className="img-zoom relative aspect-[16/10] overflow-hidden">
-                <img
+                <Image
                   src={cat.image}
                   alt={cat.imageAlt}
-                  className="h-full w-full object-cover"
+                  fill
+                  className="object-cover"
                 />
                 {/* Overlay gradient */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--card))] via-[hsl(var(--card)/0.3)] to-transparent" />

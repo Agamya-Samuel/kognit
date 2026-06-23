@@ -1,5 +1,6 @@
 import { Button } from '@edutech/ui';
 import { ArrowRight, Sparkles, Users } from 'lucide-react';
+import Image from 'next/image';
 
 export function CTA() {
   return (
@@ -7,10 +8,12 @@ export function CTA() {
       <div className="mx-auto max-w-5xl">
         <div className="relative overflow-hidden rounded-[2rem] px-6 py-16 text-center sm:px-12 sm:py-24">
           {/* Background image */}
-          <img
+          <Image
             src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1200&h=600&fit=crop"
             alt="Students celebrating together"
-            className="absolute inset-0 h-full w-full object-cover"
+            fill
+            className="object-cover"
+            priority
           />
           {/* Dark overlay */}
           <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary)/0.9)] to-[hsl(var(--primary))] opacity-90" />
