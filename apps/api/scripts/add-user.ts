@@ -80,11 +80,12 @@ async function addUser() {
     }
 
     console.log('\nUser can now log in at /auth/login\n');
-  } catch (error: any) {
-    if (error.code === '23505') {
+  } catch (error: unknown) {
+    const e = error as { code?: string; message?: string };
+    if (e.code === '23505') {
       console.error(`\n❌ Error: A user with email "${email}" already exists.\n`);
     } else {
-      console.error('\n❌ Database error:', error.message);
+      console.error('\n❌ Database error:', e.message);
     }
     process.exit(1);
   } finally {
