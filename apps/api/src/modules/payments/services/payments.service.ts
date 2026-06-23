@@ -159,18 +159,27 @@ export class PaymentsService {
       throw new ForbiddenException('This payment does not belong to you.');
     }
 
-    // Check if already processed
-    if (payment.status === 'paid') {
-      throw new BadRequestException('Payment already processed.');
+    // Atomic state transition: pending -> paid. If the row is already paid
+    // (concurrent request or duplicate webhook) this returns null and we
+    // treat the call as idempotent — find the existing enrollment.
+    const updated = await this.paymentsRepo.markPaidIfPending(
+      payment.id,
+      razorpayPaymentId,
+    );
+    if (!updated) {
+      // Payment was already paid. Look up the existing enrollment.
+      const existing = await this.enrollmentsRepo.findByStudentAndCourse(
+        payment.studentId,
+        payment.courseId,
+      );
+      if (existing) {
+        return { success: true, enrollmentId: existing.id };
+      }
+      throw new BadRequestException('Payment already processed but no enrollment found.');
     }
 
-    // Update payment record
-    await this.paymentsRepo.update(payment.id, {
-      razorpayPaymentId,
-      status: 'paid',
-    });
-
-    // Grant enrollment
+    // Grant enrollment. The (studentId, courseId) unique constraint on
+    // enrollments is the final backstop against duplicate inserts.
     const enrollment = await this.enrollmentsRepo.create({
       studentId: payment.studentId,
       courseId: payment.courseId,
@@ -202,18 +211,19 @@ export class PaymentsService {
       return;
     }
 
-    if (payment.status === 'paid') {
+    // Atomic pending -> paid transition. Idempotent: returns null on second call.
+    const updated = await this.paymentsRepo.markPaidIfPending(
+      payment.id,
+      razorpayPaymentId,
+    );
+    if (!updated) {
       this.logger.log(`Payment ${razorpayOrderId} already processed. Skipping.`);
       return;
     }
 
-    // Update payment status
-    await this.paymentsRepo.update(payment.id, {
-      razorpayPaymentId,
-      status: 'paid',
-    });
-
-    // Check if enrollment already exists (may have been created by verifyAndEnroll)
+    // Check if enrollment already exists (may have been created by verifyAndEnroll).
+    // If it does, we're done. If not, create. The unique constraint catches the
+    // race where a concurrent webhook + verifyAndEnroll both try to create.
     const alreadyEnrolled = await this.enrollmentsRepo.checkEnrollmentExists(
       payment.studentId,
       payment.courseId,
@@ -226,18 +236,30 @@ export class PaymentsService {
       return;
     }
 
-    // Grant enrollment
-    await this.enrollmentsRepo.create({
-      studentId: payment.studentId,
-      courseId: payment.courseId,
-      enrolledAt: new Date(),
-      paymentId: payment.id,
-      accessType: 'purchased',
-    } as any);
+    try {
+      await this.enrollmentsRepo.create({
+        studentId: payment.studentId,
+        courseId: payment.courseId,
+        enrolledAt: new Date(),
+        paymentId: payment.id,
+        accessType: 'purchased',
+      } as any);
 
-    this.logger.log(
-      `Webhook: Enrollment granted for student ${payment.studentId} in course ${payment.courseId}`,
-    );
+      this.logger.log(
+        `Webhook: Enrollment granted for student ${payment.studentId} in course ${payment.courseId}`,
+      );
+    } catch (err: unknown) {
+      const e = err as { code?: string };
+      // Unique constraint (PG 23505) means a concurrent call already created
+      // the enrollment. That's fine — the call is idempotent.
+      if (e?.code === '23505') {
+        this.logger.log(
+          `Webhook: Enrollment already exists (caught unique violation) for student ${payment.studentId}, course ${payment.courseId}`,
+        );
+        return;
+      }
+      throw err;
+    }
   }
 
   /**
