@@ -42,13 +42,6 @@ export class CertificatesService {
       throw new BadRequestException('Student is not enrolled in this course');
     }
 
-    // Check for existing certificate
-    const existing = await this.certificatesRepository.findByStudentAndCourse(studentId, courseId);
-    if (existing) {
-      this.logger.log(`Certificate already exists for student ${studentId}, course ${courseId}`);
-      return existing;
-    }
-
     // Check 100% completion
     const progress = await this.progressRepository.getCourseProgressSummary(studentId, courseId);
     if (!progress || progress.progressPercentage < 100) {
@@ -56,9 +49,12 @@ export class CertificatesService {
       return null;
     }
 
-    // Issue certificate
+    // Atomic insert-or-return-existing. Prevents the race where two concurrent
+    // autoIssueCertificate calls for the same (student, course) both pass the
+    // "does a cert exist?" check and both insert. The (studentId, courseId)
+    // unique index on certificates backs the conflict.
     const certificateUid = this.generateCertificateUid();
-    const certificate = await this.certificatesRepository.create({
+    const certificate = await this.certificatesRepository.createIfNotExists({
       studentId,
       courseId,
       certificateUid,
