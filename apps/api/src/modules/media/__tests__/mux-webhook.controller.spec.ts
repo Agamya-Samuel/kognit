@@ -59,6 +59,12 @@ describe('MuxWebhookController', () => {
   });
 
   describe('handleAssetStatus', () => {
+    // The signature check now uses req.rawBody (the un-parsed bytes from
+    // Express with rawBody:true) instead of JSON.stringify(webhookData).
+    // Mocks below provide a Buffer so the controller's .toString('utf8')
+    // produces a deterministic string.
+    const mockReq = (rawBody: string): any => ({ rawBody: Buffer.from(rawBody) });
+
     it('should handle asset ready event successfully', async () => {
       const webhookData = {
         id: 'evt_123',
@@ -79,22 +85,21 @@ describe('MuxWebhookController', () => {
         'mux-signature': 't=1234567890,v1=abc123',
       };
 
+      const rawBody = JSON.stringify(webhookData);
+
       jest.spyOn(muxService, 'validateWebhookSignature').mockReturnValue(true);
       jest.spyOn(muxService, 'parseWebhookEvent').mockReturnValue(webhookData as any);
       (lecturesRepository.findByMuxAssetId as jest.Mock).mockResolvedValue(mockLecture);
       (lecturesRepository.update as jest.Mock).mockResolvedValue(mockLecture);
 
-      const result = await controller.handleAssetStatus(webhookData, headers);
+      const result = await controller.handleAssetStatus(webhookData, headers, mockReq(rawBody));
 
       expect(result).toEqual({
         success: true,
         message: 'Webhook processed successfully',
       });
 
-      expect(muxService.validateWebhookSignature).toHaveBeenCalledWith(
-        headers,
-        JSON.stringify(webhookData)
-      );
+      expect(muxService.validateWebhookSignature).toHaveBeenCalledWith(headers, rawBody);
 
       expect(muxService.parseWebhookEvent).toHaveBeenCalledWith(webhookData);
 
@@ -136,7 +141,11 @@ describe('MuxWebhookController', () => {
       jest.spyOn(muxService, 'parseWebhookEvent').mockReturnValue(webhookData as any);
       (lecturesRepository.findByMuxAssetId as jest.Mock).mockResolvedValue(mockLecture);
 
-      const result = await controller.handleAssetStatus(webhookData, headers);
+      const result = await controller.handleAssetStatus(
+        webhookData,
+        headers,
+        mockReq(JSON.stringify(webhookData)),
+      );
 
       expect(result).toEqual({
         success: true,
@@ -158,7 +167,11 @@ describe('MuxWebhookController', () => {
 
       jest.spyOn(muxService, 'validateWebhookSignature').mockReturnValue(false);
 
-      const result = await controller.handleAssetStatus(webhookData, headers);
+      const result = await controller.handleAssetStatus(
+        webhookData,
+        headers,
+        mockReq(JSON.stringify(webhookData)),
+      );
 
       expect(result).toEqual({
         success: false,
@@ -180,7 +193,11 @@ describe('MuxWebhookController', () => {
       jest.spyOn(muxService, 'validateWebhookSignature').mockReturnValue(true);
       jest.spyOn(muxService, 'parseWebhookEvent').mockReturnValue(null);
 
-      const result = await controller.handleAssetStatus(webhookData, headers);
+      const result = await controller.handleAssetStatus(
+        webhookData,
+        headers,
+        mockReq(JSON.stringify(webhookData)),
+      );
 
       expect(result).toEqual({
         success: false,
@@ -210,7 +227,11 @@ describe('MuxWebhookController', () => {
       jest.spyOn(muxService, 'validateWebhookSignature').mockReturnValue(true);
       jest.spyOn(muxService, 'parseWebhookEvent').mockReturnValue(webhookData as any);
 
-      const result = await controller.handleAssetStatus(webhookData, headers);
+      const result = await controller.handleAssetStatus(
+        webhookData,
+        headers,
+        mockReq(JSON.stringify(webhookData)),
+      );
 
       expect(result).toEqual({
         success: true,
@@ -242,7 +263,11 @@ describe('MuxWebhookController', () => {
       jest.spyOn(muxService, 'parseWebhookEvent').mockReturnValue(webhookData as any);
       (lecturesRepository.findByMuxAssetId as jest.Mock).mockResolvedValue(null);
 
-      const result = await controller.handleAssetStatus(webhookData, headers);
+      const result = await controller.handleAssetStatus(
+        webhookData,
+        headers,
+        mockReq(JSON.stringify(webhookData)),
+      );
 
       expect(result).toEqual({
         success: true,

@@ -16,6 +16,9 @@ describe('MuxService', () => {
         delete: jest.fn(),
       },
     },
+    jwt: {
+      signPlaybackId: jest.fn().mockReturnValue('mock_signed_jwt_token'),
+    },
   };
 
   beforeEach(async () => {
@@ -48,6 +51,8 @@ describe('MuxService', () => {
 
     // Mock Mux client
     (service as any).mux = mockMuxClient;
+    // Re-prime the JWT mock each test since clearAllMocks resets implementations
+    mockMuxClient.jwt.signPlaybackId.mockReturnValue('mock_signed_jwt_token');
   });
 
   afterEach(() => {
@@ -210,7 +215,13 @@ describe('MuxService', () => {
         expiryMinutes: 60,
       });
 
-      expect(result).toBe('https://stream.mux.com/playback_123.m3u8');
+      expect(result).toBe(
+        'https://stream.mux.com/playback_123.m3u8?token=mock_signed_jwt_token',
+      );
+      expect(mockMuxClient.jwt.signPlaybackId).toHaveBeenCalledWith(
+        'playback_123',
+        expect.objectContaining({ type: 'video', expirationTime: '60m' }),
+      );
     });
 
     it('should throw InternalServerErrorException when Mux is not configured', async () => {
