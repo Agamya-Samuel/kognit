@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --port 3004",
     "build": "next build",
+    "analyze": "ANALYZE=true next build",
     "start": "next start --port 3004",
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
@@ -20,6 +21,7 @@
   "dependencies": {
     "@edutech/api-client": "*",
     "@edutech/types": "*",
+    "@edutech/ui": "*",
     "@hookform/resolvers": "^5.4.0",
     "@tanstack/react-query": "^5.100.9",
     "axios": "^1.16.0",

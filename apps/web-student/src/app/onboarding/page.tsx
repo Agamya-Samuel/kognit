@@ -74,8 +74,9 @@ export default function OnboardingPage() {
         country: data.country,
       });
       router.push('/dashboard');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to complete onboarding. Please try again.');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      setError(e?.response?.data?.message || 'Failed to complete onboarding. Please try again.');
     } finally {
       setIsLoading(false);
     }
