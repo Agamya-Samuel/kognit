@@ -10,34 +10,27 @@ export function useAdminDashboard() {
         adminService.getChartData()
       ]);
 
-      // Transform the API response to match the expected shape
+      // Transform the raw API response into the dashboard display shape.
+      // Field names here must match what dashboard/page.tsx consumes.
       return {
         totalUsers: metricsResponse.totalUsers || 0,
-        activeCourses: metricsResponse.activeCourses || 0,
-        revenueMTD: metricsResponse.revenueMTD || 0,
-        activeNow: metricsResponse.activeNow || 0,
+        activeCourses: metricsResponse.totalCourses || 0,
+        revenueMTD: metricsResponse.totalRevenue || 0,
+        activeNow: metricsResponse.activeUsers || 0,
+        newUsersThisMonth: metricsResponse.newUsersThisMonth || 0,
+        pendingApprovals: metricsResponse.pendingApprovals || 0,
         revenueData: (chartResponse || []).map((item: any) => ({
-          month: item.month,
+          month: new Date(item.name).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
           revenue: item.revenue,
-          costs: item.costs
+          costs: 0
         })),
         engagementData: (chartResponse || []).map((item: any) => ({
-          date: item.date,
-          views: item.views,
-          interactions: item.interactions
+          date: new Date(item.name).toLocaleDateString('en-US', { weekday: 'short' }),
+          views: item.users,
+          interactions: 0
         })),
-        recentActivity: metricsResponse.recentActivity?.map((activity: any) => ({
-          id: activity.id,
-          type: activity.type,
-          title: activity.title,
-          time: activity.time
-        })) || [],
-        pendingModeration: metricsResponse.pendingModeration?.map((item: any) => ({
-          id: item.id,
-          title: item.title,
-          instructor: item.instructor,
-          count: item.count
-        })) || []
+        recentActivity: metricsResponse.recentActivity || [],
+        pendingModeration: metricsResponse.pendingModeration || [],
       };
     }
   });
