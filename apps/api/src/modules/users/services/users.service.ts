@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, ForbiddenException } from '@nestjs/common';
+import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { UsersRepository } from '../../../db/repositories/users.repository';
 import { StudentProfilesRepository } from '../../../db/repositories/student-profiles.repository';
 import { User } from '../../../db/schema/users';
@@ -11,21 +11,23 @@ export class UsersService {
     private readonly studentProfilesRepository: StudentProfilesRepository,
   ) {}
 
-  async getProfile(userId: number): Promise<User> {
+  async getProfile(userId: number): Promise<Omit<User, 'passwordHash'>> {
     const user = await this.usersRepository.findById(userId);
     if (!user) {
-      throw new InternalServerErrorException('User not found');
+      throw new NotFoundException('User not found');
     }
-    return user;
+    // Strip passwordHash before returning — never leak the bcrypt hash to clients.
+    const { passwordHash, ...safe } = user;
+    return safe;
   }
 
   async updateProfile(
     userId: number,
     updateUserProfileDto: UpdateUserProfileDto,
-  ): Promise<User> {
+  ): Promise<Omit<User, 'passwordHash'>> {
     const user = await this.usersRepository.findById(userId);
     if (!user) {
-      throw new InternalServerErrorException('User not found');
+      throw new NotFoundException('User not found');
     }
 
     // Check name locking for students who have completed onboarding
@@ -98,8 +100,10 @@ export class UsersService {
 
     const updatedUser = await this.usersRepository.findById(userId);
     if (!updatedUser) {
-      throw new InternalServerErrorException('User not found after update');
+      throw new NotFoundException('User not found after update');
     }
-    return updatedUser;
+    // Strip passwordHash before returning — never leak the bcrypt hash to clients.
+    const { passwordHash, ...safe } = updatedUser;
+    return safe;
   }
 }

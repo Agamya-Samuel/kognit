@@ -24,7 +24,9 @@ export class UsersController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({ status: 200, description: 'User profile retrieved successfully' })
-  async getProfile(@CurrentUser() user: { sub: number }): Promise<User> {
+  async getProfile(
+    @CurrentUser() user: { sub: number },
+  ): Promise<Omit<User, 'passwordHash'>> {
     return this.usersService.getProfile(user.sub);
   }
 
@@ -36,7 +38,7 @@ export class UsersController {
   async updateProfile(
     @CurrentUser() user: { sub: number },
     @Body() updateUserProfileDto: UpdateUserProfileDto,
-  ): Promise<User> {
+  ): Promise<Omit<User, 'passwordHash'>> {
     return this.usersService.updateProfile(user.sub, updateUserProfileDto);
   }
 }
