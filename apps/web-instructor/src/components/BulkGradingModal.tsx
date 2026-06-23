@@ -71,7 +71,7 @@ export function BulkGradingModal({ submissions, isOpen, onClose, onSuccess }: Bu
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-label="Bulk grade submissions">
       <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-lg border bg-card shadow-lg">
         <div className="sticky top-0 border-b bg-card p-6">
           <div className="flex items-center justify-between">
@@ -80,6 +80,7 @@ export function BulkGradingModal({ submissions, isOpen, onClose, onSuccess }: Bu
               onClick={onClose}
               className="rounded-full p-2 hover:bg-accent"
               disabled={isLoading}
+              aria-label="Close bulk grading"
             >
               <X className="h-4 w-4" />
             </button>
@@ -150,6 +151,7 @@ export function BulkGradingModal({ submissions, isOpen, onClose, onSuccess }: Bu
                         value={grade?.score ?? submission.maxScore}
                         onChange={(e) => handleGradeChange(submission.id, Number(e.target.value))}
                         disabled={!isSelected || isLoading}
+                        aria-label={`Score for ${submission.studentName}`}
                         className="w-20 rounded-md border border-input bg-background px-3 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
                       />
                       <span className="text-sm text-muted-foreground">/ {submission.maxScore}</span>
@@ -162,6 +164,7 @@ export function BulkGradingModal({ submissions, isOpen, onClose, onSuccess }: Bu
                         value={grade?.feedback ?? ''}
                         onChange={(e) => handleFeedbackChange(submission.id, e.target.value)}
                         placeholder="Add feedback (optional)..."
+                        aria-label={`Feedback for ${submission.studentName}`}
                         rows={2}
                         disabled={isLoading}
                         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
