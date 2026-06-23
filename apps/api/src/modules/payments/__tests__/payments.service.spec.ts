@@ -67,6 +67,7 @@ describe('PaymentsService', () => {
           useValue: {
             create: jest.fn(),
             update: jest.fn(),
+            markPaidIfPending: jest.fn(),
             findById: jest.fn(),
             findByRazorpayOrderId: jest.fn(),
             findMany: jest.fn(),
@@ -77,6 +78,7 @@ describe('PaymentsService', () => {
           useValue: {
             create: jest.fn(),
             checkEnrollmentExists: jest.fn(),
+            findByStudentAndCourse: jest.fn(),
           },
         },
         {
@@ -206,6 +208,10 @@ describe('PaymentsService', () => {
         ...mockPayment,
         status: 'paid',
       } as any);
+      // markPaidIfPending returns null because the WHERE status='pending' didn't match
+      paymentsRepo.markPaidIfPending.mockResolvedValue(null as any);
+      // No existing enrollment either — throw
+      enrollmentsRepo.findByStudentAndCourse.mockResolvedValue(null as any);
 
       await expect(
         service.verifyAndEnroll(1, 'order_abc123', 'pay_xyz789', 'sig'),
@@ -215,7 +221,7 @@ describe('PaymentsService', () => {
     it('should verify payment and create enrollment on success', async () => {
       razorpayService.verifyPaymentSignature.mockReturnValue(true);
       paymentsRepo.findByRazorpayOrderId.mockResolvedValue(mockPayment as any);
-      paymentsRepo.update.mockResolvedValue({ ...mockPayment, status: 'paid' } as any);
+      paymentsRepo.markPaidIfPending.mockResolvedValue({ ...mockPayment, status: 'paid' } as any);
       enrollmentsRepo.create.mockResolvedValue({ id: 50 } as any);
 
       const result = await service.verifyAndEnroll(
@@ -226,9 +232,9 @@ describe('PaymentsService', () => {
       );
       expect(result.success).toBe(true);
       expect(result.enrollmentId).toBe(50);
-      expect(paymentsRepo.update).toHaveBeenCalledWith(
+      expect(paymentsRepo.markPaidIfPending).toHaveBeenCalledWith(
         10,
-        expect.objectContaining({ status: 'paid' }),
+        'pay_xyz789',
       );
       expect(enrollmentsRepo.create).toHaveBeenCalledWith(
         expect.objectContaining({ studentId: 1, courseId: 1 }),
@@ -241,7 +247,7 @@ describe('PaymentsService', () => {
       paymentsRepo.findByRazorpayOrderId.mockResolvedValue(null);
 
       await service.handlePaymentCaptured('order_missing', 'pay_1');
-      expect(paymentsRepo.update).not.toHaveBeenCalled();
+      expect(paymentsRepo.markPaidIfPending).not.toHaveBeenCalled();
     });
 
     it('should skip when payment is already paid (idempotency)', async () => {
@@ -249,14 +255,17 @@ describe('PaymentsService', () => {
         ...mockPayment,
         status: 'paid',
       } as any);
+      // markPaidIfPending returns null (already paid)
+      paymentsRepo.markPaidIfPending.mockResolvedValue(null as any);
 
       await service.handlePaymentCaptured('order_abc123', 'pay_xyz789');
-      expect(paymentsRepo.update).not.toHaveBeenCalled();
+      expect(paymentsRepo.markPaidIfPending).toHaveBeenCalled();
+      expect(enrollmentsRepo.create).not.toHaveBeenCalled();
     });
 
     it('should skip enrollment creation if already enrolled', async () => {
       paymentsRepo.findByRazorpayOrderId.mockResolvedValue(mockPayment as any);
-      paymentsRepo.update.mockResolvedValue(mockPayment as any);
+      paymentsRepo.markPaidIfPending.mockResolvedValue({ ...mockPayment, status: 'paid' } as any);
       enrollmentsRepo.checkEnrollmentExists.mockResolvedValue(true);
 
       await service.handlePaymentCaptured('order_abc123', 'pay_xyz789');
