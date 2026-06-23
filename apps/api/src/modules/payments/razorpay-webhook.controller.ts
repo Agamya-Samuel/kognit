@@ -13,6 +13,7 @@ import { ApiTags, ApiOperation, ApiHeader, ApiResponse } from '@nestjs/swagger';
 import { Request } from 'express';
 import { PaymentsService } from './services/payments.service';
 import { RazorpayService } from './services/razorpay.service';
+import { Public } from '../auth/decorators/auth.decorators';
 
 @ApiTags('webhooks')
 @Controller('webhooks/razorpay')
@@ -26,6 +27,7 @@ export class RazorpayWebhookController {
     this.logger.log('RazorpayWebhookController initialized');
   }
 
+  @Public()
   @Post()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Handle Razorpay webhook events' })

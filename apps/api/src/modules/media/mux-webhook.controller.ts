@@ -1,8 +1,10 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, Headers, Logger } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, Headers, Logger, Req, RawBodyRequest } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiHeader, ApiResponse } from '@nestjs/swagger';
+import { Request } from 'express';
 import { MuxService, MuxWebhookEvent } from './services/mux.service';
 import { LecturesRepository } from '../../db/repositories/lectures.repository';
 import { DRIZZLE_DB } from '../../db/database.module';
+import { Public } from '../auth/decorators/auth.decorators';
 
 @ApiTags('webhooks')
 @Controller('webhooks/mux')
@@ -16,6 +18,7 @@ export class MuxWebhookController {
     this.logger.log('MuxWebhookController initialized');
   }
 
+  @Public()
   @Post('asset-status')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Handle Mux asset status webhook events' })
@@ -26,12 +29,17 @@ export class MuxWebhookController {
   async handleAssetStatus(
     @Body() webhookData: any,
     @Headers() headers: Record<string, string>,
+    @Req() req: RawBodyRequest<Request>,
   ): Promise<{ success: boolean; message: string }> {
     try {
-      // Validate webhook signature
+      // Validate webhook signature using the raw (un-parsed) body.
+      // JSON.stringify(webhookData) would re-serialize the parsed object and
+      // break the HMAC because key ordering / whitespace would differ from
+      // the original byte stream Mux signed.
+      const rawBody = req.rawBody?.toString('utf8') ?? '';
       const isValid = this.muxService.validateWebhookSignature(
         headers,
-        JSON.stringify(webhookData),
+        rawBody,
       );
 
       if (!isValid) {

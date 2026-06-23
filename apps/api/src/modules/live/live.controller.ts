@@ -16,7 +16,7 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../modules/auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../modules/auth/decorators/current-user.decorator';
-import { Roles } from '../../modules/auth/decorators/auth.decorators';
+import { Public, Roles } from '../../modules/auth/decorators/auth.decorators';
 import { LiveKitService } from './services/livekit.service';
 import { ScheduleService } from './services/schedule.service';
 import { RecordingService } from './services/recording.service';
@@ -458,6 +458,7 @@ export class LiveController {
 
   // ─── Recording Complete Webhook (Internal/S3) ────────────────────────────
 
+  @Public()
   @Post('recording/complete')
   @HttpCode(HttpStatus.OK)
   @ApiResponse({ status: 200, description: 'Recording processed' })
