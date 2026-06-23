@@ -41,8 +41,11 @@ export const LoginForm = React.forwardRef<HTMLDivElement, LoginFormProps>(
       setServerError('');
       try {
         await onSubmit(data);
-      } catch (err: any) {
-        setServerError(err?.message || 'Login failed. Please try again.');
+      } catch (err: unknown) {
+        const message = err instanceof Error
+          ? err.message
+          : 'Login failed. Please try again.';
+        setServerError(message);
       }
     };
 
@@ -57,7 +60,7 @@ export const LoginForm = React.forwardRef<HTMLDivElement, LoginFormProps>(
           </CardHeader>
           <CardContent>
             {serverError && (
-              <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 dark:border-red-900 dark:bg-red-950/30 dark:text-red-400">
+              <div role="alert" className="mb-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 dark:border-red-900 dark:bg-red-950/30 dark:text-red-400">
                 {serverError}
               </div>
             )}
@@ -96,7 +99,7 @@ export const LoginForm = React.forwardRef<HTMLDivElement, LoginFormProps>(
                 </Field>
                 {error && (
                   <Field>
-                    <p className="text-sm text-destructive">{error}</p>
+                    <p role="alert" className="text-sm text-destructive">{error}</p>
                   </Field>
                 )}
                 <Field>
