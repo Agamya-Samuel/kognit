@@ -1,4 +1,4 @@
-import { IsEmail, IsString, IsNotEmpty, MinLength, MaxLength, IsOptional, IsIn, IsArray } from 'class-validator';
+import { IsEmail, IsString, IsNotEmpty, MinLength, MaxLength, IsOptional, IsIn, IsArray, Matches } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class LoginDto {
@@ -76,6 +76,9 @@ export class CompleteRegistrationDto {
   @IsString()
   @MinLength(8, { message: 'Password must be at least 8 characters' })
   @MaxLength(128, { message: 'Password must be at most 128 characters' })
+  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, {
+    message: 'Password must contain at least one uppercase letter, one lowercase letter, and one digit',
+  })
   password: string;
 
   @ApiPropertyOptional({
@@ -121,6 +124,9 @@ export class ResetPasswordDto {
   @IsString()
   @MinLength(8, { message: 'Password must be at least 8 characters' })
   @MaxLength(128, { message: 'Password must be at most 128 characters' })
+  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, {
+    message: 'Password must contain at least one uppercase letter, one lowercase letter, and one digit',
+  })
   password: string;
 }
 
@@ -139,6 +145,9 @@ export class ChangePasswordDto {
   @IsString()
   @MinLength(8, { message: 'Password must be at least 8 characters' })
   @MaxLength(128, { message: 'Password must be at most 128 characters' })
+  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, {
+    message: 'Password must contain at least one uppercase letter, one lowercase letter, and one digit',
+  })
   newPassword: string;
 }
 
@@ -164,6 +173,9 @@ export class CompleteActivationDto {
   @IsString()
   @MinLength(8, { message: 'Password must be at least 8 characters' })
   @MaxLength(128, { message: 'Password must be at most 128 characters' })
+  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, {
+    message: 'Password must contain at least one uppercase letter, one lowercase letter, and one digit',
+  })
   password: string;
 
   @ApiProperty({ example: 'John Doe', description: 'User full name' })
@@ -224,6 +236,9 @@ export class CompleteInstructorActivationDto {
   @IsString()
   @MinLength(8, { message: 'Password must be at least 8 characters' })
   @MaxLength(128, { message: 'Password must be at most 128 characters' })
+  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, {
+    message: 'Password must contain at least one uppercase letter, one lowercase letter, and one digit',
+  })
   password: string;
 
   @ApiProperty({ example: 'John Doe', description: 'User full name' })
