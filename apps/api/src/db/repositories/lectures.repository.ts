@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository, PaginatedResult } from './base.repository';
 import { lectures } from '../schema';
-import { eq, and, desc, asc } from 'drizzle-orm';
+import { eq, and, desc, asc, count, isNull } from 'drizzle-orm';
 import type { Lecture } from '../schema';
 
 @Injectable()
@@ -15,7 +15,7 @@ export class LecturesRepository extends BaseRepository<Lecture> {
       const result = await this.db
         .select()
         .from(lectures)
-        .where(eq(lectures.id, id))
+        .where(and(eq(lectures.id, id), isNull(lectures.deletedAt)))
         .limit(1);
 
       return result[0] || null;
@@ -42,7 +42,7 @@ export class LecturesRepository extends BaseRepository<Lecture> {
       const offset = options.offset ?? defaultOffset;
       const limit = options.limit ?? defaultLimit;
 
-      const conditions = [];
+      const conditions = [isNull(lectures.deletedAt)];
       if (options.sectionId) {
         conditions.push(eq(lectures.sectionId, options.sectionId));
       }
@@ -63,12 +63,12 @@ export class LecturesRepository extends BaseRepository<Lecture> {
           .orderBy(asc(lectures.orderIndex))
           .limit(limit)
           .offset(offset),
-        this.db.select({ count: lectures.id }).from(lectures).where(whereClause),
+        this.db.select({ count: count(lectures.id) }).from(lectures).where(whereClause),
       ]);
 
       return {
         data,
-        total: totalResult.length,
+        total: Number(totalResult[0]?.count ?? 0),
         limit,
         offset,
       };
@@ -106,7 +106,8 @@ export class LecturesRepository extends BaseRepository<Lecture> {
   async delete(id: number): Promise<boolean> {
     try {
       const result = await this.db
-        .delete(lectures)
+        .update(lectures)
+        .set({ deletedAt: new Date() })
         .where(eq(lectures.id, id))
         .returning();
 
@@ -117,9 +118,26 @@ export class LecturesRepository extends BaseRepository<Lecture> {
     }
   }
 
+  /**
+   * Soft-delete a lecture by setting `deleted_at`.
+   */
+  async softDelete(id: number): Promise<boolean> {
+    try {
+      const result = await this.db
+        .update(lectures)
+        .set({ deletedAt: new Date() })
+        .where(eq(lectures.id, id))
+        .returning();
+      return result.length > 0;
+    } catch (error) {
+      this.handleError(error, 'softDelete');
+      return false;
+    }
+  }
+
   async count(filters?: { sectionId?: number; type?: string; isPublished?: boolean }): Promise<number> {
     try {
-      const conditions = [];
+      const conditions = [isNull(lectures.deletedAt)];
 
       if (filters?.sectionId) {
         conditions.push(eq(lectures.sectionId, filters.sectionId));
@@ -133,8 +151,8 @@ export class LecturesRepository extends BaseRepository<Lecture> {
 
       const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-      const result = await this.db.select({ count: lectures.id }).from(lectures).where(whereClause);
-      return result.length;
+      const result = await this.db.select({ count: count(lectures.id) }).from(lectures).where(whereClause);
+      return Number(result[0]?.count ?? 0);
     } catch (error) {
       this.handleError(error, 'count');
       return 0;
@@ -146,7 +164,7 @@ export class LecturesRepository extends BaseRepository<Lecture> {
       const result = await this.db
         .select()
         .from(lectures)
-        .where(eq(lectures.muxAssetId, muxAssetId))
+        .where(and(eq(lectures.muxAssetId, muxAssetId), isNull(lectures.deletedAt)))
         .limit(1);
 
       return result[0] || null;
