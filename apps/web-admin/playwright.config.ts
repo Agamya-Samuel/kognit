@@ -18,7 +18,7 @@ export default defineConfig({
     ['json', { outputFile: 'test-results/results.json' }],
   ],
   use: {
-    baseURL: process.env.BASE_URL || 'http://localhost:3002',
+    baseURL: process.env.BASE_URL || 'http://localhost:3001',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -42,8 +42,8 @@ export default defineConfig({
   ...(process.env.WEB_SERVER
     ? {
         webServer: {
-          command: 'npm run dev -- --port 3002',
-          url: 'http://localhost:3002',
+          command: 'npm run dev -- --port 3001',
+          url: 'http://localhost:3001',
           reuseExistingServer: !process.env.CI,
           timeout: 120000,
         },
