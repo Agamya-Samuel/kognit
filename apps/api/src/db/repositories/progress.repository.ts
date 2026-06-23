@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository } from './base.repository';
 import { progress, lectures, sections, courses, users } from '../schema';
-import { eq, and, desc, asc, sql, inArray } from 'drizzle-orm';
+import { eq, and, desc, asc, sql, inArray, count, isNull } from 'drizzle-orm';
 import type { Progress } from '../schema';
 
 export interface CourseProgressSummary {
@@ -75,9 +75,9 @@ export class ProgressRepository extends BaseRepository<Progress> {
           .orderBy(desc(progress.lastWatchedAt))
           .limit(limit)
           .offset(offset),
-        this.db.select({ count: progress.id }).from(progress).where(eq(progress.studentId, studentId)),
+        this.db.select({ count: count(progress.id) }).from(progress).where(eq(progress.studentId, studentId)),
       ]);
-      return { data, total: totalResult.length, limit, offset };
+      return { data, total: Number(totalResult[0]?.count ?? 0), limit, offset };
     } catch (error) {
       this.handleError(error, 'findByStudent');
       return { data: [], total: 0, limit: options.limit || defaultLimit, offset: options.offset || defaultOffset };
@@ -115,8 +115,8 @@ export class ProgressRepository extends BaseRepository<Progress> {
       const whereClause = filters?.studentId
         ? eq(progress.studentId, filters.studentId)
         : undefined;
-      const result = await this.db.select({ count: progress.id }).from(progress).where(whereClause);
-      return result.length;
+      const result = await this.db.select({ count: count(progress.id) }).from(progress).where(whereClause);
+      return Number(result[0]?.count ?? 0);
     } catch (error) {
       this.handleError(error, 'count');
       return 0;
@@ -126,10 +126,10 @@ export class ProgressRepository extends BaseRepository<Progress> {
   async countCompleted(): Promise<number> {
     try {
       const result = await this.db
-        .select({ count: progress.id })
+        .select({ count: count(progress.id) })
         .from(progress)
         .where(eq(progress.isCompleted, true));
-      return result.length;
+      return Number(result[0]?.count ?? 0);
     } catch (error) {
       this.handleError(error, 'countCompleted');
       return 0;
@@ -332,14 +332,26 @@ export class ProgressRepository extends BaseRepository<Progress> {
 
   async getWatchTimeSummary(studentId: number): Promise<WatchTimeSummary | null> {
     try {
+      // Count DISTINCT courses (not lectures) so the metric reflects "how many
+      // courses has this student made progress in?". The path is
+      // progress → lectures → sections → courses, so we GROUP BY studentId
+      // and aggregate.
       const result = await this.db
         .select({
           totalWatchedSeconds: sql<number>`SUM(${progress.watchedSeconds})`,
-          totalCourses: sql<number>`COUNT(DISTINCT ${progress.lectureId})`,
+          totalCourses: sql<number>`COUNT(DISTINCT ${courses.id})`,
           lastWatchedAt: sql<string | null>`MAX(${progress.lastWatchedAt})`,
         })
         .from(progress)
-        .where(eq(progress.studentId, studentId));
+        .innerJoin(lectures, eq(progress.lectureId, lectures.id))
+        .innerJoin(sections, eq(lectures.sectionId, sections.id))
+        .innerJoin(courses, eq(sections.courseId, courses.id))
+        .where(
+          and(
+            eq(progress.studentId, studentId),
+            isNull(lectures.deletedAt),
+          ),
+        );
 
       if (result.length === 0) {
         return {

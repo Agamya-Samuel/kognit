@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository, PaginatedResult } from './base.repository';
 import { payments } from '../schema';
-import { eq, and, desc, gte, sql, inArray } from 'drizzle-orm';
+import { eq, and, desc, gte, sql, inArray, count } from 'drizzle-orm';
 import type { Payment } from '../schema';
 import { users } from '../schema/users';
 import { courses } from '../schema/courses';
@@ -89,10 +89,10 @@ export class PaymentsRepository extends BaseRepository<Payment> {
           .orderBy(desc(payments.createdAt))
           .limit(limit)
           .offset(offset),
-        this.db.select({ count: payments.id }).from(payments).where(whereClause),
+        this.db.select({ count: count(payments.id) }).from(payments).where(whereClause),
       ]);
 
-      return { data, total: totalResult.length, limit, offset };
+      return { data, total: Number(totalResult[0]?.count ?? 0), limit, offset };
     } catch (error) {
       this.handleError(error, 'findMany');
       return { data: [], total: 0, limit: options.limit || defaultLimit, offset: options.offset || defaultOffset };
@@ -123,6 +123,32 @@ export class PaymentsRepository extends BaseRepository<Payment> {
     }
   }
 
+  /**
+   * Atomically transition a payment from 'pending' to 'paid' with the given
+   * Razorpay payment id. Returns the updated row, or null if the payment
+   * was already paid/missing (i.e. a concurrent request got there first).
+   *
+   * This is the lock-and-set step for the verifyAndEnroll / webhook flows —
+   * it prevents the race where two concurrent verifyAndEnroll calls for the
+   * same order both pass the "is it paid?" check and both create enrollments.
+   */
+  async markPaidIfPending(
+    id: number,
+    razorpayPaymentId: string,
+  ): Promise<Payment | null> {
+    try {
+      const result = await this.db
+        .update(payments)
+        .set({ razorpayPaymentId, status: 'paid' })
+        .where(and(eq(payments.id, id), eq(payments.status, 'pending')))
+        .returning();
+      return result[0] || null;
+    } catch (error) {
+      this.handleError(error, 'markPaidIfPending');
+      return null;
+    }
+  }
+
   async findByStudent(studentId: number, options: { offset?: number; limit?: number } = {}): Promise<PaginatedResult<Payment>> {
     return this.findMany({ ...options, studentId });
   }
@@ -144,8 +170,8 @@ export class PaymentsRepository extends BaseRepository<Payment> {
         conditions.push(eq(payments.status, filters.status as any));
       }
       const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-      const result = await this.db.select({ count: payments.id }).from(payments).where(whereClause);
-      return result.length;
+      const result = await this.db.select({ count: count(payments.id) }).from(payments).where(whereClause);
+      return Number(result[0]?.count ?? 0);
     } catch (error) {
       this.handleError(error, 'count');
       return 0;
