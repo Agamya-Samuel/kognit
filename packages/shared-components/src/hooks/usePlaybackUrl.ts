@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { mediaService } from '@edutech/api-client';
 
 interface UsePlaybackUrlOptions {
@@ -116,7 +116,8 @@ export function usePlaybackUrl({
     }, 15000);
   }, [fetchVideoStatus, fetchPlaybackUrl]);
 
-  useState(() => {
+  // On mount: kick off the initial fetch + status-polling bootstrap.
+  useEffect(() => {
     if (autoFetch && lectureId) {
       fetchVideoStatus().then((status) => {
         if (status?.status === 'ready') {
@@ -126,9 +127,12 @@ export function usePlaybackUrl({
         }
       });
     }
-  });
+    // Intentional: only run on mount. Refs hold the latest state.
+  }, []);
 
-  useState(() => {
+  // On unmount: clear any pending interval/timeout so we don't leak them
+  // or fire callbacks against an unmounted component.
+  useEffect(() => {
     return () => {
       if (statusCheckInterval.current) {
         clearInterval(statusCheckInterval.current);
@@ -137,7 +141,7 @@ export function usePlaybackUrl({
         clearTimeout(urlRefreshTimeout.current);
       }
     };
-  });
+  }, []);
 
   const refresh = useCallback(() => {
     if (statusCheckInterval.current) {
