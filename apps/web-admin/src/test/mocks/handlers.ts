@@ -12,7 +12,9 @@ import { http, HttpResponse, delay } from 'msw';
  *   const server = setupServer(...handlers);
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL!;
+// Fallback to the same default as `setup.ts` so MSW handlers match in environments
+// where `NEXT_PUBLIC_API_URL` is not defined (e.g. CI, fresh clones without a `.env`).
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 
@@ -426,7 +428,7 @@ export const adminHandlers = [
         { status: 404 },
       );
     }
-    const body = await request.json() as { role: string };
+    const body = await request.json() as { role: 'student' | 'instructor' | 'admin' | 'institution_admin' };
     user.role = body.role;
     return HttpResponse.json({ success: true, data: user });
   }),
