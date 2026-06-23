@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository, PaginatedResult } from './base.repository';
 import { users } from '../schema';
-import { eq, and, desc, or, gte, count, ilike } from 'drizzle-orm';
+import { eq, and, desc, or, gte, count, ilike, isNull } from 'drizzle-orm';
 import type { User } from '../schema';
 
 @Injectable()
@@ -15,7 +15,7 @@ export class UsersRepository extends BaseRepository<User> {
       const result = await this.db
         .select()
         .from(users)
-        .where(eq(users.id, id))
+        .where(and(eq(users.id, id), isNull(users.deletedAt)))
         .limit(1);
 
       return result[0] || null;
@@ -30,7 +30,7 @@ export class UsersRepository extends BaseRepository<User> {
       const result = await this.db
         .select()
         .from(users)
-        .where(eq(users.email, email))
+        .where(and(eq(users.email, email), isNull(users.deletedAt)))
         .limit(1);
 
       return result[0] || null;
@@ -49,7 +49,8 @@ export class UsersRepository extends BaseRepository<User> {
       const role = options.role;
       const search = options.search;
 
-      const conditions = [];
+      // Always exclude soft-deleted users from listings.
+      const conditions = [isNull(users.deletedAt)];
       if (role) {
         conditions.push(eq(users.role, role as any));
       }
@@ -129,7 +130,8 @@ export class UsersRepository extends BaseRepository<User> {
 
   async count(filters?: { role?: string; isActive?: boolean }): Promise<number> {
     try {
-      const conditions = [];
+      // Always exclude soft-deleted users.
+      const conditions = [isNull(users.deletedAt)];
 
       if (filters?.role) {
         conditions.push(eq(users.role, filters.role as any));
@@ -154,7 +156,7 @@ export class UsersRepository extends BaseRepository<User> {
       const result = await this.db
         .select({ count: count(users.id) })
         .from(users)
-        .where(gte(users.createdAt, date));
+        .where(and(gte(users.createdAt, date), isNull(users.deletedAt)));
       return result[0]?.count ?? 0;
     } catch (error) {
       this.handleError(error, 'countAfterDate');
