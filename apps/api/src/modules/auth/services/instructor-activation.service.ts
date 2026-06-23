@@ -133,8 +133,13 @@ export class InstructorActivationService {
     const updatedUser = await this.usersRepo.findById(user.id);
     const tokens = await this.tokenService.generateTokenPair(updatedUser!);
 
+    // Strip passwordHash before returning — never leak the bcrypt hash to clients.
+    // (the local `passwordHash` const on L95 is the newly-hashed password; we
+    // exclude the `passwordHash` *property* from the user object instead.)
+    const { passwordHash: _omit, ...safeUser } = updatedUser!;
+
     return {
-      user: updatedUser,
+      user: safeUser,
       tokens,
     };
   }
