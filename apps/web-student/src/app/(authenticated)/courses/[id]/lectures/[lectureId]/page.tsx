@@ -5,8 +5,14 @@ import { useMemo } from 'react';
 import { ArrowLeft, ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react';
 import { useCourseWithCurriculum } from '@/hooks/useCourseDetail';
 import { useProgressTracking } from '@/hooks/useProgressTracking';
-import { VideoPlayer } from '@edutech/shared-components';
+import dynamic from 'next/dynamic';
 import { usePlaybackUrl } from '@edutech/shared-components';
+
+// VideoPlayer is a heavy component with video decoding — load only when needed
+const VideoPlayer = dynamic(
+  () => import('@edutech/shared-components').then(m => ({ default: m.VideoPlayer })),
+  { ssr: false, loading: () => <div className="aspect-video bg-black flex items-center justify-center text-white">Loading player…</div> },
+);
 
 export default function LectureWatchPage() {
   const params = useParams();

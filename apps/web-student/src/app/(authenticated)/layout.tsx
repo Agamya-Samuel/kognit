@@ -19,6 +19,7 @@ import {
   FileCheck,
 } from 'lucide-react';
 import { BottomTabBar } from '@/components/BottomTabBar';
+import { Toaster } from 'sonner';
 
 const REQUIRED_ROLE = 'student';
 
@@ -69,7 +70,9 @@ export default function AuthenticatedLayout({ children }: { children: ReactNode 
   if (isLoading || !isAuthenticated || !user || user.role !== REQUIRED_ROLE) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-r-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-r-transparent" role="status">
+          <span className="sr-only">Loading...</span>
+        </div>
       </div>
     );
   }
@@ -93,6 +96,7 @@ export default function AuthenticatedLayout({ children }: { children: ReactNode 
         {children}
       </DashboardShell>
       <BottomTabBar />
+      <Toaster richColors position="top-right" />
     </>
   );
 }

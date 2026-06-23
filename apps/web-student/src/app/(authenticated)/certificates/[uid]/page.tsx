@@ -98,7 +98,9 @@ export default function CertificateDetailPage() {
             Share on LinkedIn
           </Button>
           <Button variant="ghost" size="icon" onClick={() => {
-            navigator.clipboard.writeText(`https://eduplatform.com/verify/${cert.certificateUid}`);
+            // Public-facing base URL so the share link works outside localhost. Falls back to localhost for dev.
+            const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+            navigator.clipboard.writeText(`${baseUrl}/verify/${cert.certificateUid}`);
           }} className="gap-2">
             <Copy className="h-4 w-4" />
             Copy Link
