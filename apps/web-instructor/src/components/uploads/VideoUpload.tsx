@@ -164,10 +164,11 @@ export function VideoUpload({
       });
 
       await uploadToS3(uploadData.uploadUrl, selectedFile, abortControllerRef.current.signal);
-    } catch (error: any) {
-      if (error.name !== 'AbortError') {
-        console.error('Upload error:', error);
-        onUploadError?.(error.message || 'Upload failed');
+    } catch (error: unknown) {
+      const e = error instanceof Error ? error : new Error('Unknown error');
+      if (e.name !== 'AbortError') {
+        console.error('Upload error:', e);
+        onUploadError?.(e.message || 'Upload failed');
       }
     }
   };

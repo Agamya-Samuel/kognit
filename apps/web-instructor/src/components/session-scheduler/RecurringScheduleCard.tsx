@@ -29,7 +29,7 @@ export function RecurringScheduleCard({ courseId, schedule }: RecurringScheduleC
   const [expanded, setExpanded] = useState(false);
   const deleteSchedule = useDeleteRecurringSchedule();
 
-  let days: string[] = [];
+  let days: string[];
   try {
     const parsed = JSON.parse(schedule.daysOfWeek);
     days = Array.isArray(parsed) ? parsed : [];

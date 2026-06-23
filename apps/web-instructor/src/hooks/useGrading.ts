@@ -52,8 +52,9 @@ export function useGrading(): UseGradingReturn {
       const result = await submissionsService.grade(submissionId, { score, feedback });
       queryClient.invalidateQueries({ queryKey: ['submissions'] });
       return { success: true, result: result as unknown as GradingResult, error: null };
-    } catch (err: any) {
-      const msg = err.response?.data?.message || err.message || 'Failed to grade submission';
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      const msg = e?.response?.data?.message || (err instanceof Error ? err.message : 'Failed to grade submission');
       setError(msg);
       return { success: false, result: null, error: msg };
     } finally {
@@ -72,8 +73,9 @@ export function useGrading(): UseGradingReturn {
       const result = await submissionsService.autoGrade(submissionId);
       queryClient.invalidateQueries({ queryKey: ['submissions'] });
       return { success: true, result: result as unknown as GradingResult, error: null };
-    } catch (err: any) {
-      const msg = err.response?.data?.message || err.message || 'Failed to auto-grade submission';
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      const msg = e?.response?.data?.message || (err instanceof Error ? err.message : 'Failed to auto-grade submission');
       setError(msg);
       return { success: false, result: null, error: msg };
     } finally {
@@ -92,8 +94,9 @@ export function useGrading(): UseGradingReturn {
       const response = await submissionsService.bulkGrade(dto);
       queryClient.invalidateQueries({ queryKey: ['submissions'] });
       return { success: true, results: response.graded || [], errors: response.errors || [] };
-    } catch (err: any) {
-      const msg = err.response?.data?.message || err.message || 'Failed to bulk grade submissions';
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      const msg = e?.response?.data?.message || (err instanceof Error ? err.message : 'Failed to bulk grade submissions');
       setError(msg);
       return { success: false, results: [], errors: [msg] };
     } finally {
