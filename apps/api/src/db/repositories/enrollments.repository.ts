@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository, PaginatedResult } from './base.repository';
 import { enrollments } from '../schema';
-import { eq, and, desc, inArray } from 'drizzle-orm';
+import { eq, and, desc, inArray, count } from 'drizzle-orm';
 import type { Enrollment } from '../schema';
 import { users } from '../schema/users';
 import { courses } from '../schema/courses';
@@ -74,12 +74,12 @@ export class EnrollmentsRepository extends BaseRepository<Enrollment> {
           .orderBy(desc(enrollments.enrolledAt))
           .limit(limit)
           .offset(offset),
-        this.db.select({ count: enrollments.id }).from(enrollments).where(whereClause),
+        this.db.select({ count: count(enrollments.id) }).from(enrollments).where(whereClause),
       ]);
 
       return {
         data,
-        total: totalResult.length,
+        total: Number(totalResult[0]?.count ?? 0),
         limit,
         offset,
       };
@@ -121,8 +121,8 @@ export class EnrollmentsRepository extends BaseRepository<Enrollment> {
 
       const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-      const result = await this.db.select({ count: enrollments.id }).from(enrollments).where(whereClause);
-      return result.length;
+      const result = await this.db.select({ count: count(enrollments.id) }).from(enrollments).where(whereClause);
+      return Number(result[0]?.count ?? 0);
     } catch (error) {
       this.handleError(error, 'count');
       return 0;
@@ -168,11 +168,11 @@ export class EnrollmentsRepository extends BaseRepository<Enrollment> {
     
     try {
       const result = await this.db
-        .select({ count: enrollments.id })
+        .select({ count: count(enrollments.id) })
         .from(enrollments)
         .where(inArray(enrollments.courseId, courseIds));
-      
-      return result.length;
+
+      return Number(result[0]?.count ?? 0);
     } catch (error) {
       this.handleError(error, 'countByCourseIds');
       return 0;
