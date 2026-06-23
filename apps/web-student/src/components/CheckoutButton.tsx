@@ -86,8 +86,9 @@ export function CheckoutButton({
             if (result.success) {
               onSuccess?.(result.enrollmentId);
             }
-          } catch (err: any) {
-            onError?.(err.response?.data?.error || 'Payment verification failed');
+          } catch (err: unknown) {
+            const e = err as { response?: { data?: { error?: string } } };
+            onError?.(e?.response?.data?.error || 'Payment verification failed');
           } finally {
             setIsOpening(false);
           }
@@ -105,8 +106,9 @@ export function CheckoutButton({
 
       const razorpay = new window.Razorpay(options);
       razorpay.open();
-    } catch (err: any) {
-      onError?.(err.response?.data?.error || 'Failed to initiate payment');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      onError?.(e?.response?.data?.error || 'Failed to initiate payment');
       setIsOpening(false);
     }
   }, [courseId, courseTitle, createOrder, verifyPayment, loadRazorpayScript, onSuccess, onError]);

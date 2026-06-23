@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import type { Course } from '@/types/courses';
 
-export const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+export const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
 export function generateCourseMetadata(course: Course): Metadata {
   const title = `${course.title} - EduTech`;
