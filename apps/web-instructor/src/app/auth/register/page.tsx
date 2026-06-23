@@ -46,8 +46,9 @@ export default function RegisterPage() {
     try {
       await authService.requestRegistrationVerification(data.email, 'instructor');
       setStep('verify');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to send verification code. Please try again.');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      setError(e?.response?.data?.message || 'Failed to send verification code. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -61,8 +62,9 @@ export default function RegisterPage() {
     try {
       await authService.verifyRegistrationCode(email, data.code);
       setStep('complete');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Invalid verification code. Please try again.');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      setError(e?.response?.data?.message || 'Invalid verification code. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -77,8 +79,9 @@ export default function RegisterPage() {
       await authService.completeRegistration(email, code, data.name, data.password, 'instructor');
       // Redirect to pending approval page since instructors require admin approval
       router.push('/auth/pending');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      setError(e?.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
