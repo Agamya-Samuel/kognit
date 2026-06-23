@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository, PaginatedResult } from './base.repository';
 import { reviews } from '../schema';
-import { eq, and, desc, avg, count as countFn, sql } from 'drizzle-orm';
+import { eq, and, desc, avg, count, sql, isNull } from 'drizzle-orm';
 import type { Review } from '../schema';
 
 @Injectable()
@@ -15,7 +15,7 @@ export class ReviewsRepository extends BaseRepository<Review> {
       const result = await this.db
         .select()
         .from(reviews)
-        .where(eq(reviews.id, id))
+        .where(and(eq(reviews.id, id), isNull(reviews.deletedAt)))
         .limit(1);
       return result[0] || null;
     } catch (error) {
@@ -29,7 +29,13 @@ export class ReviewsRepository extends BaseRepository<Review> {
       const result = await this.db
         .select()
         .from(reviews)
-        .where(and(eq(reviews.userId, userId), eq(reviews.courseId, courseId)))
+        .where(
+          and(
+            eq(reviews.userId, userId),
+            eq(reviews.courseId, courseId),
+            isNull(reviews.deletedAt),
+          ),
+        )
         .limit(1);
       return result[0] || null;
     } catch (error) {
@@ -51,7 +57,7 @@ export class ReviewsRepository extends BaseRepository<Review> {
       const offset = options.offset ?? defaultOffset;
       const limit = options.limit ?? defaultLimit;
 
-      const conditions = [];
+      const conditions = [isNull(reviews.deletedAt)];
       if (options.courseId) {
         conditions.push(eq(reviews.courseId, options.courseId));
       }
@@ -72,10 +78,10 @@ export class ReviewsRepository extends BaseRepository<Review> {
           .orderBy(desc(reviews.createdAt))
           .limit(limit)
           .offset(offset),
-        this.db.select({ count: reviews.id }).from(reviews).where(whereClause),
+        this.db.select({ count: count(reviews.id) }).from(reviews).where(whereClause),
       ]);
 
-      return { data, total: totalResult.length, limit, offset };
+      return { data, total: Number(totalResult[0]?.count ?? 0), limit, offset };
     } catch (error) {
       this.handleError(error, 'findMany');
       return { data: [], total: 0, limit: options.limit || defaultLimit, offset: options.offset || defaultOffset };
@@ -121,7 +127,7 @@ export class ReviewsRepository extends BaseRepository<Review> {
       const result = await this.db
         .update(reviews)
         .set(updateData)
-        .where(eq(reviews.id, id))
+        .where(and(eq(reviews.id, id), isNull(reviews.deletedAt)))
         .returning();
       return result[0] || null;
     } catch (error) {
@@ -143,10 +149,16 @@ export class ReviewsRepository extends BaseRepository<Review> {
       const result = await this.db
         .select({
           average: avg(reviews.rating),
-          count: countFn(reviews.id),
+          count: count(reviews.id),
         })
         .from(reviews)
-        .where(and(eq(reviews.courseId, courseId), eq(reviews.moderationStatus, 'visible')));
+        .where(
+          and(
+            eq(reviews.courseId, courseId),
+            eq(reviews.moderationStatus, 'visible'),
+            isNull(reviews.deletedAt),
+          ),
+        );
 
       const row = result[0];
       if (!row || row.count === 0) return null;
@@ -159,7 +171,7 @@ export class ReviewsRepository extends BaseRepository<Review> {
 
   async count(filters?: { courseId?: number; userId?: number; moderationStatus?: string }): Promise<number> {
     try {
-      const conditions = [];
+      const conditions = [isNull(reviews.deletedAt)];
       if (filters?.courseId) {
         conditions.push(eq(reviews.courseId, filters.courseId));
       }
@@ -170,11 +182,30 @@ export class ReviewsRepository extends BaseRepository<Review> {
         conditions.push(eq(reviews.moderationStatus, filters.moderationStatus as any));
       }
       const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-      const result = await this.db.select({ count: reviews.id }).from(reviews).where(whereClause);
-      return result.length;
+      const result = await this.db.select({ count: count(reviews.id) }).from(reviews).where(whereClause);
+      return Number(result[0]?.count ?? 0);
     } catch (error) {
       this.handleError(error, 'count');
       return 0;
+    }
+  }
+
+  /**
+   * Soft-delete a review by setting `deleted_at`. The row remains in the DB
+   * for audit / undelete purposes; all read methods filter it out via
+   * `isNull(reviews.deletedAt)`.
+   */
+  async softDelete(id: number): Promise<boolean> {
+    try {
+      const result = await this.db
+        .update(reviews)
+        .set({ deletedAt: new Date() })
+        .where(eq(reviews.id, id))
+        .returning();
+      return result.length > 0;
+    } catch (error) {
+      this.handleError(error, 'softDelete');
+      return false;
     }
   }
 }

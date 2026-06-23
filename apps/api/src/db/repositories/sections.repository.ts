@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository, PaginatedResult } from './base.repository';
 import { sections } from '../schema';
-import { eq, and, desc, asc } from 'drizzle-orm';
+import { eq, and, desc, asc, count, isNull } from 'drizzle-orm';
 import type { Section } from '../schema';
 
 @Injectable()
@@ -15,7 +15,7 @@ export class SectionsRepository extends BaseRepository<Section> {
       const result = await this.db
         .select()
         .from(sections)
-        .where(eq(sections.id, id))
+        .where(and(eq(sections.id, id), isNull(sections.deletedAt)))
         .limit(1);
 
       return result[0] || null;
@@ -40,7 +40,7 @@ export class SectionsRepository extends BaseRepository<Section> {
       const offset = options.offset ?? defaultOffset;
       const limit = options.limit ?? defaultLimit;
 
-      const conditions = [];
+      const conditions = [isNull(sections.deletedAt)];
       if (options.courseId) {
         conditions.push(eq(sections.courseId, options.courseId));
       }
@@ -55,12 +55,12 @@ export class SectionsRepository extends BaseRepository<Section> {
           .orderBy(asc(sections.orderIndex))
           .limit(limit)
           .offset(offset),
-        this.db.select({ count: sections.id }).from(sections).where(whereClause),
+        this.db.select({ count: count(sections.id) }).from(sections).where(whereClause),
       ]);
 
       return {
         data,
-        total: totalResult.length,
+        total: Number(totalResult[0]?.count ?? 0),
         limit,
         offset,
       };
@@ -98,7 +98,8 @@ export class SectionsRepository extends BaseRepository<Section> {
   async delete(id: number): Promise<boolean> {
     try {
       const result = await this.db
-        .delete(sections)
+        .update(sections)
+        .set({ deletedAt: new Date() })
         .where(eq(sections.id, id))
         .returning();
 
@@ -109,9 +110,27 @@ export class SectionsRepository extends BaseRepository<Section> {
     }
   }
 
+  /**
+   * Soft-delete a section by setting `deleted_at`. All read methods filter
+   * out soft-deleted rows via `isNull(sections.deletedAt)`.
+   */
+  async softDelete(id: number): Promise<boolean> {
+    try {
+      const result = await this.db
+        .update(sections)
+        .set({ deletedAt: new Date() })
+        .where(eq(sections.id, id))
+        .returning();
+      return result.length > 0;
+    } catch (error) {
+      this.handleError(error, 'softDelete');
+      return false;
+    }
+  }
+
   async count(filters?: { courseId?: number }): Promise<number> {
     try {
-      const conditions = [];
+      const conditions = [isNull(sections.deletedAt)];
 
       if (filters?.courseId) {
         conditions.push(eq(sections.courseId, filters.courseId));
@@ -119,8 +138,8 @@ export class SectionsRepository extends BaseRepository<Section> {
 
       const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-      const result = await this.db.select({ count: sections.id }).from(sections).where(whereClause);
-      return result.length;
+      const result = await this.db.select({ count: count(sections.id) }).from(sections).where(whereClause);
+      return Number(result[0]?.count ?? 0);
     } catch (error) {
       this.handleError(error, 'count');
       return 0;
