@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, boolean, timestamp, varchar } from 'drizzle-orm/pg-core';
+import { pgTable, serial, integer, boolean, timestamp, varchar, uniqueIndex } from 'drizzle-orm/pg-core';
 import type { InferSelectModel } from 'drizzle-orm';
 import { users } from './users';
 
@@ -19,6 +19,8 @@ export const userNotificationPreferences = pgTable('user_notification_preference
   smsFrequency: varchar('sms_frequency', { length: 20 }).$type<string>().notNull().default('immediate'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
-}, (table) => []);
+}, (table) => [
+  uniqueIndex('user_notification_preferences_user_id_idx').on(table.userId),
+]);
 
 export type UserNotificationPreferences = InferSelectModel<typeof userNotificationPreferences>;
