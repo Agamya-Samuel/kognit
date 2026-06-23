@@ -95,6 +95,7 @@ export function createSection(overrides: Partial<Section> = {}): Section {
     title: `Test Section ${id}`,
     description: null,
     orderIndex: 0,
+    deletedAt: null,
     createdAt: nextDate(),
     ...overrides,
   };
@@ -119,6 +120,7 @@ export function createLecture(overrides: Partial<Lecture> = {}): Lecture {
     durationSeconds: 0,
     isFreePreview: false,
     isPublished: false,
+    deletedAt: null,
     createdAt: nextDate(),
     ...overrides,
   };
@@ -190,6 +192,7 @@ export function createAssignment(
     dueAt: nextDate(new Date(), 7 * 24 * 60 * 60 * 1000), // 7 days from now
     lateWindowHours: null,
     latePenaltyPercent: 0,
+    deletedAt: null,
     createdAt: nextDate(),
     ...overrides,
   };
@@ -280,6 +283,7 @@ export function createReview(overrides: Partial<Review> = {}): Review {
     flaggedAt: null,
     moderatedBy: null,
     moderatedAt: null,
+    deletedAt: null,
     createdAt: nextDate(),
     ...overrides,
   };
