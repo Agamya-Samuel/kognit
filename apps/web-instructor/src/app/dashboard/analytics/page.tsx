@@ -7,7 +7,25 @@ import { useDashboardMetrics } from '@/hooks/useCourses';
 import { useInstructorAnalytics } from '@/hooks/useCourses';
 import { useInstructorChartData } from '@/hooks/useInstructorChartData';
 import { StatCard, StatsRow } from '@/components/StatsRow';
-import { RevenueChart, EnrollmentChart, EngagementChart, ProgressChart } from '@/components/charts/Charts';
+import dynamic from 'next/dynamic';
+
+// Heavy recharts components — loaded client-side only to reduce initial bundle
+const RevenueChart = dynamic(
+  () => import('@/components/charts/Charts').then(m => m.RevenueChart),
+  { ssr: false, loading: () => <div className="h-[350px] flex items-center justify-center text-muted-foreground">Loading chart…</div> },
+);
+const EnrollmentChart = dynamic(
+  () => import('@/components/charts/Charts').then(m => m.EnrollmentChart),
+  { ssr: false, loading: () => <div className="h-[350px] flex items-center justify-center text-muted-foreground">Loading chart…</div> },
+);
+const EngagementChart = dynamic(
+  () => import('@/components/charts/Charts').then(m => m.EngagementChart),
+  { ssr: false, loading: () => <div className="h-[350px] flex items-center justify-center text-muted-foreground">Loading chart…</div> },
+);
+const ProgressChart = dynamic(
+  () => import('@/components/charts/Charts').then(m => m.ProgressChart),
+  { ssr: false, loading: () => <div className="h-[350px] flex items-center justify-center text-muted-foreground">Loading chart…</div> },
+);
 
 export default function AnalyticsPage() {
   const { data: metrics, isLoading: metricsLoading } = useDashboardMetrics();
