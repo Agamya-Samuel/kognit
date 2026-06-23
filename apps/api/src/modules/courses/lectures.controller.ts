@@ -11,6 +11,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { LecturesService } from './lectures.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Public } from '../auth/decorators/auth.decorators';
@@ -24,6 +25,7 @@ export class LecturesController {
   constructor(private readonly lecturesService: LecturesService) {}
 
   @Public()
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
   @Get()
   @ApiResponse({ status: 200, description: 'Lecture list retrieved' })
   @ApiParam({ name: 'sectionId', description: 'Section ID' })
@@ -47,6 +49,7 @@ export class LecturesController {
   }
 
   @Public()
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
   @Get(':lectureId')
   @ApiResponse({ status: 200, description: 'Lecture details' })
   @ApiParam({ name: 'sectionId', description: 'Section ID' })

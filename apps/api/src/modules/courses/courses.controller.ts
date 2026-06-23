@@ -12,6 +12,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { CoursesService } from './courses.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Public } from '../auth/decorators/auth.decorators';
@@ -32,6 +33,7 @@ export class CoursesController {
   // --- Public/Authenticated: Browse Courses ---
 
   @Public()
+  @Throttle({ default: { limit: 60, ttl: 60_000 } })
   @Get('domains')
   @ApiResponse({ status: 200, description: 'Available course domains' })
   @ApiOperation({ summary: 'Get available course domain categories' })
@@ -44,6 +46,7 @@ export class CoursesController {
   }
 
   @Public()
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
   @Get()
   @ApiResponse({ status: 200, description: 'Paginated course list' })
   @ApiOperation({ summary: 'List courses with pagination, filtering, and search' })
@@ -78,6 +81,7 @@ export class CoursesController {
   }
 
   @Public()
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
   @Get(':id')
   @ApiResponse({ status: 200, description: 'Course details' })
   @ApiResponse({ status: 404, description: 'Course not found' })
@@ -94,6 +98,7 @@ export class CoursesController {
   }
 
   @Public()
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
   @Get(':id/curriculum')
   @ApiResponse({ status: 200, description: 'Course with curriculum' })
   @ApiParam({ name: 'id', description: 'Course ID' })
