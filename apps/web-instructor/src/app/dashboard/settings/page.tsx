@@ -80,8 +80,9 @@ export default function SettingsPage() {
       });
       setProfileSuccess(true);
       setTimeout(() => setProfileSuccess(false), 3000);
-    } catch (error: any) {
-      setProfileError(error?.message || 'Failed to update profile');
+    } catch (error: unknown) {
+      const e = error instanceof Error ? error : new Error('Unknown error');
+      setProfileError(e.message || 'Failed to update profile');
     }
   };
 
@@ -101,8 +102,9 @@ export default function SettingsPage() {
       setPasswordSuccess(true);
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
       setTimeout(() => setPasswordSuccess(false), 3000);
-    } catch (error: any) {
-      setPasswordError(error?.message || 'Failed to change password');
+    } catch (error: unknown) {
+      const e = error instanceof Error ? error : new Error('Unknown error');
+      setPasswordError(e.message || 'Failed to change password');
     }
   };
 

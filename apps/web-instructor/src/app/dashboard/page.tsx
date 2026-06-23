@@ -15,13 +15,23 @@ import {
   CalendarCheck,
 } from 'lucide-react';
 import { StatCard, StatsRow } from '@/components/StatsRow';
-import { RevenueChart, EngagementChart } from '@/components/charts/Charts';
+import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle } from '@edutech/ui';
 import { Button } from '@edutech/ui';
 import Link from 'next/link';
 import { useDashboardMetrics, useRecentActivity, useUpcomingClasses } from '@/hooks/useCourses';
 import { useInstructorChartData } from '@/hooks/useInstructorChartData';
 import { PageHeader } from '@/components/PageHeader';
+
+// Heavy recharts components — loaded client-side only to reduce initial bundle
+const RevenueChart = dynamic(
+  () => import('@/components/charts/Charts').then(m => m.RevenueChart),
+  { ssr: false, loading: () => <div className="h-[350px] flex items-center justify-center text-muted-foreground">Loading chart…</div> },
+);
+const EngagementChart = dynamic(
+  () => import('@/components/charts/Charts').then(m => m.EngagementChart),
+  { ssr: false, loading: () => <div className="h-[350px] flex items-center justify-center text-muted-foreground">Loading chart…</div> },
+);
 
 export default function DashboardPage() {
   const { data: metrics, isLoading: metricsLoading, error: metricsError } = useDashboardMetrics();
