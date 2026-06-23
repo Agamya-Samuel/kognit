@@ -5,7 +5,6 @@ import { ThemeProvider } from 'next-themes';
 import { ApiProvider } from '@edutech/api-client';
 import { AuthProvider } from '@edutech/shared-components';
 import { useState } from 'react';
-import { Toaster } from '@edutech/ui';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -36,7 +35,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
             disableTransitionOnChange
           >
             {children}
-            <Toaster />
           </ThemeProvider>
         </AuthProvider>
       </ApiProvider>

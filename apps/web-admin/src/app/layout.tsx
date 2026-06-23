@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Providers } from './providers';
+import { WebVitalsReporter } from '@edutech/shared-components';
 
 export const metadata: Metadata = {
   title: 'EduTech Admin',
@@ -15,6 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <WebVitalsReporter />
         <Providers>{children}</Providers>
       </body>
     </html>
