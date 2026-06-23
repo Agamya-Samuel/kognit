@@ -46,8 +46,9 @@ export default function RegisterPage() {
     try {
       await authService.requestRegistrationVerification(data.email, 'student');
       setStep('verify');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to send verification code. Please try again.');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      setError(e?.response?.data?.message || 'Failed to send verification code. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -61,8 +62,9 @@ export default function RegisterPage() {
     try {
       await authService.verifyRegistrationCode(email, data.code);
       setStep('complete');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Invalid verification code. Please try again.');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      setError(e?.response?.data?.message || 'Invalid verification code. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -76,8 +78,9 @@ export default function RegisterPage() {
       await authService.completeRegistration(email, code, data.name, data.password, 'student');
       // Redirect to onboarding after successful registration
       router.push('/onboarding');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      setError(e?.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -99,7 +102,7 @@ export default function RegisterPage() {
       </CardHeader>
       <CardContent>
         {error && (
-          <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 dark:border-red-900 dark:bg-red-950/30 dark:text-red-400">
+          <div role="alert" className="mb-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 dark:border-red-900 dark:bg-red-950/30 dark:text-red-400">
             {error}
           </div>
         )}
