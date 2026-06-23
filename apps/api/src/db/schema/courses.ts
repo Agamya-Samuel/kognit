@@ -11,6 +11,8 @@ export const courses = pgTable('courses', {
   thumbnailUrl: varchar('thumbnail_url', { length: 500 }),
   domain: varchar('domain', { length: 100 }).notNull(),
   pricingType: pricingType('pricing_type').notNull().default('free'),
+  // NOTE: priceInr stores the course price in **paise** (1 INR = 100 paise),
+  // not in whole rupees. A value of 999 means ₹9.99.
   priceInr: integer('price_inr').notNull().default(0),
   courseStructure: courseStructure('course_structure').notNull(),
   status: courseStatus('status').notNull().default('draft'),

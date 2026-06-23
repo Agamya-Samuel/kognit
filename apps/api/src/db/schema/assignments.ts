@@ -13,9 +13,11 @@ export const assignments = pgTable('assignments', {
   dueAt: timestamp('due_at').notNull(),
   lateWindowHours: integer('late_window_hours'),
   latePenaltyPercent: integer('late_penalty_percent').notNull().default(0),
+  deletedAt: timestamp('deleted_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 }, (table) => [
   index('assignments_lecture_id_idx').on(table.lectureId),
+  index('assignments_deleted_at_idx').on(table.deletedAt),
 ]);
 
 export type Assignment = InferSelectModel<typeof assignments>;
