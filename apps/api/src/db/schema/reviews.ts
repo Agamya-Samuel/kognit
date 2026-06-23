@@ -14,11 +14,13 @@ export const reviews = pgTable('reviews', {
   flaggedAt: timestamp('flagged_at'),
   moderatedBy: integer('moderated_by').references(() => users.id, { onDelete: 'set null' }),
   moderatedAt: timestamp('moderated_at'),
+  deletedAt: timestamp('deleted_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 }, (table) => [
   index('reviews_course_id_idx').on(table.courseId),
   index('reviews_user_id_idx').on(table.userId),
   index('reviews_course_moderation_idx').on(table.courseId, table.moderationStatus),
+  index('reviews_deleted_at_idx').on(table.deletedAt),
   {
     uniqueUserCourse: {
       columns: [table.userId, table.courseId],

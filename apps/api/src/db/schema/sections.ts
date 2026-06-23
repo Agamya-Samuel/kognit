@@ -8,9 +8,11 @@ export const sections = pgTable('sections', {
   title: varchar('title', { length: 255 }).notNull(),
   description: text('description'),
   orderIndex: integer('order_index').notNull().default(0),
+  deletedAt: timestamp('deleted_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 }, (table) => [
   index('sections_course_id_idx').on(table.courseId),
+  index('sections_deleted_at_idx').on(table.deletedAt),
 ]);
 
 export type Section = InferSelectModel<typeof sections>;

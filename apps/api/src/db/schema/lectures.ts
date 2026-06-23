@@ -18,11 +18,13 @@ export const lectures = pgTable('lectures', {
   durationSeconds: integer('duration_seconds').notNull().default(0),
   isFreePreview: boolean('is_free_preview').notNull().default(false),
   isPublished: boolean('is_published').notNull().default(false),
+  deletedAt: timestamp('deleted_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 }, (table) => [
   index('lectures_section_id_idx').on(table.sectionId),
   index('lectures_mux_asset_id_idx').on(table.muxAssetId),
   index('lectures_is_published_idx').on(table.isPublished),
+  index('lectures_deleted_at_idx').on(table.deletedAt),
 ]);
 
 export type Lecture = InferSelectModel<typeof lectures>;
