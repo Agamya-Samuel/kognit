@@ -25,8 +25,14 @@ export class DatabaseService implements OnModuleDestroy {
         max: 10,
         idle_timeout: 30,
         connect_timeout: 5,
+        // NOTE: postgres.js auto-scales connections (no `min` option).
+        // MED-04 finding applies to pg-pool, not postgres.js.
         onnotice: (notice) => this.logger.debug(`PostgreSQL notice: ${notice.message}`),
-      });
+        // statement_timeout: abort any query that runs longer than 30s.
+        // Prevents slow queries from holding connections indefinitely.
+        // The option is supported at runtime by postgres.js but not in its TS types.
+        statement_timeout: 30_000,
+      } as Parameters<typeof postgres>[1]);
 
       this.db = drizzle(this.client);
       this.logger.log('Database connection established successfully');
