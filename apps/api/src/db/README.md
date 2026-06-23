@@ -21,7 +21,9 @@ apps/api/src/db/
 │   ├── courses.ts
 │   ├── sections.ts
 │   ├── lectures.ts
+│   ├── lesson-attachments.ts
 │   ├── live-classes.ts
+│   ├── recurring-schedules.ts
 │   ├── enrollments.ts
 │   ├── progress.ts
 │   ├── assignments.ts
@@ -29,23 +31,34 @@ apps/api/src/db/
 │   ├── certificates.ts
 │   ├── payments.ts
 │   ├── channels.ts
+│   ├── channel-members.ts
 │   ├── messages.ts
 │   ├── notifications.ts
 │   ├── audit-logs.ts
 │   ├── password-resets.ts
+│   ├── refresh-tokens.ts
 │   ├── email-verifications.ts
 │   ├── user-auth-providers.ts
+│   ├── user-notification-preferences.ts
 │   ├── beta-invites.ts
 │   ├── waitlist.ts
 │   ├── reviews.ts
 │   ├── jobs.ts
+│   ├── quiz-questions.ts
+│   ├── uploads.ts
+│   ├── platform-settings.ts
 │   ├── institution-accounts.ts
 │   └── institution-enrollments.ts
 └── repositories/              # Repository pattern implementation
     ├── base.repository.ts
     ├── users.repository.ts
     ├── courses.repository.ts
-    └── enrollments.repository.ts
+    ├── sections.repository.ts
+    ├── lectures.repository.ts
+    ├── assignments.repository.ts
+    ├── reviews.repository.ts
+    ├── enrollments.repository.ts
+    └── ... (30+ repository files)
 ```
 
 ## Connection Configuration
@@ -94,7 +107,8 @@ All PostgreSQL enums are defined in [`enums.ts`](schema/enums.ts):
 - `approval_status`: pending, approved, rejected
 - `pricing_type`: free, paid
 - `lecture_type`: video, live, text, assignment, quiz
-- `live_class_status`: scheduled, live, ended
+- `live_class_status`: scheduled, live, ended, cancelled
+- `recording_status`: none, recording, processing, ready, failed
 - `assignment_type`: mcq, short, code
 - `access_type`: purchased, free
 - `payment_status`: pending, paid, failed, refunded
@@ -103,6 +117,12 @@ All PostgreSQL enums are defined in [`enums.ts`](schema/enums.ts):
 - `moderation_status`: visible, flagged, hidden
 - `waitlist_source`: landing_page, invite_flow
 - `permissions_level`: super_admin, moderator, support
+- `upload_status`: pending, uploading, complete, failed, cancelled
+- `email_verification_purpose`: email_verify, student_activation, instructor_activation
+- `course_status`: draft, in_review, revision_requested, published, archived
+- `course_structure`: live, normal
+- `session_type`: one_time, recurring
+- `day_of_week`: mon, tue, wed, thu, fri, sat, sun
 
 ### Core Tables
 
@@ -117,9 +137,11 @@ All PostgreSQL enums are defined in [`enums.ts`](schema/enums.ts):
 
 #### Course Content
 - **`courses`**: Course metadata, pricing, and publishing status
-- **`sections`**: Course sections/modules
-- **`lectures`**: Individual lectures with video/live/text types
+- **`sections`**: Course sections/modules (soft-delete via `deleted_at`)
+- **`lectures`**: Individual lectures with video/live/text types (soft-delete via `deleted_at`)
+- **`lesson_attachments`**: File attachments for lectures
 - **`live_classes`**: Live class scheduling and recordings
+- **`recurring_schedules`**: Recurring live class schedule patterns
 
 #### Enrollment & Progress
 - **`enrollments`**: Student course enrollments
@@ -127,8 +149,9 @@ All PostgreSQL enums are defined in [`enums.ts`](schema/enums.ts):
 - **`certificates`**: Course completion certificates
 
 #### Assignments
-- **`assignments`**: Assignment definitions and scoring
+- **`assignments`**: Assignment definitions and scoring (soft-delete via `deleted_at`)
 - **`submissions`**: Student assignment submissions
+- **`quiz_questions`**: Quiz question definitions for MCQ assignments
 
 #### Payments
 - **`payments`**: Payment transactions with Razorpay integration
@@ -139,13 +162,17 @@ All PostgreSQL enums are defined in [`enums.ts`](schema/enums.ts):
 
 #### Notifications & System
 - **`notifications`**: User notifications with delivery tracking
+- **`user_notification_preferences`**: Per-user notification delivery settings
 - **`audit_logs`**: System activity logging
+- **`platform_settings`**: Platform-wide configuration key-value store
+- **`uploads`**: File upload tracking with S3/Mux ingestion status
 
 #### Marketing
 - **`beta_invites`**: Beta invite code management
 - **`waitlist`**: Email waitlist for non-invited users
-- **`reviews`**: Course reviews with moderation
+- **`reviews`**: Course reviews with moderation (soft-delete via `deleted_at`)
 - **`jobs`**: Job board listings
+- **`refresh_tokens`**: JWT refresh token storage with family-based theft detection
 
 #### Phase 2 (Institution)
 - **`institution_accounts`**: Institution seat management
@@ -339,8 +366,8 @@ Student 2: student2@edutech.com / Student@123
 
 ## Progress Completion Logic
 
-- **No `completed` boolean column** - completion is computed dynamically
-- **Formula**: `watched_seconds >= lecture.duration_seconds`
+- **`is_completed` boolean column** exists on the `progress` table and is set to `true` when the lecture is considered complete
+- **Completion formula**: `watched_seconds >= lecture.duration_seconds` (computed server-side and written to `is_completed`)
 - **Server-side abuse prevention**:
   - Max 30-second update intervals
   - Max 30-second jump from previous value (prevents seek-to-end)
