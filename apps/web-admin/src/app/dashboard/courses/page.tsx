@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Spinner, Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@edutech/ui';
 import { CheckCircle2, XCircle, PauseCircle, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { adminService } from '@edutech/api-client';
 import { PageHeader } from '@/components/PageHeader';
 import { EmptyState } from '@/components/EmptyState';
+import { useCourses } from '@/hooks/useCourses';
 import { cn } from '@/lib/utils';
 
 interface Course {
@@ -23,56 +25,35 @@ interface Course {
   updatedAt: string;
 }
 
-interface CoursesResponse {
-  courses: Course[];
-  total: number;
-  page: number;
-  limit: number;
-}
-
 type PublishFilter = 'all' | 'published' | 'draft';
 
 export default function CoursesPage() {
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [total, setTotal] = useState(0);
+  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [publishFilter, setPublishFilter] = useState<PublishFilter>('all');
   const [search, setSearch] = useState('');
-  const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState<number | null>(null);
   const [actionType, setActionType] = useState<'reject' | 'suspend' | null>(null);
   const [reason, setReason] = useState('');
 
-  const fetchCourses = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params: Record<string, string | number | boolean> = { page, limit };
-      if (publishFilter === 'published') params.isPublished = true;
-      if (publishFilter === 'draft') params.isPublished = false;
-      if (search) params.search = search;
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['admin', 'courses'] });
 
-      const result = await adminService.getCourses(params) as unknown as CoursesResponse;
-      setCourses(result.courses ?? []);
-      setTotal(result.total ?? 0);
-    } catch {
-      setCourses([]);
-      setTotal(0);
-    } finally {
-      setLoading(false);
-    }
-  }, [page, limit, publishFilter, search]);
+  const queryParams: { page: number; limit: number; isPublished?: boolean; search?: string } = { page, limit };
+  if (publishFilter === 'published') queryParams.isPublished = true;
+  if (publishFilter === 'draft') queryParams.isPublished = false;
+  if (search) queryParams.search = search;
 
-  useEffect(() => {
-    fetchCourses();
-  }, [fetchCourses]);
+  const { data, isLoading: loading } = useCourses(queryParams);
+  const courses: Course[] = data?.courses ?? [];
+  const total = data?.total ?? 0;
 
   const totalPages = Math.ceil(total / limit);
 
   const handleApprove = async (id: number) => {
     try {
       await adminService.approveCourse(id);
-      fetchCourses();
+      invalidate();
     } catch {
       console.error('Failed to approve course:', id);
     }
@@ -84,7 +65,7 @@ export default function CoursesPage() {
       await adminService.suspendCourse(actionId, reason);
       setActionId(null);
       setActionType(null);
-      fetchCourses();
+      invalidate();
     } catch {
       console.error('Failed to suspend course:', actionId);
     }
@@ -97,7 +78,7 @@ export default function CoursesPage() {
       setActionId(null);
       setActionType(null);
       setReason('');
-      fetchCourses();
+      invalidate();
     } catch {
       console.error('Failed to reject course:', actionId);
     }

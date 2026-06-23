@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Spinner, Select, SelectItem } from '@edutech/ui';
 import { Plus, Search, Filter, Download, Eye, Edit, Trash2 } from 'lucide-react';
-import { adminService } from '@edutech/api-client';
 import { PageHeader } from '@/components/PageHeader';
 import { EmptyState } from '@/components/EmptyState';
+import { useAssignments } from '@/hooks/useAssignments';
 
 interface Assignment {
   id: number;
@@ -20,37 +20,20 @@ interface Assignment {
 }
 
 export default function AssignmentsPage() {
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
-  const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [loading, setLoading] = useState(true);
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
 
-  const fetchAssignments = useCallback(async () => {
-    setLoading(true);
-    try {
-      const result = await adminService.getAssignments({
-        page,
-        limit,
-        search: searchQuery,
-        status: statusFilter === 'all' ? undefined : statusFilter,
-      });
-      setAssignments(result.assignments ?? []);
-      setTotal(result.total ?? 0);
-    } catch {
-      setAssignments([]);
-      setTotal(0);
-    } finally {
-      setLoading(false);
-    }
-  }, [page, limit, searchQuery, statusFilter]);
-
-  useEffect(() => {
-    fetchAssignments();
-  }, [fetchAssignments]);
+  const { data, isLoading: loading } = useAssignments({
+    page,
+    limit,
+    search: searchQuery || undefined,
+    status: statusFilter === 'all' ? undefined : statusFilter,
+  });
+  const assignments: Assignment[] = data?.assignments ?? [];
+  const total = data?.total ?? 0;
 
   const totalPages = Math.ceil(total / limit);
 
@@ -58,21 +41,18 @@ export default function AssignmentsPage() {
     setSelectedAssignment(assignment);
   };
 
-  const handleEdit = (assignment: Assignment) => {
-    // TODO: Implement edit functionality
-    console.log('Edit assignment:', assignment);
+  const handleEdit = (_assignment: Assignment) => {
+    // TODO: Implement edit functionality — navigate to edit page or open dialog
   };
 
   const handleDelete = (assignment: Assignment) => {
     if (confirm(`Are you sure you want to delete "${assignment.title}"?`)) {
       // TODO: Implement delete functionality
-      console.log('Delete assignment:', assignment);
     }
   };
 
   const handleExport = () => {
     // TODO: Implement export functionality
-    console.log('Export assignments');
   };
 
   const statusColor = (status: string) => {
