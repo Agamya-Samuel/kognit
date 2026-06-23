@@ -24,10 +24,11 @@ export function GradingForm({ submission, maxScore, onSubmit, onCancel, isLoadin
         <h3 className="mb-4 text-lg font-semibold">Grade Submission</h3>
 
         <div className="mb-4">
-          <label className="mb-2 block text-sm font-medium text-foreground">
+          <label htmlFor="score" className="mb-2 block text-sm font-medium text-foreground">
             Score (out of {maxScore})
           </label>
           <input
+            id="score"
             type="number"
             min="0"
             max={maxScore}
@@ -39,8 +40,9 @@ export function GradingForm({ submission, maxScore, onSubmit, onCancel, isLoadin
         </div>
 
         <div className="mb-4">
-          <label className="mb-2 block text-sm font-medium text-foreground">Feedback</label>
+          <label htmlFor="feedback" className="mb-2 block text-sm font-medium text-foreground">Feedback</label>
           <textarea
+            id="feedback"
             value={feedback}
             onChange={(e) => setFeedback(e.target.value)}
             rows={4}
