@@ -8,7 +8,7 @@ import { CoursesRepository } from '../../../db/repositories/courses.repository';
 import { AssignmentsRepository } from '../../../db/repositories/assignments.repository';
 import { PaymentsRepository } from '../../../db/repositories/payments.repository';
 import { ProgressRepository } from '../../../db/repositories/progress.repository';
-import { SettingsRepository } from '../../../db/repositories/settings.repository';
+import { PlatformSettingsRepository } from '../../platform-settings/repositories/platform-settings.repository';
 import { StudentProfilesRepository } from '../../../db/repositories/student-profiles.repository';
 import { InstitutionAccountsRepository } from '../../../db/repositories/institution-accounts.repository';
 import { EmailVerificationsRepository } from '../../../db/repositories/email-verifications.repository';
@@ -22,7 +22,7 @@ describe('AdminService', () => {
   let assignmentsRepo: jest.Mocked<AssignmentsRepository>;
   let paymentsRepo: jest.Mocked<PaymentsRepository>;
   let progressRepo: jest.Mocked<ProgressRepository>;
-  let settingsRepo: jest.Mocked<SettingsRepository>;
+  let settingsRepo: jest.Mocked<PlatformSettingsRepository>;
 
   const mockUser = {
     id: 1,
@@ -140,7 +140,7 @@ describe('AdminService', () => {
           },
         },
         {
-          provide: SettingsRepository,
+          provide: PlatformSettingsRepository,
           useValue: {
             getById: jest.fn(),
             getAll: jest.fn(),
@@ -196,7 +196,7 @@ describe('AdminService', () => {
     assignmentsRepo = module.get(AssignmentsRepository);
     paymentsRepo = module.get(PaymentsRepository);
     progressRepo = module.get(ProgressRepository);
-    settingsRepo = module.get(SettingsRepository);
+    settingsRepo = module.get(PlatformSettingsRepository);
   });
 
   it('should be defined', () => {
