@@ -15,6 +15,7 @@ import {
   Building2,
   Bell,
 } from 'lucide-react';
+import { Toaster } from 'sonner';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -50,8 +51,10 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent align-[-0.125em]" />
-          <p className="mt-4 text-muted-foreground">Loading...</p>
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent align-[-0.125em]" role="status">
+            <span className="sr-only">Loading...</span>
+          </div>
+          <p className="mt-4 text-muted-foreground" aria-hidden="true">Loading...</p>
         </div>
       </div>
     );
@@ -103,6 +106,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       }}
     >
       {children}
+      <Toaster richColors position="top-right" />
     </DashboardShell>
   );
 }

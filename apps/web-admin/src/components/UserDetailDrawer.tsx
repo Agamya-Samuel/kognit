@@ -70,10 +70,17 @@ export function UserDetailDrawer({ user, open, onClose, onRoleChange, onToggleAc
       <div
         className="fixed inset-0 z-50 bg-black/40"
         onClick={onClose}
+        onKeyDown={(e) => e.key === 'Escape' && onClose()}
+        role="presentation"
       />
 
       {/* Drawer */}
-      <div className="fixed right-0 top-0 z-50 h-full w-96 overflow-y-auto border-l border-border bg-card shadow-xl">
+      <div
+        className="fixed right-0 top-0 z-50 h-full w-96 overflow-y-auto border-l border-border bg-card shadow-xl"
+        role="dialog"
+        aria-modal="true"
+        aria-label="User details"
+      >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border px-6 py-4">
           <h2 className="text-lg font-semibold text-foreground">
@@ -81,6 +88,7 @@ export function UserDetailDrawer({ user, open, onClose, onRoleChange, onToggleAc
           </h2>
           <button
             onClick={onClose}
+            aria-label="Close user details"
             className="rounded p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
           >
             <X className="h-5 w-5" />
