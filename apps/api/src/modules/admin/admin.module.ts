@@ -7,7 +7,7 @@ import { CoursesRepository } from '../../db/repositories/courses.repository';
 import { AssignmentsRepository } from '../../db/repositories/assignments.repository';
 import { PaymentsRepository } from '../../db/repositories/payments.repository';
 import { ProgressRepository } from '../../db/repositories/progress.repository';
-import { SettingsRepository } from '../../db/repositories/settings.repository';
+import { PlatformSettingsModule } from '../platform-settings/platform-settings.module';
 import { StudentProfilesRepository } from '../../db/repositories/student-profiles.repository';
 import { InstitutionAccountsRepository } from '../../db/repositories/institution-accounts.repository';
 import { EmailVerificationsRepository } from '../../db/repositories/email-verifications.repository';
@@ -52,11 +52,6 @@ const repositories = [
     inject: [DRIZZLE_DB],
   },
   {
-    provide: SettingsRepository,
-    useFactory: (db: any) => new SettingsRepository(db),
-    inject: [DRIZZLE_DB],
-  },
-  {
     provide: StudentProfilesRepository,
     useFactory: (db: any) => new StudentProfilesRepository(db),
     inject: [DRIZZLE_DB],
@@ -74,7 +69,7 @@ const repositories = [
 ];
 
 @Module({
-  imports: [NotificationsModule, ConfigModule],
+  imports: [NotificationsModule, ConfigModule, PlatformSettingsModule],
   controllers: [AdminController],
   providers: [...repositories, AdminService],
 })

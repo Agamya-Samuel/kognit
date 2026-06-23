@@ -17,6 +17,7 @@ import { Roles } from '../auth/decorators/auth.decorators';
 import { AdminService } from './admin.service';
 import { NotificationPreferencesDto, AdminNotificationConfigDto } from '../notifications/dto/notification-preferences.dto';
 import { NotificationsService } from '../notifications/services/notifications.service';
+import { UpdateSettingsDto } from './dto/update-settings.dto';
 
 @ApiTags('Admin')
 @ApiBearerAuth()
@@ -239,8 +240,8 @@ export class AdminController {
     @Patch('settings')
     @ApiResponse({ status: 200, description: 'Platform settings updated' })
     @ApiOperation({ summary: 'Update platform settings' })
-    async updateSettings(@Body() settingsData: any) {
-        return this.adminService.updateSettings(settingsData);
+    async updateSettings(@Body() dto: UpdateSettingsDto) {
+        return this.adminService.updateSettings(dto.settings);
     }
 
     // ─── Notification Configuration ────────────────────────────────────

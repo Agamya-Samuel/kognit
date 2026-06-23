@@ -10,7 +10,7 @@ import { CoursesRepository } from '../../db/repositories/courses.repository';
 import { AssignmentsRepository } from '../../db/repositories/assignments.repository';
 import { PaymentsRepository } from '../../db/repositories/payments.repository';
 import { ProgressRepository } from '../../db/repositories/progress.repository';
-import { SettingsRepository } from '../../db/repositories/settings.repository';
+import { PlatformSettingsRepository } from '../platform-settings/repositories/platform-settings.repository';
 import { NotificationDispatcherService } from '../notifications/services/notification-dispatcher.service';
 import type { User } from '../../db/schema';
 
@@ -94,7 +94,7 @@ export class AdminService {
     private readonly assignmentsRepo: AssignmentsRepository,
     private readonly paymentsRepo: PaymentsRepository,
     private readonly progressRepo: ProgressRepository,
-    private readonly settingsRepo: SettingsRepository,
+    private readonly settingsRepo: PlatformSettingsRepository,
     private readonly studentProfilesRepo: StudentProfilesRepository,
     private readonly institutionAccountsRepo: InstitutionAccountsRepository,
     private readonly emailVerificationsRepo: EmailVerificationsRepository,
@@ -421,17 +421,44 @@ export class AdminService {
 
   // ─── Settings Management ───────────────────────────────────────────────
 
-  async getSettings(): Promise<any> {
+  async getSettings(): Promise<Record<string, unknown>> {
     const settings = await this.settingsRepo.getAll();
     // Group settings by key for easier consumption by frontend
-    const grouped = {};
+    const grouped: Record<string, unknown> = {};
     for (const setting of settings) {
-      grouped[setting.id] = JSON.parse(setting.value);
+      try {
+        grouped[setting.id] = JSON.parse(setting.value);
+      } catch {
+        // If the stored value is not valid JSON, return it as a raw string
+        grouped[setting.id] = setting.value;
+      }
     }
     return grouped;
   }
 
-  async updateSettings(settingsData: any): Promise<{ message: string }> {
+  // Allowed setting keys — reject arbitrary keys to prevent unvalidated writes
+  private static readonly ALLOWED_SETTING_KEYS = [
+    'maintenance_mode',
+    'max_upload_size_mb',
+    'registration_enabled',
+    'payment_enabled',
+    'support_email',
+    'support_phone',
+    'terms_url',
+    'privacy_url',
+    'announcement_banner',
+    'default_currency',
+    'platform_name',
+  ];
+
+  async updateSettings(settingsData: Record<string, unknown>): Promise<{ message: string }> {
+    // Validate keys against the allow-list
+    for (const key of Object.keys(settingsData)) {
+      if (!AdminService.ALLOWED_SETTING_KEYS.includes(key)) {
+        throw new BadRequestException(`Unknown setting key: ${key}`);
+      }
+    }
+
     // Update each setting key-value pair
     for (const [key, value] of Object.entries(settingsData)) {
       await this.settingsRepo.upsert(key, JSON.stringify(value), `Setting for ${key}`);
