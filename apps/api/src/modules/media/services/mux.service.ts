@@ -1,7 +1,7 @@
 import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Mux } from '@mux/mux-node';
-import { createHmac } from 'crypto';
+import { createHmac, timingSafeEqual } from 'crypto';
 
 export interface MuxAssetOptions {
   input: string; // S3 URL or direct upload URL
@@ -168,6 +168,13 @@ export class MuxService {
 
   /**
    * Generate a signed playback URL for a playback ID
+   *
+   * For `playbackPolicy: 'signed'` Mux assets, the playback URL must
+   * include a short-lived JWT token signed with the asset's signing key.
+   * Without it, the Mux player returns 401.
+   *
+   * Uses the Mux SDK's `mux.jwt.signPlaybackId()` helper which builds the
+   * correct token (HS256 with the configured `MUX_SIGNING_KEY`).
    */
   async generateSignedPlaybackUrl(
     options: SignedPlaybackUrlOptions,
@@ -183,15 +190,20 @@ export class MuxService {
         );
       }
 
-      const { playbackId } = options;
+      const { playbackId, expiryMinutes = 60 } = options;
 
-      // In Mux SDK v14+, signed URLs are generated automatically
-      // when using a signing key. The playback URL itself includes
-      // the signature token.
-      const signedUrl = this.getPlaybackUrl(playbackId);
+      // Build the token. Mux SDK accepts an `expirationTime` either as a
+      // numeric seconds-from-now value or an ISO timestamp.
+      const expirationTime = `${expiryMinutes}m`;
+      const token = (this.mux as any).jwt.signPlaybackId(playbackId, {
+        type: 'video',
+        expirationTime,
+      });
+
+      const signedUrl = `${this.getPlaybackUrl(playbackId)}?token=${encodeURIComponent(token)}`;
 
       this.logger.log(
-        `Generated signed playback URL for playback ID ${playbackId}`
+        `Generated signed playback URL for playback ID ${playbackId} (expires in ${expiryMinutes}m)`,
       );
 
       return signedUrl;
@@ -239,7 +251,18 @@ export class MuxService {
         .update(`${timestamp}.${body}`)
         .digest('hex');
 
-      if (signature !== expectedSignature) {
+      // Use timingSafeEqual to prevent timing side-channel attacks.
+      // Both buffers must be the same length; throw on mismatch.
+      let sigBuf: Buffer;
+      let expectedBuf: Buffer;
+      try {
+        sigBuf = Buffer.from(signature, 'hex');
+        expectedBuf = Buffer.from(expectedSignature, 'hex');
+      } catch {
+        this.logger.warn('Invalid signature encoding');
+        return false;
+      }
+      if (sigBuf.length !== expectedBuf.length || !timingSafeEqual(sigBuf, expectedBuf)) {
         this.logger.warn('Webhook signature verification failed');
         return false;
       }
