@@ -39,6 +39,7 @@ describe('CertificatesService', () => {
       findByStudentAndCourse: jest.fn(),
       findByStudent: jest.fn(),
       create: jest.fn(),
+      createIfNotExists: jest.fn(),
       findMany: jest.fn(),
     };
 
@@ -104,16 +105,23 @@ describe('CertificatesService', () => {
     it('should return existing certificate if already issued', async () => {
       const existing = createMockCertificate();
       enrollmentsRepo.findByStudentAndCourse.mockResolvedValue({ id: 1 } as any);
-      certificatesRepo.findByStudentAndCourse.mockResolvedValue(existing);
+      progressRepo.getCourseProgressSummary.mockResolvedValue({
+        courseId: 20,
+        totalLectures: 10,
+        completedLectures: 10,
+        progressPercentage: 100,
+      });
+      // createIfNotExists returns the existing row (because ON CONFLICT was hit
+      // in production; here we just mock that the repo returned the existing cert).
+      certificatesRepo.createIfNotExists.mockResolvedValue(existing);
 
       const result = await service.autoIssueCertificate(10, 20);
       expect(result).toEqual(existing);
-      expect(certificatesRepo.create).not.toHaveBeenCalled();
+      expect(certificatesRepo.createIfNotExists).toHaveBeenCalled();
     });
 
     it('should return null if course not 100% complete', async () => {
       enrollmentsRepo.findByStudentAndCourse.mockResolvedValue({ id: 1 } as any);
-      certificatesRepo.findByStudentAndCourse.mockResolvedValue(null);
       progressRepo.getCourseProgressSummary.mockResolvedValue({
         courseId: 20,
         totalLectures: 10,
@@ -123,23 +131,23 @@ describe('CertificatesService', () => {
 
       const result = await service.autoIssueCertificate(10, 20);
       expect(result).toBeNull();
+      expect(certificatesRepo.createIfNotExists).not.toHaveBeenCalled();
     });
 
     it('should issue certificate when 100% complete', async () => {
       const newCert = createMockCertificate();
       enrollmentsRepo.findByStudentAndCourse.mockResolvedValue({ id: 1 } as any);
-      certificatesRepo.findByStudentAndCourse.mockResolvedValue(null);
       progressRepo.getCourseProgressSummary.mockResolvedValue({
         courseId: 20,
         totalLectures: 10,
         completedLectures: 10,
         progressPercentage: 100,
       });
-      certificatesRepo.create.mockResolvedValue(newCert);
+      certificatesRepo.createIfNotExists.mockResolvedValue(newCert);
 
       const result = await service.autoIssueCertificate(10, 20);
       expect(result).toEqual(newCert);
-      expect(certificatesRepo.create).toHaveBeenCalledWith(
+      expect(certificatesRepo.createIfNotExists).toHaveBeenCalledWith(
         expect.objectContaining({
           studentId: 10,
           courseId: 20,
