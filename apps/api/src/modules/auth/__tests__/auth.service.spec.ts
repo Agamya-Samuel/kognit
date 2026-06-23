@@ -119,9 +119,12 @@ describe('AuthService', () => {
   // ─── Registration Flow ──────────────────────────────────────────────
 
   describe('requestRegistrationVerification', () => {
-    it('should throw ConflictException if email already registered', async () => {
+    it('should return generic success when email already registered (prevent enumeration)', async () => {
       usersRepo.findByEmail.mockResolvedValue(createUser({ email: 'taken@test.com' }));
-      await expect(service.requestRegistrationVerification('taken@test.com')).rejects.toThrow(ConflictException);
+      const result = await service.requestRegistrationVerification('taken@test.com');
+      expect(result.message).toContain('If the email is not already registered');
+      // Should NOT store a verification code in Redis for already-registered emails
+      expect(cacheService.set).not.toHaveBeenCalled();
     });
 
     it('should store verification code in cache and return it', async () => {

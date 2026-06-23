@@ -82,13 +82,29 @@ describe('AuthController', () => {
   // ─── Login / Logout ──────────────────────────────────────────────────
 
   describe('login', () => {
-    it('should call authService.login', async () => {
+    it('should call authService.login and set auth cookies', async () => {
       const user = createUser();
       const tokens = { accessToken: 'at', refreshToken: 'rt', expiresIn: 900 };
       authService.login.mockResolvedValue({ user, tokens });
-      const result = await controller.login({ email: 'user@test.com', password: 'Password123' });
+      // Mock Express Response with a jest.fn() for `.cookie()`
+      const mockRes: any = { cookie: jest.fn() };
+      const result = await controller.login(
+        { email: 'user@test.com', password: 'Password123' },
+        mockRes,
+      );
       expect(authService.login).toHaveBeenCalledWith('user@test.com', 'Password123', undefined);
       expect(result.tokens).toBeDefined();
+      // The middleware depends on these cookies being set, so assert it.
+      expect(mockRes.cookie).toHaveBeenCalledWith(
+        'accessToken',
+        'at',
+        expect.objectContaining({ httpOnly: true, sameSite: 'lax', path: '/' }),
+      );
+      expect(mockRes.cookie).toHaveBeenCalledWith(
+        'refreshToken',
+        'rt',
+        expect.objectContaining({ httpOnly: true, sameSite: 'lax', path: '/' }),
+      );
     });
   });
 
