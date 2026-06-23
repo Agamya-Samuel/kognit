@@ -53,28 +53,32 @@ export class PasswordResetService {
   }
 
   /**
-   * Reset password using token and email (the email helps identify the user).
+   * Reset password using token and email.
+   * Uses a single generic error message for all failure cases to prevent
+   * email enumeration — an attacker cannot distinguish between "email not
+   * registered", "no active reset", and "invalid token".
    */
   async resetPasswordWithEmail(email: string, token: string, newPassword: string): Promise<boolean> {
     const user = await this.usersRepo.findByEmail(email);
     if (!user) {
-      throw new BadRequestException('No account found with this email.');
+      // Generic error — don't reveal whether the email exists
+      throw new BadRequestException('Invalid or expired password reset link.');
     }
 
     const resetRecord = await this.passwordResetsRepo.findActiveByUserId(user.id);
     if (!resetRecord) {
-      throw new BadRequestException('No active password reset request found. Please request a new one.');
+      throw new BadRequestException('Invalid or expired password reset link.');
     }
 
     // Check expiration
     if (new Date() > resetRecord.expiresAt) {
-      throw new BadRequestException('Password reset link has expired. Please request a new one.');
+      throw new BadRequestException('Invalid or expired password reset link.');
     }
 
     // Verify token
     const isValid = await bcrypt.compare(token, resetRecord.tokenHash);
     if (!isValid) {
-      throw new BadRequestException('Invalid password reset token.');
+      throw new BadRequestException('Invalid or expired password reset link.');
     }
 
     // Hash new password

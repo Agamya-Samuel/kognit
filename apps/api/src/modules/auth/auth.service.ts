@@ -29,6 +29,7 @@ import { NotificationDispatcherService } from '../notifications/services/notific
 // Stored in Redis with TTL via CacheService
 const VERIFICATION_CODE_TTL_SECONDS = 10 * 60; // 10 minutes
 const PENDING_REGISTRATION_NAMESPACE = 'pending_registration';
+const MAX_FAILED_ATTEMPTS = 5;
 
 @Injectable()
 export class AuthService {
@@ -60,10 +61,32 @@ export class AuthService {
    * Sends the code via email through the notification dispatcher.
    */
   async requestRegistrationVerification(email: string, intent?: string): Promise<{ message: string }> {
-    // Check if email is already registered
+    // Check if email is already registered.
+    // To prevent email enumeration, always return the same generic response —
+    // even when the email is already taken. An informational email is dispatched
+    // to the address so the legitimate owner knows an account already exists.
     const existingUser = await this.usersRepo.findByEmail(email);
     if (existingUser) {
-      throw new ConflictException('An account with this email already exists.');
+      this.logger.warn(`Registration attempted for already-registered email: ${email}`);
+      // Dispatch an informational email (fire-and-forget) so the account owner
+      // knows someone tried to register with their email.
+      try {
+        await this.notificationDispatcher.dispatch({
+          userId: existingUser.id,
+          type: 'system',
+          title: 'Registration Attempt on Your Account',
+          body: 'Someone tried to create an account with your email. If this was you, please log in instead.',
+          deliveredVia: 'email',
+          channels: ['email'],
+          userEmail: email,
+          priority: 2,
+        });
+      } catch (error) {
+        this.logger.error(`Failed to send informational email to ${email}`, error);
+      }
+      return {
+        message: 'If the email is not already registered, you will receive a verification code.',
+      };
     }
 
     // Validate intent - only allow student or instructor
@@ -176,7 +199,9 @@ export class AuthService {
       throw new BadRequestException('Invalid verification code.');
     }
 
-    // Check if user was created while pending (race condition)
+    // Check if user was created while pending (race condition).
+    // At this point the user has verified email ownership, so throwing is safe —
+    // this is not an enumeration vector.
     const existingUser = await this.usersRepo.findByEmail(email);
     if (existingUser) {
       throw new ConflictException('An account with this email already exists.');
@@ -262,6 +287,26 @@ export class AuthService {
     if (!isPasswordValid) {
       const { isLocked } = await this.lockoutService.recordFailedAttempt(email);
       if (isLocked) {
+        // Notify the legitimate owner that their account was just locked.
+        // We use the `password` system type so this bypasses the user's
+        // notification preferences — security alerts should always go through.
+        this.notificationDispatcher
+          .dispatch({
+            userId: user.id,
+            type: 'password',
+            title: 'Your account has been temporarily locked',
+            body:
+              `We detected ${MAX_FAILED_ATTEMPTS} consecutive failed login attempts on your account ` +
+              `and have temporarily locked it. If this was not you, please reset your password immediately.`,
+            deliveredVia: 'email',
+            channels: ['email'],
+            userEmail: user.email,
+            priority: 1,
+          })
+          .catch((err) =>
+            // Don't let a notification failure propagate to the login response.
+            this.logger.error(`Failed to dispatch lockout notification for ${email}: ${err}`),
+          );
         throw new UnauthorizedException(
           'Account has been locked due to too many failed login attempts. Please try again later.',
         );
@@ -601,6 +646,7 @@ export class AuthService {
     email: string;
     name: string;
     avatarUrl?: string;
+    intent?: 'student' | 'instructor';
   }): Promise<{ user: any; tokens: TokenPayload; isNewUser: boolean }> {
     const { provider, providerId, email, name, avatarUrl } = params;
 
@@ -642,9 +688,9 @@ export class AuthService {
       return { user: this.sanitizeUser(existingUser), tokens, isNewUser: false };
     }
 
-    // Create new user with OAuth (role depends on intent, default to student)
-    // TODO: Once OAuth strategy passes intent from state parameter, use params.intent
-    const intent = (params as any).intent || 'student';
+    // Create new user with OAuth. Role and approval status are driven by the
+    // `intent` field that the strategy extracted from the OAuth state.
+    const intent = params.intent === 'instructor' ? 'instructor' : 'student';
     const role = intent === 'instructor' ? 'instructor' : 'student';
     const approvalStatus = intent === 'instructor' ? 'pending' : 'approved';
 
