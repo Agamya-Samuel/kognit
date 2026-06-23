@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppConfigModule } from './config/config.module';
 import { DatabaseModule } from './db/database.module';
@@ -29,6 +29,7 @@ import { SocketModule } from './modules/socket/socket.module';
 import { LoggerModule } from './common/logger/logger.module';
 import { SentryModule } from './common/sentry/sentry.module';
 import { PlatformSettingsModule } from './modules/platform-settings/platform-settings.module';
+import { CsrfGuard } from './common/guards/csrf.guard';
 
 // Feature modules (to be implemented)
 
@@ -74,6 +75,8 @@ import { PlatformSettingsModule } from './modules/platform-settings/platform-set
     // Global guards: JWT auth + RBAC applied to all routes
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useClass: CsrfGuard },
   ],
 })
 export class AppModule {}
