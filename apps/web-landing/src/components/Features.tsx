@@ -1,5 +1,8 @@
+'use client';
+
 import { Badge } from '@edutech/ui';
 import { Video, Code2, Users, ArrowUpRight } from 'lucide-react';
+import Image from 'next/image';
 
 const features = [
   {
@@ -98,10 +101,11 @@ export function Features() {
             >
               {/* Image side */}
               <div className="img-zoom relative lg:w-1/2">
-                <img
+                <Image
                   src={feature.image}
                   alt={feature.imageAlt}
-                  className="aspect-[16/10] w-full object-cover lg:aspect-auto lg:h-full"
+                  fill
+                  className="object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--card)/0.1)] to-transparent" />
               </div>

@@ -2,6 +2,7 @@
 
 import { Badge } from '@edutech/ui';
 import { Button } from '@edutech/ui';
+import Image from 'next/image';
 import {
   Sparkles,
   ArrowRight,
@@ -132,10 +133,12 @@ export function Hero() {
             {/* Main hero image */}
             <div className="animate-scale-in relative mx-auto max-w-md lg:mx-0 lg:max-w-none">
               <div className="relative overflow-hidden rounded-3xl shadow-2xl shadow-[hsl(var(--primary)/0.12)]">
-                <img
+                <Image
                   src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop&crop=faces"
                   alt="Students collaborating on a tech project in a modern learning space"
+                  fill
                   className="aspect-[4/3] w-full object-cover"
+                  priority
                 />
                 {/* Image overlay gradient */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--background)/0.4)] to-transparent" />
@@ -187,12 +190,13 @@ export function Hero() {
               {/* Floating card: Rating */}
               <div className="absolute -bottom-2 right-8 z-20 animate-fade-in-up delay-400 sm:-bottom-4 sm:right-4">
                 <div className="flex items-center gap-2 rounded-xl border border-[hsl(var(--border)/0.5)] bg-[hsl(var(--card)/0.9)] px-3 py-2 shadow-lg backdrop-blur-md">
-                  <div className="flex items-center gap-0.5">
+                  <div className="flex items-center gap-0.5" role="img" aria-label="Rated 4.9 out of 5 stars">
                     {[1, 2, 3, 4, 5].map((s) => (
                       <Star
                         key={s}
                         size={12}
                         className="fill-[hsl(var(--warning))] text-[hsl(var(--warning))]"
+                        aria-hidden="true"
                       />
                     ))}
                   </div>
