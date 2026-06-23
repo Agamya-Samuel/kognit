@@ -6,7 +6,7 @@ import { lectures } from '../schema/lectures';
 import { sections } from '../schema/sections';
 import { courses } from '../schema/courses';
 import { users } from '../schema/users';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, count } from 'drizzle-orm';
 import type { Submission } from '../schema';
 
 @Injectable()
@@ -77,9 +77,9 @@ export class SubmissionsRepository extends BaseRepository<Submission> {
           .orderBy(desc(submissions.submittedAt))
           .limit(limit)
           .offset(offset),
-        this.db.select({ count: submissions.id }).from(submissions).where(whereClause),
+        this.db.select({ count: count(submissions.id) }).from(submissions).where(whereClause),
       ]);
-      return { data, total: totalResult.length, limit, offset };
+      return { data, total: Number(totalResult[0]?.count ?? 0), limit, offset };
     } catch (error) {
       this.handleError(error, 'findMany');
       return { data: [], total: 0, limit: options.limit || defaultLimit, offset: options.offset || defaultOffset };
@@ -124,8 +124,8 @@ export class SubmissionsRepository extends BaseRepository<Submission> {
         conditions.push(eq(submissions.studentId, filters.studentId));
       }
       const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-      const result = await this.db.select({ count: submissions.id }).from(submissions).where(whereClause);
-      return result.length;
+      const result = await this.db.select({ count: count(submissions.id) }).from(submissions).where(whereClause);
+      return Number(result[0]?.count ?? 0);
     } catch (error) {
       this.handleError(error, 'count');
       return 0;

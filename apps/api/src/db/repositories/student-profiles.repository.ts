@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository, PaginatedResult } from './base.repository';
 import { studentProfiles } from '../schema';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, count } from 'drizzle-orm';
 import type { StudentProfile } from '../schema';
 
 @Injectable()
@@ -51,9 +51,9 @@ export class StudentProfilesRepository extends BaseRepository<StudentProfile> {
           .orderBy(desc(studentProfiles.createdAt))
           .limit(limit)
           .offset(offset),
-        this.db.select({ count: studentProfiles.id }).from(studentProfiles),
+        this.db.select({ count: count(studentProfiles.id) }).from(studentProfiles),
       ]);
-      return { data, total: totalResult.length, limit, offset };
+      return { data, total: Number(totalResult[0]?.count ?? 0), limit, offset };
     } catch (error) {
       this.handleError(error, 'findMany');
       return { data: [], total: 0, limit: options.limit || defaultLimit, offset: options.offset || defaultOffset };
