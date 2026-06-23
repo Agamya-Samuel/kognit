@@ -143,7 +143,10 @@ export default function AssignmentGradingPage({ params }: { params: { id: string
         </Button>
       </div>
 
-      {selectedSubmission !== null ? (
+      {selectedSubmission !== null ? (() => {
+        const found = submissions?.find((s: Submission) => s.id === selectedSubmission);
+        if (!found) return null;
+        return (
         <div>
           <Button
             variant="ghost"
@@ -155,14 +158,15 @@ export default function AssignmentGradingPage({ params }: { params: { id: string
             Back to submissions list
           </Button>
           <GradingForm
-            submission={submissions?.find((s: Submission) => s.id === selectedSubmission)!}
+            submission={found}
             maxScore={assignment.maxScore}
             onSubmit={handleGrade}
             onCancel={() => setSelectedSubmission(null)}
             isLoading={isGrading}
           />
         </div>
-      ) : filteredSubmissions.length === 0 ? (
+        );
+      })() : filteredSubmissions.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <div className="rounded-full bg-muted p-4 mb-4">

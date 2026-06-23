@@ -45,10 +45,9 @@ export default function CreateAssignmentPage() {
   const handleSubmit = async () => {
     try {
       await createAssignment.mutateAsync(assignmentData);
-      console.log('Assignment created successfully');
       window.location.href = '/dashboard/assignments';
     } catch (error) {
-      console.error('Failed to create assignment');
+      // Error is surfaced via createAssignment.error in the UI
     }
   };
 
