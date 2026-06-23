@@ -47,8 +47,8 @@ export function TypingEffect({
 
   return (
     <span className="inline">
-      <span className="gradient-text">{text}</span>
-      <span className="animate-pulse text-[hsl(var(--primary))]">|</span>
+      <span className="gradient-text" aria-live="polite">{text}</span>
+      <span className="animate-pulse text-[hsl(var(--primary))]" aria-hidden="true">|</span>
     </span>
   );
 }

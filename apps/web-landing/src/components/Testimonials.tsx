@@ -1,5 +1,6 @@
 import { Badge } from '@edutech/ui';
 import { Star, Award, Users, BookOpen, Quote } from 'lucide-react';
+import Image from 'next/image';
 
 const testimonials = [
   {
@@ -103,12 +104,13 @@ export function Testimonials() {
               />
 
               {/* Star rating */}
-              <div className="mb-4 flex gap-0.5">
+              <div className="mb-4 flex gap-0.5" role="img" aria-label={`Rated ${t.rating} out of 5 stars`}>
                 {Array.from({ length: t.rating }).map((_, i) => (
                   <Star
                     key={i}
                     size={14}
                     className="fill-[hsl(var(--warning))] text-[hsl(var(--warning))]"
+                    aria-hidden="true"
                   />
                 ))}
               </div>
@@ -121,9 +123,11 @@ export function Testimonials() {
               {/* Author */}
               <div className="mt-6 flex items-center gap-3 border-t border-[hsl(var(--border))] pt-4">
                 <div className="h-11 w-11 overflow-hidden rounded-full ring-2 ring-[hsl(var(--primary)/0.15)]">
-                  <img
+                  <Image
                     src={t.photo}
                     alt={t.name}
+                    width={44}
+                    height={44}
                     className="h-full w-full object-cover"
                   />
                 </div>
