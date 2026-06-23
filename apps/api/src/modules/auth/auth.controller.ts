@@ -20,6 +20,8 @@ import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { Public } from './decorators/auth.decorators';
+import { getAllowedOrigins, isAllowedRedirect, resolveRedirect, setAuthCookies } from './auth.util';
+import { Throttle } from '@nestjs/throttler';
 import type { JwtPayload } from './strategies';
 import type { Request, Response } from 'express';
 import {
@@ -74,12 +76,12 @@ export class AuthController {
   @ApiOperation({ summary: 'Google OAuth callback' })
   async googleAuthCallback(@Req() req: Request, @Res() res: Response) {
     // Parse redirect and intent from the state parameter (base64 JSON)
-    let redirect = '/auth/callback';
+    let requestedRedirect: unknown = '/auth/callback';
     let intent = 'student';
     try {
       const stateStr = Buffer.from(req.query.state as string, 'base64').toString('utf-8');
       const state = JSON.parse(stateStr);
-      redirect = state.redirect || '/auth/callback';
+      requestedRedirect = state.redirect || '/auth/callback';
       intent = state.intent || 'student';
     } catch {
       // If state parsing fails, use defaults
@@ -91,6 +93,10 @@ export class AuthController {
       isNewUser: boolean;
     };
 
+    const allowedOrigins = getAllowedOrigins(this.configService);
+    const defaultOrigin = allowedOrigins[0] || 'http://localhost:3002';
+    const isProduction = this.configService.get<string>('NODE_ENV') === 'production';
+
     // Enforce portal-vs-role access control for OAuth logins (existing users).
     // New OAuth users are created with the correct role from intent, so only
     // existing users (whose role may predate the OAuth link) need validation.
@@ -101,18 +107,50 @@ export class AuthController {
         // Revoke the tokens that were just issued to prevent unauthorized access
         await this.authService.revokeTokensForUser(user.id);
         const message = err instanceof Error ? err.message : 'Access denied for this portal.';
-        const defaultOrigin = this.configService.get<string>('CORS_ORIGINS')?.split(',')[0] || 'http://localhost:3002';
-        const errorBaseUrl = redirect.startsWith('http') ? redirect : `${defaultOrigin}${redirect}`;
-        const separator = errorBaseUrl.includes('?') ? '&' : '?';
-        return res.redirect(`${errorBaseUrl}${separator}error=${encodeURIComponent(message)}`);
+        const errorBaseUrl = resolveRedirect(
+          requestedRedirect,
+          allowedOrigins,
+          defaultOrigin,
+          '/auth/callback?error=' + encodeURIComponent(message),
+        );
+        return res.redirect(errorBaseUrl);
       }
     }
 
-    // Build redirect URL with tokens and intent
-    const defaultOrigin = this.configService.get<string>('CORS_ORIGINS')?.split(',')[0] || 'http://localhost:3002';
-    const baseUrl = redirect.startsWith('http') ? redirect : `${defaultOrigin}${redirect}`;
-    const separator = baseUrl.includes('?') ? '&' : '?';
-    const callbackUrl = `${baseUrl}${separator}accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}&isNewUser=${isNewUser}&intent=${intent}`;
+    // Validate the redirect target against the CORS allow-list to prevent
+    // open-redirect attacks where a crafted state parameter points to evil.com.
+    // Relative paths must be re-rooted on the first allowed origin (frontend
+    // domain) — otherwise the browser resolves them against the API origin.
+    let callbackUrl: string;
+    if (
+      typeof requestedRedirect === 'string' &&
+      requestedRedirect.startsWith('/') &&
+      !requestedRedirect.startsWith('//')
+    ) {
+      callbackUrl = `${defaultOrigin}${requestedRedirect}`;
+    } else if (isAllowedRedirect(requestedRedirect, allowedOrigins)) {
+      callbackUrl = requestedRedirect as string;
+    } else {
+      callbackUrl = `${defaultOrigin}/auth/callback`;
+    }
+    const separator = callbackUrl.includes('?') ? '&' : '?';
+    // Tokens are still included in the URL for backward compatibility with
+    // the existing frontends (which read them from useSearchParams and store
+    // in localStorage for subsequent Bearer-authenticated calls). The
+    // open-redirect risk is fully mitigated by isAllowedRedirect above; the
+    // httpOnly cookies below are defense in depth.
+    callbackUrl =
+      `${callbackUrl}${separator}` +
+      `accessToken=${encodeURIComponent(tokens.accessToken)}` +
+      `&refreshToken=${encodeURIComponent(tokens.refreshToken)}` +
+      `&isNewUser=${isNewUser}` +
+      `&intent=${intent}`;
+
+    // Also deliver tokens via httpOnly Secure SameSite=Lax cookies so the
+    // browser automatically attaches them on subsequent same-origin API
+    // calls. httpOnly prevents JS read (XSS-safe), SameSite=Lax allows the
+    // cross-site top-level OAuth redirect to send the cookies.
+    setAuthCookies(res, tokens.accessToken, tokens.refreshToken, isProduction);
 
     return res.redirect(callbackUrl);
   }
@@ -124,6 +162,7 @@ export class AuthController {
   @Public()
   @Post('register/request')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 3, ttl: 60_000 } })
   @ApiResponse({ status: 200, description: 'Verification email sent' })
   @ApiOperation({ summary: 'Request email verification for registration' })
   async requestRegistration(@Body() dto: RequestEmailVerificationDto) {
@@ -133,6 +172,7 @@ export class AuthController {
   @Public()
   @Post('register/verify')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @ApiResponse({ status: 200, description: 'Email code verified' })
   @ApiOperation({ summary: 'Verify email code for registration' })
   async verifyRegistrationCode(@Body() dto: VerifyEmailCodeDto) {
@@ -152,10 +192,21 @@ export class AuthController {
   @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @ApiResponse({ status: 200, description: 'Login successful' })
   @ApiOperation({ summary: 'Login with email and password' })
-  async login(@Body() dto: LoginDto) {
-    return this.authService.login(dto.email, dto.password, dto.portal);
+  async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
+    const result = await this.authService.login(dto.email, dto.password, dto.portal);
+
+    // Mirror the OAuth-callback flow: also deliver the tokens as httpOnly
+    // cookies. The portal apps' middleware.ts checks for these cookies to
+    // do server-side route protection. Without this, users who sign in via
+    // email/password (whose tokens live in localStorage, not cookies) would
+    // be redirected to /auth/login on every protected route.
+    const isProduction = this.configService.get<string>('NODE_ENV') === 'production';
+    setAuthCookies(res, result.tokens.accessToken, result.tokens.refreshToken, isProduction);
+
+    return result;
   }
 
   @Post('logout')
@@ -204,6 +255,7 @@ export class AuthController {
   @Public()
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 3, ttl: 60_000 } })
   @ApiResponse({ status: 200, description: 'Reset email sent' })
   @ApiOperation({ summary: 'Request password reset email' })
   async forgotPassword(@Body() dto: ForgotPasswordDto) {
@@ -213,6 +265,7 @@ export class AuthController {
   @Public()
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 3, ttl: 60_000 } })
   @ApiResponse({ status: 200, description: 'Password reset successful' })
   @ApiOperation({ summary: 'Reset password with token and email' })
   async resetPassword(@Body() dto: ResetPasswordDto) {
