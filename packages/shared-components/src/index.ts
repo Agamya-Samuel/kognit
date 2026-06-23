@@ -82,3 +82,7 @@ export type {
 
 // Store
 export { authAtom, accessTokenAtom, sidebarOpenAtom, themeAtom } from './store/atoms';
+
+// Performance Monitoring
+export { WebVitalsReporter } from './components/WebVitalsReporter';
+export type { WebVitalsOptions } from './components/WebVitalsReporter';
