@@ -1,22 +1,22 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, Button, Spinner, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, Input, Field, FieldGroup, FieldLabel } from '@edutech/ui';
 import { CheckCircle2, XCircle, ChevronLeft, ChevronRight, UserPlus } from 'lucide-react';
 import { adminService } from '@edutech/api-client';
 import { PageHeader } from '@/components/PageHeader';
 import { EmptyState } from '@/components/EmptyState';
+import { useInstructors } from '@/hooks/useInstructors';
 import { cn } from '@/lib/utils';
 
 const STATUS_FILTERS = ['pending', 'approved', 'rejected'];
 
 export default function InstructorsPage() {
-  const [instructors, setInstructors] = useState<any[]>([]);
-  const [total, setTotal] = useState(0);
+  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [statusFilter, setStatusFilter] = useState('pending');
-  const [loading, setLoading] = useState(true);
   const [rejectingId, setRejectingId] = useState<number | null>(null);
   const [rejectReason, setRejectReason] = useState('');
 
@@ -28,34 +28,18 @@ export default function InstructorsPage() {
   const [inviteError, setInviteError] = useState('');
   const [inviteSuccess, setInviteSuccess] = useState('');
 
-  const fetchInstructors = useCallback(async () => {
-    setLoading(true);
-    try {
-      const result = await adminService.getInstructors({
-        page,
-        limit,
-        status: statusFilter,
-      }) as any;
-      setInstructors(result?.instructors ?? []);
-      setTotal(result?.total ?? 0);
-    } catch {
-      setInstructors([]);
-      setTotal(0);
-    } finally {
-      setLoading(false);
-    }
-  }, [page, limit, statusFilter]);
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['admin', 'instructors'] });
 
-  useEffect(() => {
-    fetchInstructors();
-  }, [fetchInstructors]);
+  const { data, isLoading: loading } = useInstructors({ page, limit, status: statusFilter });
+  const instructors = data?.instructors ?? [];
+  const total = data?.total ?? 0;
 
   const totalPages = Math.ceil(total / limit);
 
   const handleApprove = async (id: number) => {
     try {
       await adminService.approveInstructor(id);
-      fetchInstructors();
+      invalidate();
     } catch {
       console.error('Failed to approve instructor:', id);
     }
@@ -67,7 +51,7 @@ export default function InstructorsPage() {
       await adminService.rejectInstructor(rejectingId, rejectReason);
       setRejectingId(null);
       setRejectReason('');
-      fetchInstructors();
+      invalidate();
     } catch {
       console.error('Failed to reject instructor:', rejectingId);
     }
@@ -84,9 +68,10 @@ export default function InstructorsPage() {
       setInviteSuccess(`Invitation sent to ${inviteEmail}. The instructor will receive an activation email shortly.`);
       setInviteEmail('');
       setInviteName('');
-      fetchInstructors();
-    } catch (err: any) {
-      setInviteError(err.response?.data?.message || 'Failed to send invitation. Please try again.');
+      invalidate();
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      setInviteError(e?.response?.data?.message || 'Failed to send invitation. Please try again.');
     } finally {
       setIsInviting(false);
     }
@@ -177,7 +162,7 @@ export default function InstructorsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
-                    {instructors.map((inst) => (
+                    {instructors.map((inst: any) => (
                       <tr key={inst.id} className="hover:bg-accent/50 transition-colors">
                         <td className="py-3 font-medium text-foreground">
                           {inst.userName}

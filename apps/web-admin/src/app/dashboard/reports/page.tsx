@@ -1,48 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@edutech/ui';
 import { Users, BookOpen, Award, TrendingUp, Calendar, DollarSign, AlertCircle } from 'lucide-react';
-import { adminService } from '@edutech/api-client';
 import { PageHeader } from '@/components/PageHeader';
-
-interface DashboardMetrics {
-  totalUsers: number;
-  totalCourses: number;
-  totalInstructors: number;
-  totalRevenue: number;
-  activeUsers: number;
-  newUsersThisMonth: number;
-  completedCourses: number;
-  pendingApprovals: number;
-}
-
-interface ChartData {
-  name: string;
-  users: number;
-  revenue: number;
-}
-
-interface UserDemographics {
-  students: number;
-  instructors: number;
-  admins: number;
-}
-
-interface CourseStats {
-  active: number;
-  draft: number;
-  archived: number;
-}
-
-interface RevenueBreakdown {
-  course_sales: number;
-  subscriptions: number;
-  other: number;
-}
+import { useReports } from '@/hooks/useReports';
 
 export default function ReportsPage() {
-  const [metrics, setMetrics] = useState<DashboardMetrics>({
+  const { data, isLoading: loading, error: queryError } = useReports();
+  const error = queryError ? 'Failed to load reports data. Please try again.' : null;
+
+  const metrics = data?.metrics ?? {
     totalUsers: 0,
     totalCourses: 0,
     totalInstructors: 0,
@@ -51,64 +18,11 @@ export default function ReportsPage() {
     newUsersThisMonth: 0,
     completedCourses: 0,
     pendingApprovals: 0,
-  });
-  const [chartData, setChartData] = useState<ChartData[]>([]);
-  const [demographics, setDemographics] = useState<UserDemographics>({
-    students: 0,
-    instructors: 0,
-    admins: 0,
-  });
-  const [courseStats, setCourseStats] = useState<CourseStats>({
-    active: 0,
-    draft: 0,
-    archived: 0,
-  });
-  const [revenueBreakdown, setRevenueBreakdown] = useState<RevenueBreakdown>({
-    course_sales: 0,
-    subscriptions: 0,
-    other: 0,
-  });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const [
-          metricsResult,
-          chartResult,
-          demographicsResult,
-          courseStatsResult,
-          revenueBreakdownResult,
-        ] = await Promise.all([
-          adminService.getDashboardMetrics(),
-          adminService.getChartData(),
-          adminService.getDemographics(),
-          adminService.getCourseStats(),
-          adminService.getRevenueBreakdown(),
-        ]);
-
-        setMetrics(metricsResult);
-        setChartData(chartResult);
-        setDemographics({
-          students: demographicsResult?.students ?? 0,
-          instructors: demographicsResult?.instructors ?? 0,
-          admins: demographicsResult?.admins ?? 0,
-        });
-        setCourseStats(courseStatsResult);
-        setRevenueBreakdown(revenueBreakdownResult);
-      } catch (err) {
-        console.error('Failed to fetch dashboard data:', err);
-        setError('Failed to load reports data. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDashboardData();
-  }, []);
+  };
+  const chartData = data?.chartData ?? [];
+  const demographics = data?.demographics ?? { students: 0, instructors: 0, admins: 0 };
+  const courseStats = data?.courseStats ?? { active: 0, draft: 0, archived: 0 };
+  const revenueBreakdown = data?.revenueBreakdown ?? { course_sales: 0, subscriptions: 0, other: 0 };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {

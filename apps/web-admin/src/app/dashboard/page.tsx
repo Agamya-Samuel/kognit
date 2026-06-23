@@ -1,7 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { adminService } from '@edutech/api-client';
+import { useAdminDashboard } from '@/hooks/useAdminDashboard';
 import {
   Users,
   BookOpen,
@@ -18,11 +17,21 @@ import {
   Inbox,
 } from 'lucide-react';
 import { StatCard, StatsRow } from '@/components/StatsRow';
-import { RevenueChart, EngagementChart } from '@/components/charts/Charts';
+import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle } from '@edutech/ui';
 import { Button } from '@edutech/ui';
 import Link from 'next/link';
 import { PageHeader } from '@/components/PageHeader';
+
+// Heavy recharts components — loaded client-side only to reduce initial bundle
+const RevenueChart = dynamic(
+  () => import('@/components/charts/Charts').then(m => m.RevenueChart),
+  { ssr: false, loading: () => <div className="h-[350px] flex items-center justify-center text-muted-foreground">Loading chart…</div> },
+);
+const EngagementChart = dynamic(
+  () => import('@/components/charts/Charts').then(m => m.EngagementChart),
+  { ssr: false, loading: () => <div className="h-[350px] flex items-center justify-center text-muted-foreground">Loading chart…</div> },
+);
 
 interface RevenueDataPoint {
   month: string;
@@ -51,36 +60,7 @@ interface PendingModerationItem {
 }
 
 export default function AdminDashboardPage() {
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['admin', 'dashboard'],
-    queryFn: async () => {
-      const [metricsResponse, chartResponse] = await Promise.all([
-        adminService.getDashboardMetrics(),
-        adminService.getChartData()
-      ]);
-
-      return {
-        totalUsers: metricsResponse.totalUsers || 0,
-        activeCourses: metricsResponse.totalCourses || 0,
-        revenueMTD: metricsResponse.totalRevenue || 0,
-        activeNow: metricsResponse.activeUsers || 0,
-        revenueData: (chartResponse || []).map((item: any) => ({
-          month: new Date(item.name).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-          revenue: item.revenue,
-          costs: 0
-        })),
-        engagementData: (chartResponse || []).map((item: any) => ({
-          date: new Date(item.name).toLocaleDateString('en-US', { weekday: 'short' }),
-          views: item.users,
-          interactions: 0
-        })),
-        recentActivity: metricsResponse.recentActivity || [],
-        pendingModeration: metricsResponse.pendingModeration || [],
-        newUsersThisMonth: metricsResponse.newUsersThisMonth || 0,
-        pendingApprovals: metricsResponse.pendingApprovals || 0,
-      };
-    }
-  });
+  const { data, isLoading, error } = useAdminDashboard();
 
   if (isLoading) {
     return (
