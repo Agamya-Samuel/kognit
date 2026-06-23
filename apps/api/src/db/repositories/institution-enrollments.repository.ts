@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository, PaginatedResult } from './base.repository';
 import { institutionEnrollments } from '../schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, count } from 'drizzle-orm';
 import type { InstitutionEnrollment } from '../schema';
 
 @Injectable()
@@ -82,10 +82,10 @@ export class InstitutionEnrollmentsRepository extends BaseRepository<Institution
           .orderBy(desc(institutionEnrollments.enrolledAt))
           .limit(limit)
           .offset(offset),
-        this.db.select({ count: institutionEnrollments.id }).from(institutionEnrollments).where(whereClause),
+        this.db.select({ count: count(institutionEnrollments.id) }).from(institutionEnrollments).where(whereClause),
       ]);
 
-      return { data, total: totalResult.length, limit, offset };
+      return { data, total: Number(totalResult[0]?.count ?? 0), limit, offset };
     } catch (error) {
       this.handleError(error, 'findMany');
       return { data: [], total: 0, limit: options.limit || defaultLimit, offset: options.offset || defaultOffset };
@@ -127,8 +127,8 @@ export class InstitutionEnrollmentsRepository extends BaseRepository<Institution
         conditions.push(eq(institutionEnrollments.courseId, filters.courseId));
       }
       const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-      const result = await this.db.select({ count: institutionEnrollments.id }).from(institutionEnrollments).where(whereClause);
-      return result.length;
+      const result = await this.db.select({ count: count(institutionEnrollments.id) }).from(institutionEnrollments).where(whereClause);
+      return Number(result[0]?.count ?? 0);
     } catch (error) {
       this.handleError(error, 'count');
       return 0;
