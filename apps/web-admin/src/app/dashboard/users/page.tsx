@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Spinner } from '@edutech/ui';
 import { Search, ChevronLeft, ChevronRight, UserCog, Trash2, Shield } from 'lucide-react';
 import { adminService } from '@edutech/api-client';
@@ -21,77 +22,82 @@ interface User {
   updatedAt: string;
 }
 
+interface UsersResponse {
+  users: User[];
+  total: number;
+}
+
 const ROLES = ['all', 'student', 'instructor', 'admin', 'institution_admin'];
 
+const USERS_QUERY_KEY = (page: number, limit: number, role: string, search: string) =>
+  ['admin', 'users', { page, limit, role, search }] as const;
+
 export default function UsersPage() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [total, setTotal] = useState(0);
+  const queryClient = useQueryClient();
+
+  // UI state (filters, selection) — kept as local useState. Server data
+  // is owned by TanStack Query.
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [roleFilter, setRoleFilter] = useState('all');
   const [search, setSearch] = useState('');
-  const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const fetchUsers = useCallback(async () => {
-    setLoading(true);
-    try {
+  // Server state via TanStack Query. Replaces the useState+useEffect+fetch
+  // pattern; automatic caching, refetching, and revalidation on filter change.
+  const { data, isLoading } = useQuery({
+    queryKey: USERS_QUERY_KEY(page, limit, roleFilter, search),
+    queryFn: async (): Promise<UsersResponse> => {
       const params: Record<string, string | number> = { page, limit };
       if (roleFilter !== 'all') params.role = roleFilter;
       if (search) params.search = search;
+      const result = (await adminService.getUsers(params)) as UsersResponse | null;
+      return {
+        users: result?.users ?? [],
+        total: result?.total ?? 0,
+      };
+    },
+    placeholderData: (prev) => prev, // keep previous list visible during refetch
+  });
 
-const result = await adminService.getUsers(params);
-      setUsers(result?.users ?? []);
-      setTotal(result?.total ?? 0);
-    } catch {
-      setUsers([]);
-      setTotal(0);
-    } finally {
-      setLoading(false);
-    }
-  }, [page, limit, roleFilter, search]);
-
-  useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
-
+  const users = data?.users ?? [];
+  const total = data?.total ?? 0;
   const totalPages = Math.ceil(total / limit);
 
-  const handleToggleActive = async (user: User) => {
-    try {
-      await adminService.toggleUserActive(user.id);
-      fetchUsers();
+  // Helper that invalidates the users list after any mutation.
+  const invalidateUsers = () =>
+    queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+
+  const toggleActive = useMutation({
+    mutationFn: (user: User) => adminService.toggleUserActive(user.id),
+    onSuccess: (_data, user) => {
+      invalidateUsers();
       if (drawerOpen && selectedUser?.id === user.id) {
         setSelectedUser({ ...user, isActive: !user.isActive });
       }
-    } catch {
-      // Silently fail — UI stays consistent
-    }
-  };
+    },
+  });
 
-  const handleUpdateRole = async (userId: number, role: string) => {
-    try {
-      await adminService.updateUserRole(userId, role);
-      fetchUsers();
+  const updateRole = useMutation({
+    mutationFn: ({ userId, role }: { userId: number; role: string }) =>
+      adminService.updateUserRole(userId, role),
+    onSuccess: (_data, { userId, role }) => {
+      invalidateUsers();
       if (drawerOpen && selectedUser?.id === userId) {
-        setSelectedUser({ ...selectedUser!, role });
+        setSelectedUser((prev) => (prev ? { ...prev, role } : prev));
       }
-    } catch {
-      // Silently fail
-    }
-  };
+    },
+  });
 
-  const handleDelete = async (userId: number) => {
-    try {
-      await adminService.deleteUser(userId);
+  const deleteUser = useMutation({
+    mutationFn: (userId: number) => adminService.deleteUser(userId),
+    onSuccess: () => {
       setDrawerOpen(false);
       setSelectedUser(null);
-      fetchUsers();
-    } catch {
-      // Silently fail
-    }
-  };
+      invalidateUsers();
+    },
+  });
 
   const openDrawer = (user: User) => {
     setSelectedUser(user);
@@ -154,7 +160,7 @@ const result = await adminService.getUsers(params);
           <CardTitle>Users</CardTitle>
         </CardHeader>
         <CardContent>
-          {loading ? (
+          {isLoading && !data ? (
             <div className="flex justify-center py-12">
               <Spinner />
             </div>
@@ -206,7 +212,7 @@ const result = await adminService.getUsers(params);
                         <td className="py-3 text-right">
                           <div className="flex items-center justify-end gap-1">
                             <button
-                              onClick={() => handleToggleActive(user)}
+                              onClick={() => toggleActive.mutate(user)}
                               className="rounded p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                               title={user.isActive ? 'Deactivate' : 'Activate'}
                             >
@@ -220,7 +226,7 @@ const result = await adminService.getUsers(params);
                               <UserCog className="h-4 w-4" />
                             </button>
                             <button
-                              onClick={() => handleDelete(user.id)}
+                              onClick={() => deleteUser.mutate(user.id)}
                               className="rounded p-1.5 text-destructive hover:bg-destructive/10 transition-colors"
                               title="Delete user"
                             >
@@ -270,9 +276,9 @@ const result = await adminService.getUsers(params);
         user={selectedUser}
         open={drawerOpen}
         onClose={() => { setDrawerOpen(false); setSelectedUser(null); }}
-        onRoleChange={(role: string) => selectedUser && handleUpdateRole(selectedUser.id, role)}
-        onToggleActive={() => selectedUser && handleToggleActive(selectedUser)}
-        onDelete={() => selectedUser && handleDelete(selectedUser.id)}
+        onRoleChange={(role: string) => selectedUser && updateRole.mutate({ userId: selectedUser.id, role })}
+        onToggleActive={() => selectedUser && toggleActive.mutate(selectedUser)}
+        onDelete={() => selectedUser && deleteUser.mutate(selectedUser.id)}
       />
     </div>
   );
