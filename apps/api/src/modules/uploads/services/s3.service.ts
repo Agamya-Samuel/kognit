@@ -1,13 +1,17 @@
-import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import {
+  Injectable,
+  Logger,
+  InternalServerErrorException,
+} from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import {
   S3Client,
   PutObjectCommand,
   GetObjectCommand,
   DeleteObjectCommand,
   HeadObjectCommand,
-} from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+} from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 export interface UploadUrlOptions {
   fileName: string;
@@ -35,14 +39,16 @@ export class S3Service {
 
   constructor(private configService: ConfigService) {
     this.s3Client = new S3Client({
-      region: this.configService.get<string>('AWS_REGION') || 'us-east-1',
+      region: this.configService.get<string>("AWS_REGION") || "us-east-1",
       credentials: {
-        accessKeyId: this.configService.get<string>('AWS_ACCESS_KEY_ID') || '',
-        secretAccessKey: this.configService.get<string>('AWS_SECRET_ACCESS_KEY') || '',
+        accessKeyId: this.configService.get<string>("AWS_ACCESS_KEY_ID") || "",
+        secretAccessKey:
+          this.configService.get<string>("AWS_SECRET_ACCESS_KEY") || "",
       },
     });
 
-    this.bucketName = this.configService.get<string>('AWS_S3_BUCKET') || 'edutech-uploads';
+    this.bucketName =
+      this.configService.get<string>("AWS_S3_BUCKET") || "your-s3-bucket-name";
 
     this.logger.log(`S3Service initialized with bucket: ${this.bucketName}`);
   }
@@ -57,22 +63,22 @@ export class S3Service {
       // Validate file size
       if (fileSize > this.maxFileSize) {
         throw new InternalServerErrorException(
-          `File size exceeds maximum allowed size of ${this.maxFileSize / 1024 / 1024}MB`
+          `File size exceeds maximum allowed size of ${this.maxFileSize / 1024 / 1024}MB`,
         );
       }
 
       // Validate content type for video files
       const validContentTypes = [
-        'video/mp4',
-        'video/quicktime',
-        'video/x-msvideo',
-        'video/x-ms-wmv',
-        'video/webm',
+        "video/mp4",
+        "video/quicktime",
+        "video/x-msvideo",
+        "video/x-ms-wmv",
+        "video/webm",
       ];
 
       if (!validContentTypes.includes(contentType)) {
         throw new InternalServerErrorException(
-          `Invalid content type. Allowed types: ${validContentTypes.join(', ')}`
+          `Invalid content type. Allowed types: ${validContentTypes.join(", ")}`,
         );
       }
 
@@ -101,28 +107,31 @@ export class S3Service {
       expiresAt.setMinutes(expiresAt.getMinutes() + this.uploadExpiryMinutes);
 
       this.logger.log(
-        `Generated upload URL for upload ${uploadId}, lecture ${lectureId}, file: ${fileName}`
+        `Generated upload URL for upload ${uploadId}, lecture ${lectureId}, file: ${fileName}`,
       );
 
       return {
         uploadId,
         uploadUrl,
         expiresAt,
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': contentType,
+          "Content-Type": contentType,
         },
       };
     } catch (error) {
-      this.logger.error('Error generating upload URL:', error);
-      throw new InternalServerErrorException('Failed to generate upload URL');
+      this.logger.error("Error generating upload URL:", error);
+      throw new InternalServerErrorException("Failed to generate upload URL");
     }
   }
 
   /**
    * Get a presigned URL for downloading/viewing a file
    */
-  async getDownloadUrl(fileKey: string, expiresIn: number = 3600): Promise<string> {
+  async getDownloadUrl(
+    fileKey: string,
+    expiresIn: number = 3600,
+  ): Promise<string> {
     try {
       const command = new GetObjectCommand({
         Bucket: this.bucketName,
@@ -132,8 +141,8 @@ export class S3Service {
       const url = await getSignedUrl(this.s3Client, command, { expiresIn });
       return url;
     } catch (error) {
-      this.logger.error('Error generating download URL:', error);
-      throw new InternalServerErrorException('Failed to generate download URL');
+      this.logger.error("Error generating download URL:", error);
+      throw new InternalServerErrorException("Failed to generate download URL");
     }
   }
 
@@ -150,8 +159,8 @@ export class S3Service {
       await this.s3Client.send(command);
       this.logger.log(`Deleted file from S3: ${fileKey}`);
     } catch (error) {
-      this.logger.error('Error deleting file from S3:', error);
-      throw new InternalServerErrorException('Failed to delete file');
+      this.logger.error("Error deleting file from S3:", error);
+      throw new InternalServerErrorException("Failed to delete file");
     }
   }
 
@@ -173,25 +182,27 @@ export class S3Service {
       const response = await this.s3Client.send(command);
 
       return {
-        contentType: response.ContentType || '',
+        contentType: response.ContentType || "",
         contentLength: response.ContentLength || 0,
         lastModified: response.LastModified || new Date(),
         metadata: response.Metadata || {},
       };
     } catch (error) {
-      this.logger.error('Error getting object metadata:', error);
-      throw new InternalServerErrorException('Failed to get object metadata');
+      this.logger.error("Error getting object metadata:", error);
+      throw new InternalServerErrorException("Failed to get object metadata");
     }
   }
 
   /**
    * Validate file key format and extract upload ID
    */
-  parseFileKey(fileKey: string): { uploadId: number; lectureId: number } | null {
+  parseFileKey(
+    fileKey: string,
+  ): { uploadId: number; lectureId: number } | null {
     try {
       // Expected format: uploads/{uploadId}/{lectureId}/{filename}
-      const parts = fileKey.split('/');
-      if (parts.length >= 3 && parts[0] === 'uploads') {
+      const parts = fileKey.split("/");
+      if (parts.length >= 3 && parts[0] === "uploads") {
         const uploadId = parseInt(parts[1], 10);
         const lectureId = parseInt(parts[2], 10);
 
@@ -201,7 +212,7 @@ export class S3Service {
       }
       return null;
     } catch (error) {
-      this.logger.error('Error parsing file key:', error);
+      this.logger.error("Error parsing file key:", error);
       return null;
     }
   }
@@ -209,11 +220,15 @@ export class S3Service {
   /**
    * Generate a unique file key for S3
    */
-  private generateFileKey(uploadId: number, lectureId: number, fileName: string): string {
+  private generateFileKey(
+    uploadId: number,
+    lectureId: number,
+    fileName: string,
+  ): string {
     const timestamp = Date.now();
-    const extension = fileName.split('.').pop();
-    const baseName = fileName.replace(/\.[^/.]+$/, '');
-    const sanitizedBaseName = baseName.replace(/[^a-zA-Z0-9-_]/g, '_');
+    const extension = fileName.split(".").pop();
+    const baseName = fileName.replace(/\.[^/.]+$/, "");
+    const sanitizedBaseName = baseName.replace(/[^a-zA-Z0-9-_]/g, "_");
 
     return `uploads/${uploadId}/${lectureId}/${timestamp}-${sanitizedBaseName}.${extension}`;
   }
@@ -223,9 +238,9 @@ export class S3Service {
    */
   isConfigured(): boolean {
     return !!(
-      this.configService.get<string>('AWS_ACCESS_KEY_ID') &&
-      this.configService.get<string>('AWS_SECRET_ACCESS_KEY') &&
-      this.configService.get<string>('AWS_S3_BUCKET')
+      this.configService.get<string>("AWS_ACCESS_KEY_ID") &&
+      this.configService.get<string>("AWS_SECRET_ACCESS_KEY") &&
+      this.configService.get<string>("AWS_S3_BUCKET")
     );
   }
 
@@ -233,7 +248,7 @@ export class S3Service {
    * Get CloudFront CDN URL for a file key
    */
   getCloudFrontUrl(fileKey: string): string {
-    const cdnUrl = this.configService.get<string>('AWS_S3_CDN_URL');
+    const cdnUrl = this.configService.get<string>("AWS_S3_CDN_URL");
     if (cdnUrl) {
       return `${cdnUrl}/${fileKey}`;
     }
