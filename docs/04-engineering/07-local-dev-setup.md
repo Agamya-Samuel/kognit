@@ -7,12 +7,12 @@
 
 ## Prerequisites
 
-| Tool | Version | Install |
-|---|---|---|
-| Node.js | >= 20.x | [nodejs.org](https://nodejs.org) |
-| npm | >= 10.x | Comes with Node.js |
-| Docker & Docker Compose | Latest | [docker.com](https://docker.com) |
-| Git | Latest | [git-scm.com](https://git-scm.com) |
+| Tool                    | Version | Install                            |
+| ----------------------- | ------- | ---------------------------------- |
+| Node.js                 | >= 20.x | [nodejs.org](https://nodejs.org)   |
+| npm                     | >= 10.x | Comes with Node.js                 |
+| Docker & Docker Compose | Latest  | [docker.com](https://docker.com)   |
+| Git                     | Latest  | [git-scm.com](https://git-scm.com) |
 
 ---
 
@@ -62,7 +62,7 @@ FRONTEND_URL=http://localhost:3000
 DATABASE_HOST=localhost
 DATABASE_PORT=5432
 DATABASE_USER=edutech
-DATABASE_PASSWORD=edutech_password
+DATABASE_PASSWORD=CHANGE_ME
 DATABASE_NAME=edutech
 DATABASE_SSL=false
 
@@ -79,6 +79,7 @@ LOG_LEVEL=debug
 ```
 
 Optional integrations (leave empty to skip):
+
 - `MUX_TOKEN_ID` / `MUX_TOKEN_SECRET` — Video processing
 - `LIVEKIT_API_KEY` / `LIVEKIT_API_SECRET` / `LIVEKIT_URL` — Live classes
 - `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_S3_BUCKET` — File uploads
@@ -123,11 +124,11 @@ The API server starts at `http://localhost:3000`.
 
 ## 6. Verify Everything Works
 
-| Check | URL |
-|---|---|
+| Check        | URL                                |
+| ------------ | ---------------------------------- |
 | Health check | `http://localhost:3000/api/health` |
-| Swagger docs | `http://localhost:3000/api/docs` |
-| API v1 base | `http://localhost:3000/api/v1/...` |
+| Swagger docs | `http://localhost:3000/api/docs`   |
+| API v1 base  | `http://localhost:3000/api/v1/...` |
 
 ---
 

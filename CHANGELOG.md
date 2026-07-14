@@ -82,6 +82,7 @@ npm run db:migrate
 ### Environment Variables
 
 See `apps/api/.env` for the full list. Key defaults for local development:
-- Database: `edutech` / `edutech_password` on `localhost:5432`
+
+- Database: `edutech` / `<password>` on `localhost:5432`
 - Redis: `localhost:6379`
 - JWT secrets: defaults provided (change for production)

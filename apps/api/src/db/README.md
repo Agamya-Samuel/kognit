@@ -92,9 +92,9 @@ Required environment variables (see [`apps/api/.env`](../../.env)):
 DATABASE_HOST=localhost
 DATABASE_PORT=5432
 DATABASE_USER=edutech
-DATABASE_PASSWORD=edutech_password
+DATABASE_PASSWORD=CHANGE_ME
 DATABASE_NAME=edutech
-DATABASE_URL=postgresql://edutech:edutech_password@localhost:5432/edutech
+DATABASE_URL=postgresql://edutech:CHANGE_ME@localhost:5432/edutech
 ```
 
 ## Schema Definitions
@@ -127,6 +127,7 @@ All PostgreSQL enums are defined in [`enums.ts`](schema/enums.ts):
 ### Core Tables
 
 #### Users & Authentication
+
 - **`users`**: Core user table with role-based access
 - **`instructor_profiles`**: Instructor-specific information and approval status
 - **`student_profiles`**: Student skills and placement status
@@ -136,6 +137,7 @@ All PostgreSQL enums are defined in [`enums.ts`](schema/enums.ts):
 - **`user_auth_providers`**: OAuth provider links
 
 #### Course Content
+
 - **`courses`**: Course metadata, pricing, and publishing status
 - **`sections`**: Course sections/modules (soft-delete via `deleted_at`)
 - **`lectures`**: Individual lectures with video/live/text types (soft-delete via `deleted_at`)
@@ -144,23 +146,28 @@ All PostgreSQL enums are defined in [`enums.ts`](schema/enums.ts):
 - **`recurring_schedules`**: Recurring live class schedule patterns
 
 #### Enrollment & Progress
+
 - **`enrollments`**: Student course enrollments
 - **`progress`**: Lecture completion tracking
 - **`certificates`**: Course completion certificates
 
 #### Assignments
+
 - **`assignments`**: Assignment definitions and scoring (soft-delete via `deleted_at`)
 - **`submissions`**: Student assignment submissions
 - **`quiz_questions`**: Quiz question definitions for MCQ assignments
 
 #### Payments
+
 - **`payments`**: Payment transactions with Razorpay integration
 
 #### Communication
+
 - **`channels`**: Chat channels (course, general, DM)
 - **`messages`**: Chat messages with soft delete
 
 #### Notifications & System
+
 - **`notifications`**: User notifications with delivery tracking
 - **`user_notification_preferences`**: Per-user notification delivery settings
 - **`audit_logs`**: System activity logging
@@ -168,6 +175,7 @@ All PostgreSQL enums are defined in [`enums.ts`](schema/enums.ts):
 - **`uploads`**: File upload tracking with S3/Mux ingestion status
 
 #### Marketing
+
 - **`beta_invites`**: Beta invite code management
 - **`waitlist`**: Email waitlist for non-invited users
 - **`reviews`**: Course reviews with moderation (soft-delete via `deleted_at`)
@@ -175,6 +183,7 @@ All PostgreSQL enums are defined in [`enums.ts`](schema/enums.ts):
 - **`refresh_tokens`**: JWT refresh token storage with family-based theft detection
 
 #### Phase 2 (Institution)
+
 - **`institution_accounts`**: Institution seat management
 - **`institution_enrollments`**: Institution bulk enrollments
 
@@ -191,6 +200,7 @@ All table relationships are defined in [`relations.ts`](schema/relations.ts) usi
 **Foreign Keys**: All foreign keys use `ON DELETE RESTRICT` at database level
 
 **Unique Constraints**:
+
 - `users.email`
 - `user_auth_providers.(provider, provider_id)`
 - `enrollments.(student_id, course_id)`
@@ -234,10 +244,10 @@ The repository pattern provides a clean abstraction over Drizzle ORM queries.
 **Example:**
 
 ```typescript
-import { UsersRepository } from './db/repositories/users.repository';
+import { UsersRepository } from "./db/repositories/users.repository";
 
 const usersRepo = new UsersRepository(db);
-const user = await usersRepo.findByEmail('user@example.com');
+const user = await usersRepo.findByEmail("user@example.com");
 ```
 
 #### Courses Repository
@@ -300,6 +310,7 @@ npm run db:studio
 The [`seed.ts`](seed.ts) script creates initial test data:
 
 ### Seed Data Includes:
+
 - 1 admin user
 - 1 instructor with approved profile
 - 2 students with profiles
@@ -334,15 +345,18 @@ Student 2: student2@edutech.com / Student@123
 ## Data Integrity
 
 ### Currency Storage
+
 - Prices stored as **INTEGER in paise** (smallest currency unit)
 - Example: ₹499.00 → `49900`
 - Display by dividing by 100
 
 ### Password & Token Hashing
+
 - **Passwords**: bcrypt with 12 rounds (128 char max)
 - **Reset/Verification Tokens**: bcrypt with 10 rounds (60 char output, VARCHAR(60))
 
 ### Transaction Isolation
+
 - **Default**: READ COMMITTED
 - **Enrollment Creation**: `SELECT ... FOR UPDATE` on payment record
 - **Certificate Generation**: `SELECT ... FOR UPDATE` on enrollment
@@ -352,12 +366,14 @@ Student 2: student2@edutech.com / Student@123
 ## Query Optimization
 
 ### Connection Pool
+
 - **Formula**: `max_connections = (core_count * 2) + effective_spindle_count`
 - **Defaults**: min=2, max=10, idle_timeout=30s, connection_timeout=5s
 - **Monitoring**: Track pool utilization via metrics
 - **Scale-up**: Trigger at 80% utilization for 5+ minutes
 
 ### Query Rules
+
 - Always use parameterized queries (Drizzle handles this)
 - Index all foreign keys
 - Index all WHERE clause columns

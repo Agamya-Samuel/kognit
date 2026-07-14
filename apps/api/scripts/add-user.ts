@@ -1,5 +1,5 @@
-import postgres from 'postgres';
-import bcrypt from 'bcrypt';
+import postgres from "postgres";
+import bcrypt from "bcrypt";
 
 const args = process.argv.slice(2);
 
@@ -22,29 +22,31 @@ Examples:
 }
 
 if (args.length < 4) {
-  console.error('Error: Missing required arguments.\n');
+  console.error("Error: Missing required arguments.\n");
   printUsage();
 }
 
 const [email, password, name, role] = args;
 
-const validRoles = ['admin', 'instructor', 'student'];
+const validRoles = ["admin", "instructor", "student"];
 if (!validRoles.includes(role)) {
-  console.error(`Error: Role must be one of: ${validRoles.join(', ')}`);
+  console.error(`Error: Role must be one of: ${validRoles.join(", ")}`);
   process.exit(1);
 }
 
-const databaseUrl = process.env.DATABASE_URL || 'postgresql://edutech:edutech_password@localhost:5432/edutech';
+const databaseUrl =
+  process.env.DATABASE_URL ||
+  "postgresql://edutech:CHANGE_ME@localhost:5432/edutech";
 
 async function addUser() {
   console.log(`\nAdding ${role} user: ${email}`);
-  console.log('Connecting to database...');
+  console.log("Connecting to database...");
 
   const sql = postgres(databaseUrl, { max: 1 });
 
   try {
     const passwordHash = await bcrypt.hash(password, 12);
-    console.log('Password hashed successfully.');
+    console.log("Password hashed successfully.");
 
     const [user] = await sql`
       INSERT INTO users (email, password_hash, role, name, is_verified, is_active)
@@ -52,8 +54,8 @@ async function addUser() {
       RETURNING id, email, role, name, is_verified, is_active, created_at
     `;
 
-    console.log('\n✅ User created successfully!');
-    console.log('---------------------------');
+    console.log("\n✅ User created successfully!");
+    console.log("---------------------------");
     console.log(`ID:         ${user.id}`);
     console.log(`Email:      ${user.email}`);
     console.log(`Name:       ${user.name}`);
@@ -61,16 +63,16 @@ async function addUser() {
     console.log(`Verified:   ${user.is_verified}`);
     console.log(`Active:     ${user.is_active}`);
     console.log(`Created:    ${user.created_at}`);
-    console.log('---------------------------\n');
+    console.log("---------------------------\n");
 
-    if (role === 'instructor') {
+    if (role === "instructor") {
       const [profile] = await sql`
         INSERT INTO instructor_profiles (user_id, headline, bio)
         VALUES (${user.id}, 'New Instructor', 'Instructor biography')
         RETURNING id
       `;
       console.log(`Instructor profile created with ID: ${profile.id}`);
-    } else if (role === 'student') {
+    } else if (role === "student") {
       const [profile] = await sql`
         INSERT INTO student_profiles (user_id)
         VALUES (${user.id})
@@ -79,13 +81,15 @@ async function addUser() {
       console.log(`Student profile created with ID: ${profile.id}`);
     }
 
-    console.log('\nUser can now log in at /auth/login\n');
+    console.log("\nUser can now log in at /auth/login\n");
   } catch (error: unknown) {
     const e = error as { code?: string; message?: string };
-    if (e.code === '23505') {
-      console.error(`\n❌ Error: A user with email "${email}" already exists.\n`);
+    if (e.code === "23505") {
+      console.error(
+        `\n❌ Error: A user with email "${email}" already exists.\n`,
+      );
     } else {
-      console.error('\n❌ Database error:', e.message);
+      console.error("\n❌ Database error:", e.message);
     }
     process.exit(1);
   } finally {

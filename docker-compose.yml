@@ -6,9 +6,9 @@ services:
     container_name: edutech-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: edutech
-      POSTGRES_PASSWORD: edutech_password
-      POSTGRES_DB: edutech
+      POSTGRES_USER: ${POSTGRES_USER:-edutech}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-edutech}
     ports:
       - '5432:5432'
     volumes:
