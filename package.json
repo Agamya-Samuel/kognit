@@ -73,5 +73,8 @@
     "class-validator": "^0.15.1",
     "compression": "^1.8.1",
     "drizzle-orm": "^0.45.2"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.34.8"
   }
 }
