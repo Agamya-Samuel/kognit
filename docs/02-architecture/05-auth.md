@@ -15,10 +15,10 @@ Each web app (`web-student`, `web-instructor`, `web-admin`, `web-institution`) c
 
 ## Token Architecture
 
-| Token | Storage (Web) | Storage (Mobile) | Expiry |
-|---|---|---|---|
-| Access Token (JWT) | `localStorage.getItem('accessToken')` | SecureStore | 15 minutes |
-| Refresh Token | `localStorage.getItem('refreshToken')` | SecureStore | 30 days |
+| Token              | Storage (Web)                          | Storage (Mobile) | Expiry     |
+| ------------------ | -------------------------------------- | ---------------- | ---------- |
+| Access Token (JWT) | `localStorage.getItem('accessToken')`  | SecureStore      | 15 minutes |
+| Refresh Token      | `localStorage.getItem('refreshToken')` | SecureStore      | 30 days    |
 
 ### Token Transmission
 
@@ -38,8 +38,9 @@ Each web app (`web-student`, `web-instructor`, `web-admin`, `web-institution`) c
 ## Auth Flows
 
 ### Web (all apps)
+
 ```
-Next.js app → POST api.eduplatform.com/api/v1/auth/login { portal } → NestJS Auth Module
+Next.js app → POST api.example.com/api/v1/auth/login { portal } → NestJS Auth Module
   → Validate credentials + portal access (assertPortalAccess)
   → Check account lockout status
   → Issue JWT + Refresh Token
@@ -50,6 +51,7 @@ Next.js app → POST api.eduplatform.com/api/v1/auth/login { portal } → NestJS
 ```
 
 ### Portal Access Control
+
 - Each app must pass `portal` parameter on login
 - `portal: 'admin'` requires `role === 'admin'` ONLY (institution_admin excluded)
 - `portal: 'instructor'` requires `role === 'instructor'`
@@ -57,6 +59,7 @@ Next.js app → POST api.eduplatform.com/api/v1/auth/login { portal } → NestJS
 - Wrong portal access returns 403 error
 
 ### Email-First Registration
+
 ```
 User enters email → POST /api/v1/auth/send-verification-code
   → Generate 6-digit code (bcrypt hashed, stored in email_verifications)
@@ -73,10 +76,12 @@ User enters email → POST /api/v1/auth/send-verification-code
 ```
 
 #### Role-based Registration Flow
+
 - `intent: 'student'` → Creates student with `approvalStatus: 'approved'`, `onboardingCompleted: false`
 - `intent: 'instructor'` → Creates instructor with `approvalStatus: 'pending'` (requires admin approval)
 
 #### Student Onboarding After Registration
+
 ```
 Student → PATCH /users/profile → Update student profile fields
   → mobile, address, city, state, pinCode, country, affiliatedInstituteId
@@ -85,6 +90,7 @@ Student → PATCH /users/profile → Update student profile fields
 ```
 
 #### Instructor Registration
+
 ```
 Instructor → POST /auth/register → Account created with approvalStatus: 'pending'
   → Frontend redirects to /auth/pending
@@ -93,6 +99,7 @@ Instructor → POST /auth/register → Account created with approvalStatus: 'pen
 ```
 
 ### Admin Registration
+
 - Admin registration is **disabled** via UI
 - Admins are created via seed or API by existing admins
 - No self-service admin registration page
@@ -108,6 +115,7 @@ If a user registers with email/password and then uses Google/GitHub OAuth with t
 5. OAuth callbacks must use `SELECT ... FOR UPDATE` on the matching `users` row to prevent linking race conditions
 
 **`user_auth_providers` table:**
+
 ```
 id, user_id (FK), provider (email|google|github),
 provider_id (external sub ID), created_at
@@ -115,6 +123,7 @@ UNIQUE (provider, provider_id) — prevents duplicate provider links
 ```
 
 **Linking rules:**
+
 - Email/password → OAuth with same verified email: auto-link
 - OAuth → different OAuth with same email: auto-link (if existing account email is verified)
 - OAuth with unverified email: do not link, create separate account
@@ -185,6 +194,7 @@ UNIQUE (provider, provider_id) — prevents duplicate provider links
 ## Student Activation (Institution-Imported Students)
 
 ### Activation Flow
+
 ```
 Admin imports student CSV → Admin creates student accounts without passwords
   → System generates activation tokens (stored in email_verifications with purpose='student_activation')
@@ -199,16 +209,17 @@ Student clicks activation link → /auth/activate?token=xxxx
 ```
 
 ### Token Expiry
+
 - Activation tokens expire after 1200 days (configurable)
 - Tokens are single-use (verified column prevents reuse)
 
 ## RBAC Roles
 
-| Role | Permissions |
-|---|---|
-| `student` | Browse, enroll, watch, submit assignments, community |
-| `instructor` | All student permissions + create courses, manage students, analytics |
-| `admin` | Full platform access, user management, moderation |
-| `institution_admin` | Institution dashboard, manage seats, cohort reports |
+| Role                | Permissions                                                          |
+| ------------------- | -------------------------------------------------------------------- |
+| `student`           | Browse, enroll, watch, submit assignments, community                 |
+| `instructor`        | All student permissions + create courses, manage students, analytics |
+| `admin`             | Full platform access, user management, moderation                    |
+| `institution_admin` | Institution dashboard, manage seats, cohort reports                  |
 
 > **Single role per user.** Each user account has exactly one role. Users who need access to multiple portals (e.g., someone who is both a student and an instructor) must create separate accounts with different email addresses. There is no cross-app auth flow or role switching.

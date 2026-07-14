@@ -26,11 +26,11 @@ The `ApiClient` class in `packages/api-client/src/index.ts` provides the foundat
 ```typescript
 // Basic usage
 const client = new ApiClient({
-  baseURL: 'https://api.eduplatform.com/api',
-  getToken: () => localStorage.getItem('accessToken'),
+  baseURL: "https://api.example.com/api",
+  getToken: () => localStorage.getItem("accessToken"),
 });
 
-const courses = await client.get<Course[]>('/courses');
+const courses = await client.get<Course[]>("/courses");
 ```
 
 ### 2. Authentication Strategy
@@ -44,14 +44,10 @@ All three frontend apps (student, instructor, admin) use a standardized authenti
 
 ```tsx
 // apps/web-student/src/app/providers.tsx
-import { ApiProvider } from '@edutech/api-client';
+import { ApiProvider } from "@edutech/api-client";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  return (
-    <ApiProvider loginPath="/auth/login">
-      {children}
-    </ApiProvider>
-  );
+  return <ApiProvider loginPath="/auth/login">{children}</ApiProvider>;
 }
 ```
 
@@ -84,7 +80,7 @@ All data fetching uses React Query hooks built on service modules:
 // Student app
 export function useCourses() {
   return useQuery({
-    queryKey: ['courses'],
+    queryKey: ["courses"],
     queryFn: () => coursesService.list(),
   });
 }
@@ -92,7 +88,7 @@ export function useCourses() {
 // Instructor app
 export function useDashboardMetrics() {
   return useQuery({
-    queryKey: ['dashboard', 'metrics'],
+    queryKey: ["dashboard", "metrics"],
     queryFn: () => coursesService.getDashboardMetrics(),
   });
 }
@@ -100,7 +96,7 @@ export function useDashboardMetrics() {
 // Admin app
 export function useInstructors(filters?: InstructorFilters) {
   return useQuery({
-    queryKey: ['instructors', filters],
+    queryKey: ["instructors", filters],
     queryFn: () => adminService.getInstructors(filters),
   });
 }
@@ -111,7 +107,7 @@ export function useInstructors(filters?: InstructorFilters) {
 For Server Components and metadata generation:
 
 ```typescript
-import { createServerApiClient } from '@edutech/api-client';
+import { createServerApiClient } from "@edutech/api-client";
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
   const client = createServerApiClient(process.env.API_URL!);
@@ -137,11 +133,11 @@ All types are defined in `/packages/types` and shared across:
 
 ```typescript
 // Same type used everywhere
-import type { Course, AssignmentFilters } from '@edutech/types';
+import type { Course, AssignmentFilters } from "@edutech/types";
 
 const { data: courses } = useQuery({
-  queryKey: ['courses', { domain: 'programming' }],
-  queryFn: () => coursesService.list({ domain: 'programming' }),
+  queryKey: ["courses", { domain: "programming" }],
+  queryFn: () => coursesService.list({ domain: "programming" }),
 });
 // courses: Course[] | undefined
 ```
@@ -151,15 +147,15 @@ const { data: courses } = useQuery({
 Structured error handling with type guards:
 
 ```typescript
-import { isApiError, ApiClientError } from '@edutech/api-client';
+import { isApiError, ApiClientError } from "@edutech/api-client";
 
 try {
   await coursesService.create(dto);
 } catch (error) {
   if (isApiError(error)) {
-    console.error('Code:', error.code);    // string
-    console.error('Status:', error.status); // number
-    console.error('Details:', error.details); // FieldError[] | undefined
+    console.error("Code:", error.code); // string
+    console.error("Status:", error.status); // number
+    console.error("Details:", error.details); // FieldError[] | undefined
   }
 }
 ```
@@ -172,20 +168,15 @@ Consistent query key structure across all apps:
 
 ```typescript
 // Resources
-['courses']
-['courses', courseId]
-['courses', { domain: 'programming' }]
-
-// Nested resources
-['assignments']
-['assignments', assignmentId]
-['assignments', 'course', courseId]
-['submissions', 'assignment', assignmentId]
-
-// Dashboard
-['dashboard', 'metrics']
-['dashboard', 'activity']
-['live', 'upcoming']
+["courses"][("courses", courseId)][("courses", { domain: "programming" })][
+  // Nested resources
+  "assignments"
+][("assignments", assignmentId)][("assignments", "course", courseId)][
+  ("submissions", "assignment", assignmentId)
+][
+  // Dashboard
+  ("dashboard", "metrics")
+][("dashboard", "activity")][("live", "upcoming")];
 ```
 
 ---
@@ -204,9 +195,10 @@ Consistent query key structure across all apps:
 
 ```typescript
 interface ApiClientError extends Error {
-  code: string;           // Backend error code (e.g., "VALIDATION_ERROR")
-  status: number;         // HTTP status code (e.g., 400, 401, 404, 500)
-  details?: Array<{     // Field-level validation errors
+  code: string; // Backend error code (e.g., "VALIDATION_ERROR")
+  status: number; // HTTP status code (e.g., 400, 401, 404, 500)
+  details?: Array<{
+    // Field-level validation errors
     field: string;
     message: string;
   }>;
@@ -233,7 +225,7 @@ const mutation = useMutation({
   mutationFn: (dto: CreateCourseDto) => coursesService.create(dto),
   onSuccess: () => {
     // Invalidate all courses queries
-    queryClient.invalidateQueries({ queryKey: ['courses'] });
+    queryClient.invalidateQueries({ queryKey: ["courses"] });
   },
 });
 ```
@@ -241,6 +233,7 @@ const mutation = useMutation({
 ### Server-Side Caching
 
 For Server Components, consider:
+
 - Incremental Static Regeneration (ISR)
 - On-demand revalidation
 - Edge runtime for faster data fetching
@@ -269,6 +262,7 @@ Rate limit headers included in all responses.
 ### CORS
 
 Strict allow-list of origins:
+
 - Production domains (student, instructor, admin)
 - Localhost ports (3000, 3001, 3002) for development
 
@@ -299,16 +293,19 @@ export function CourseList({ domain }: { domain?: string }) {
 const mutation = useMutation({
   mutationFn: (dto: UpdateCourseDto) => coursesService.update(id, dto),
   onMutate: async (newCourse) => {
-    await queryClient.cancelQueries({ queryKey: ['course', id] });
-    const previous = queryClient.getQueryData(['course', id]);
-    queryClient.setQueryData(['course', id], (old: Course) => ({ ...old, ...newCourse }));
+    await queryClient.cancelQueries({ queryKey: ["course", id] });
+    const previous = queryClient.getQueryData(["course", id]);
+    queryClient.setQueryData(["course", id], (old: Course) => ({
+      ...old,
+      ...newCourse,
+    }));
     return { previous };
   },
   onError: (err, _newCourse, context) => {
-    queryClient.setQueryData(['course', id], context.previous);
+    queryClient.setQueryData(["course", id], context.previous);
   },
   onSettled: () => {
-    queryClient.invalidateQueries({ queryKey: ['course', id] });
+    queryClient.invalidateQueries({ queryKey: ["course", id] });
   },
 });
 ```
@@ -317,13 +314,13 @@ const mutation = useMutation({
 
 ```typescript
 const { data: course } = useQuery({
-  queryKey: ['course', courseId],
+  queryKey: ["course", courseId],
   queryFn: () => coursesService.getById(courseId),
   enabled: !!courseId,
 });
 
 const { data: lectures } = useQuery({
-  queryKey: ['lectures', courseId],
+  queryKey: ["lectures", courseId],
   queryFn: () => lecturesService.getByCourse(courseId),
   enabled: !!courseId && !!course?.isPublished,
 });
@@ -336,6 +333,7 @@ const { data: lectures } = useQuery({
 ### Error Tracking
 
 All `ApiClientError` instances are automatically sent to Sentry with:
+
 - Error code
 - HTTP status
 - Request URL
@@ -345,6 +343,7 @@ All `ApiClientError` instances are automatically sent to Sentry with:
 ### Performance Tracking
 
 React Query DevTools provides:
+
 - Query state (loading, success, error)
 - Cache inspection
 - Query timing

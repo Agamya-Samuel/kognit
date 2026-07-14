@@ -7,12 +7,14 @@ A live-first EdTech platform for college and university students across India an
 This is a **monorepo** built with **Turborepo**, consisting of:
 
 ### Applications
+
 - `apps/web-student` - Student learning experience (Next.js)
 - `apps/web-instructor` - Instructor dashboard and tools (Next.js)
 - `apps/web-admin` - Platform administration (Next.js)
 - `apps/api` - Backend API (NestJS modular monolith)
 
 ### Shared Packages
+
 - `packages/ui` - Shared ShadCN/TailwindCSS component library
 - `packages/types` - Shared TypeScript types and interfaces
 - `packages/validation` - Shared Zod schemas
@@ -23,6 +25,7 @@ This is a **monorepo** built with **Turborepo**, consisting of:
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js >= 18.17.0
 - npm >= 9.0.0
 - PostgreSQL database
@@ -117,12 +120,14 @@ edutech/
 ## 🔧 Technology Stack
 
 ### Frontend
+
 - **Framework:** Next.js 14 (App Router)
 - **Styling:** TailwindCSS + ShadCN/UI
 - **State Management:** Jotai + TanStack Query
 - **Video:** Mux Player + LiveKit SDK
 
 ### Backend
+
 - **Framework:** NestJS 10
 - **ORM:** Drizzle ORM
 - **Database:** PostgreSQL
@@ -130,6 +135,7 @@ edutech/
 - **API Docs:** Swagger/OpenAPI
 
 ### Infrastructure
+
 - **Monorepo:** Turborepo
 - **CI/CD:** GitHub Actions
 - **Deployment:** Dokploy
@@ -157,10 +163,12 @@ edutech/
 ## 🧪 Testing
 
 We maintain high test coverage with:
+
 - **80%** minimum coverage across all packages
 - **95%** minimum coverage on critical paths (auth, payments, enrollments, certificates)
 
 ### Test Types
+
 - **Unit Tests** - Jest for backend, Vitest for frontend
 - **Integration Tests** - API and database integration
 - **E2E Tests** - Playwright for critical user journeys
@@ -168,20 +176,23 @@ We maintain high test coverage with:
 ## 🚢 Deployment
 
 ### Staging
+
 - Deployed automatically to `develop` branch
 - URLs:
-  - API: `api.eduplatform.com`
-  - Student: `student.eduplatform.com`
-  - Instructor: `instructor.eduplatform.com`
-  - Admin: `admin.eduplatform.com`
+  - API: `api.example.com`
+  - Student: `student.example.com`
+  - Instructor: `instructor.example.com`
+  - Admin: `admin.example.com`
 
 ### Production
+
 - Manual deployment from `main` branch
 - Requires approval before deploying
 
 ## 📖 Documentation
 
 Comprehensive documentation is available in the `docs/` directory:
+
 - [Product Overview](docs/01-product/01-overview.md)
 - [Tech Stack](docs/02-architecture/01-tech-stack.md)
 - [Database Schema](docs/02-architecture/04-database.md)

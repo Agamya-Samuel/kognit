@@ -404,7 +404,7 @@ This is a meaningful change in Sprint 2's design intent — the original comprom
 
 After Sprint 3, **all 12 Critical + all 15 High findings from the original report are now fixed.** The remaining work is all Medium/Low:
 
-- Frontend polish items not in Sprint 3 (specific hardcoded `https://eduplatform.com` URLs in certificate share + sitemap/robots — minor SEO concerns)
+- Frontend polish items not in Sprint 3 (specific hardcoded `https://example.com` URLs in certificate share + sitemap/robots — minor SEO concerns)
 - `instructor-students.service.ts` (the `MED-06` `getWatchTimeSummary` "totalCourses counts distinct lectures" — should count distinct courses)
 - A few `MED-` items around admin pages still using `useState` + `fetch` anti-pattern instead of TanStack Query
 - A few `console.log` in S3 webhook controller (LSP warnings)

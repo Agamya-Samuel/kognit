@@ -92,24 +92,24 @@ A live-first EdTech platform connecting Indian college students with vetted inst
 
 ### Target Audience
 
-| Attribute | Details |
-|---|---|
-| **Primary** | College students, age 18–26, India |
-| **Secondary** | Instructors (industry professionals, domain experts) |
-| **Tertiary** | Institutions (colleges, training centers) — Phase 2 |
-| **Device** | Mobile-first (primary audience predominantly uses smartphones) |
+| Attribute        | Details                                                        |
+| ---------------- | -------------------------------------------------------------- |
+| **Primary**      | College students, age 18–26, India                             |
+| **Secondary**    | Instructors (industry professionals, domain experts)           |
+| **Tertiary**     | Institutions (colleges, training centers) — Phase 2            |
+| **Device**       | Mobile-first (primary audience predominantly uses smartphones) |
 | **Connectivity** | Variable network quality; optimize for low-bandwidth scenarios |
 
 ### Platform Zones
 
 The platform is four separate web applications, each with its own subdomain:
 
-| App | Subdomain | Purpose |
-|---|---|---|
-| **Landing** | `eduplatform.com` | Public-facing marketing and conversion page |
-| **Student** | `student.eduplatform.com` | Course discovery, learning, community, placement |
-| **Instructor** | `instructor.eduplatform.com` | Course creation, student management, analytics, revenue |
-| **Admin** | `admin.eduplatform.com` | Platform administration, moderation, security |
+| App            | Subdomain                | Purpose                                                 |
+| -------------- | ------------------------ | ------------------------------------------------------- |
+| **Landing**    | `example.com`            | Public-facing marketing and conversion page             |
+| **Student**    | `student.example.com`    | Course discovery, learning, community, placement        |
+| **Instructor** | `instructor.example.com` | Course creation, student management, analytics, revenue |
+| **Admin**      | `admin.example.com`      | Platform administration, moderation, security           |
 
 Users have a single role (student OR instructor) — no role switching within an account.
 
@@ -145,13 +145,13 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Enter email, enter password, sign in, sign in with Google/GitHub, navigate to forgot password, navigate to registration
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Default | Empty form | — |
-  | Loading | Button spinner + disabled button | — |
-  | Error (invalid credentials) | Red banner below form | "Invalid email or password. Please try again." |
-  | Error (account locked) | Red banner with lock icon + timer | "Account locked for 15 minutes due to too many failed attempts." |
-  | Error (account deactivated) | Red banner | "Your account has been deactivated. Contact support." |
+  | State                       | Visual                            | User Message                                                     |
+  | --------------------------- | --------------------------------- | ---------------------------------------------------------------- |
+  | Default                     | Empty form                        | —                                                                |
+  | Loading                     | Button spinner + disabled button  | —                                                                |
+  | Error (invalid credentials) | Red banner below form             | "Invalid email or password. Please try again."                   |
+  | Error (account locked)      | Red banner with lock icon + timer | "Account locked for 15 minutes due to too many failed attempts." |
+  | Error (account deactivated) | Red banner                        | "Your account has been deactivated. Contact support."            |
 
 - **Mobile Considerations**: Full-width card, stacked OAuth buttons, larger touch targets for inputs
 - **Exit Points**: Successful login → respective app dashboard; OAuth → OAuth Redirect page; Forgot Password → Forgot Password page; Create Account → Email entry (start of registration)
@@ -167,17 +167,17 @@ Users have a single role (student OR instructor) — no role switching within an
   - "Resend code" text link with countdown timer (e.g., "Resend in 00:45")
   - "Verify" primary button
   - "Back" text link
-- **Data Displayed**: Masked email address (e.g., "Code sent to a***@gmail.com")
+- **Data Displayed**: Masked email address (e.g., "Code sent to a\*\*\*@gmail.com")
 - **User Actions**: Enter 6-digit code, verify, resend code (after timer expires), go back
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Default | Empty digit boxes | — |
-  | Loading | Spinner replacing verify button | — |
-  | Error (wrong code) | Red border on digit boxes + shake animation | "Invalid code. Please check and try again." |
-  | Error (expired code) | Red banner | "This code has expired. Please request a new one." |
-  | Success | Green checkmark animation on digit boxes | Auto-advance to Registration page |
+  | State                | Visual                                      | User Message                                       |
+  | -------------------- | ------------------------------------------- | -------------------------------------------------- |
+  | Default              | Empty digit boxes                           | —                                                  |
+  | Loading              | Spinner replacing verify button             | —                                                  |
+  | Error (wrong code)   | Red border on digit boxes + shake animation | "Invalid code. Please check and try again."        |
+  | Error (expired code) | Red banner                                  | "This code has expired. Please request a new one." |
+  | Success              | Green checkmark animation on digit boxes    | Auto-advance to Registration page                  |
 
 - **Mobile Considerations**: Larger digit boxes for touch, numeric keyboard on mobile, auto-advance must work with tap
 - **Exit Points**: Success → Registration (Set Password + Name); Back → Email entry; Resend → new code sent
@@ -197,13 +197,13 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Enter name, enter password, confirm password, create account
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Default | Empty form | — |
+  | State            | Visual                           | User Message                                                                                        |
+  | ---------------- | -------------------------------- | --------------------------------------------------------------------------------------------------- |
+  | Default          | Empty form                       | —                                                                                                   |
   | Validation error | Red border + message below field | Per-field: "Password must be at least 8 characters" / "Passwords do not match" / "Name is required" |
-  | Loading | Button spinner + disabled button | "Creating your account..." |
-  | Error | Red banner | "Registration failed. Please try again." |
-  | Success | Success animation | Auto-redirect to respective app dashboard |
+  | Loading          | Button spinner + disabled button | "Creating your account..."                                                                          |
+  | Error            | Red banner                       | "Registration failed. Please try again."                                                            |
+  | Success          | Success animation                | Auto-redirect to respective app dashboard                                                           |
 
 - **Mobile Considerations**: Full-width inputs, password strength indicator below field, stacked layout
 - **Exit Points**: Success → respective app dashboard (Student/Instructor based on signup context)
@@ -222,12 +222,12 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Enter email, send reset link, navigate back to login
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Default | Empty form | — |
-  | Loading | Button spinner | — |
-  | Error (email not found) | Red banner | "No account found with this email address." |
-  | Success | Green confirmation with envelope icon | "If an account exists with this email, a reset link has been sent." |
+  | State                   | Visual                                | User Message                                                        |
+  | ----------------------- | ------------------------------------- | ------------------------------------------------------------------- |
+  | Default                 | Empty form                            | —                                                                   |
+  | Loading                 | Button spinner                        | —                                                                   |
+  | Error (email not found) | Red banner                            | "No account found with this email address."                         |
+  | Success                 | Green confirmation with envelope icon | "If an account exists with this email, a reset link has been sent." |
 
 - **Mobile Considerations**: Full-width card and inputs
 - **Exit Points**: Success → confirmation screen; Back → Login page
@@ -247,13 +247,13 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Enter new password, confirm password, reset password
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Default | Empty form | — |
-  | Validation error | Red border + message below field | Per-field validation messages |
-  | Loading | Button spinner | — |
-  | Error (expired token) | Red banner | "This reset link has expired. Please request a new one." |
-  | Success | Green checkmark + redirect | "Password reset successfully. Redirecting to login..." |
+  | State                 | Visual                           | User Message                                             |
+  | --------------------- | -------------------------------- | -------------------------------------------------------- |
+  | Default               | Empty form                       | —                                                        |
+  | Validation error      | Red border + message below field | Per-field validation messages                            |
+  | Loading               | Button spinner                   | —                                                        |
+  | Error (expired token) | Red banner                       | "This reset link has expired. Please request a new one." |
+  | Success               | Green checkmark + redirect       | "Password reset successfully. Redirecting to login..."   |
 
 - **Mobile Considerations**: Same as Registration page
 - **Exit Points**: Success → Login page (with auto-redirect)
@@ -270,12 +270,12 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: None (automatic)
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Processing | Full-screen spinner | "Signing you in with [Provider]..." |
-  | Error (provider error) | Error card with retry button | "Unable to sign in with [Provider]. Please try again." |
-  | Error (account conflict) | Error card with options | "An account already exists with this email. Sign in with password instead." |
-  | Success | Brief flash then redirect | Auto-redirect to respective app dashboard |
+  | State                    | Visual                       | User Message                                                                |
+  | ------------------------ | ---------------------------- | --------------------------------------------------------------------------- |
+  | Processing               | Full-screen spinner          | "Signing you in with [Provider]..."                                         |
+  | Error (provider error)   | Error card with retry button | "Unable to sign in with [Provider]. Please try again."                      |
+  | Error (account conflict) | Error card with options      | "An account already exists with this email. Sign in with password instead." |
+  | Success                  | Brief flash then redirect    | Auto-redirect to respective app dashboard                                   |
 
 - **Mobile Considerations**: Full-screen overlay, no navigation chrome
 - **Exit Points**: Success → app dashboard; Error → Login page
@@ -284,7 +284,7 @@ Users have a single role (student OR instructor) — no role switching within an
 
 ## 3. Landing Page
 
-> A single-page marketing site at `eduplatform.com`. Purpose: convert visitors into registered students. Keep it simple — headline, value proposition, and a clear CTA.
+> A single-page marketing site at `example.com`. Purpose: convert visitors into registered students. Keep it simple — headline, value proposition, and a clear CTA.
 
 ### 3.1 Landing Page
 
@@ -300,20 +300,20 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Click CTA buttons (navigate to student app), browse features, read testimonials, click footer links
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Skeleton placeholders for images, shimmer on text blocks | — |
-  | Loaded | Fully rendered with entrance animations | — |
-  | Error (assets failed) | Graceful fallback — text visible, images show placeholder | — |
+  | State                 | Visual                                                    | User Message |
+  | --------------------- | --------------------------------------------------------- | ------------ |
+  | Loading               | Skeleton placeholders for images, shimmer on text blocks  | —            |
+  | Loaded                | Fully rendered with entrance animations                   | —            |
+  | Error (assets failed) | Graceful fallback — text visible, images show placeholder | —            |
 
 - **Mobile Considerations**: Mobile-first responsive layout, compressed hero section, stacked feature cards, sticky CTA button at bottom on mobile, touch-friendly footer links
-- **Exit Points**: CTA buttons → `student.eduplatform.com` (registration/login); Footer links → respective pages
+- **Exit Points**: CTA buttons → `student.example.com` (registration/login); Footer links → respective pages
 
 ---
 
 ## 4. Student App Pages
 
-> All student pages live at `student.eduplatform.com`. Mobile-first design. Navigation uses a **bottom tab bar** on mobile and a **sidebar** on desktop.
+> All student pages live at `student.example.com`. Mobile-first design. Navigation uses a **bottom tab bar** on mobile and a **sidebar** on desktop.
 
 ### 4.1 Dashboard
 
@@ -332,11 +332,11 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Continue watching (resume last lecture), open a course, join upcoming live class, browse courses, open notifications
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Skeleton cards matching layout | — |
-  | Empty (new user) | Welcome illustration + CTA | "Welcome! Start by browsing courses." |
-  | Error | Toast notification + retry | "Failed to load dashboard. Tap to retry." |
+  | State            | Visual                         | User Message                              |
+  | ---------------- | ------------------------------ | ----------------------------------------- |
+  | Loading          | Skeleton cards matching layout | —                                         |
+  | Empty (new user) | Welcome illustration + CTA     | "Welcome! Start by browsing courses."     |
+  | Error            | Toast notification + retry     | "Failed to load dashboard. Tap to retry." |
 
 - **Mobile Considerations**: Vertical card stack, swipeable course cards, collapsible sections, bottom tab navigation bar
 - **Exit Points**: Course card → Course Detail; Continue Learning → Video Player; Join → Live Class; Browse Courses → Course Catalog; Notifications → Notifications Center
@@ -356,11 +356,11 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Search by keyword, apply/remove filters, sort results, click course card, browse pages
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Skeleton course cards in grid | — |
-  | Empty (no results) | Illustration + search tips | "No courses found. Try adjusting your filters." |
-  | Error | Toast + retry | "Failed to load courses." |
+  | State              | Visual                        | User Message                                    |
+  | ------------------ | ----------------------------- | ----------------------------------------------- |
+  | Loading            | Skeleton course cards in grid | —                                               |
+  | Empty (no results) | Illustration + search tips    | "No courses found. Try adjusting your filters." |
+  | Error              | Toast + retry                 | "Failed to load courses."                       |
 
 - **Mobile Considerations**: Single-column card layout, filter drawer (bottom sheet on mobile), touch-friendly filter chips
 - **Exit Points**: Course card → Course Detail; Login wall → Login page (for paid courses)
@@ -381,11 +381,11 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Watch free preview lectures (no login required), read reviews, browse syllabus, enroll/purchase, navigate back
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Skeleton sections (hero, syllabus, reviews) | — |
-  | Error (not found) | "Course not found" + back link | "This course may have been removed." |
-  | Already enrolled | "Continue Learning" button replaces "Enroll" | — |
+  | State             | Visual                                       | User Message                         |
+  | ----------------- | -------------------------------------------- | ------------------------------------ |
+  | Loading           | Skeleton sections (hero, syllabus, reviews)  | —                                    |
+  | Error (not found) | "Course not found" + back link               | "This course may have been removed." |
+  | Already enrolled  | "Continue Learning" button replaces "Enroll" | —                                    |
 
 - **Mobile Considerations**: Stacked layout, expandable/collapsible sections, full-width video player, sticky bottom enroll bar
 - **Exit Points**: Enroll → Checkout/Payment; Continue Learning → Video Player; Free Preview → Video Player; Back → Course Catalog
@@ -405,12 +405,12 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Play/pause, seek, adjust speed, change quality, fullscreen, navigate lectures, mark as complete, toggle auto-advance
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading / Buffering | Spinner overlay on video + progress bar | — |
-  | Error (unavailable) | Error overlay with icon | "This video is currently processing or unavailable." + Retry button |
-  | Error (access denied) | Lock icon overlay | "You need to enroll in this course to watch this lecture." |
-  | Playing | Full controls visible, progress tracking active | — |
+  | State                 | Visual                                          | User Message                                                        |
+  | --------------------- | ----------------------------------------------- | ------------------------------------------------------------------- |
+  | Loading / Buffering   | Spinner overlay on video + progress bar         | —                                                                   |
+  | Error (unavailable)   | Error overlay with icon                         | "This video is currently processing or unavailable." + Retry button |
+  | Error (access denied) | Lock icon overlay                               | "You need to enroll in this course to watch this lecture."          |
+  | Playing               | Full controls visible, progress tracking active | —                                                                   |
 
 - **Mobile Considerations**: Full-width player, touch-friendly controls, landscape mode support, lecture list as bottom sheet (replaces sidebar), gesture controls (swipe to seek)
 - **Exit Points**: Complete lecture → auto-advance to next; Lecture sidebar → another lecture; Back → Course Detail
@@ -431,13 +431,13 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Enable/disable mic and camera, send chat messages, raise hand, share screen, leave class, view participants
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Connecting | Pulsing video icon + spinner | "Connecting to live class..." |
-  | Live | Red "LIVE" badge, active video, chat flowing | — |
-  | Poor connection | Yellow/red quality indicator | "Poor connection. Video quality may be reduced." |
-  | Disconnected | Reconnect overlay | "Connection lost. Reconnecting..." |
-  | Ended | Recording available overlay | "This class has ended. Recording will be available soon." |
+  | State           | Visual                                       | User Message                                              |
+  | --------------- | -------------------------------------------- | --------------------------------------------------------- |
+  | Connecting      | Pulsing video icon + spinner                 | "Connecting to live class..."                             |
+  | Live            | Red "LIVE" badge, active video, chat flowing | —                                                         |
+  | Poor connection | Yellow/red quality indicator                 | "Poor connection. Video quality may be reduced."          |
+  | Disconnected    | Reconnect overlay                            | "Connection lost. Reconnecting..."                        |
+  | Ended           | Recording available overlay                  | "This class has ended. Recording will be available soon." |
 
 - **Mobile Considerations**: Responsive video grid, chat as drawer overlay, pinned speaker view, data-usage warning, simplified controls bar
 - **Exit Points**: Leave class → Course Detail; End of class → recording access screen; Disconnect → reconnect prompt
@@ -454,11 +454,11 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Switch tabs, sort courses, continue course, view completed courses
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Skeleton course cards | — |
-  | Empty (no courses) | Illustration + CTA | "You haven't enrolled in any courses yet. Browse our catalog!" |
-  | Empty (tab) | Tab-specific empty state | "No in-progress courses" or "No completed courses" |
+  | State              | Visual                   | User Message                                                   |
+  | ------------------ | ------------------------ | -------------------------------------------------------------- |
+  | Loading            | Skeleton course cards    | —                                                              |
+  | Empty (no courses) | Illustration + CTA       | "You haven't enrolled in any courses yet. Browse our catalog!" |
+  | Empty (tab)        | Tab-specific empty state | "No in-progress courses" or "No completed courses"             |
 
 - **Mobile Considerations**: Single-column card layout, swipeable cards, sticky tab bar
 - **Exit Points**: Course card → Video Player (continue) or Course Detail; Browse CTA → Course Catalog
@@ -476,10 +476,10 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Click assignment to view details/submit, filter by status, sort by date
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Skeleton list items | — |
-  | Empty | Illustration | "No assignments for this course." |
+  | State   | Visual              | User Message                      |
+  | ------- | ------------------- | --------------------------------- |
+  | Loading | Skeleton list items | —                                 |
+  | Empty   | Illustration        | "No assignments for this course." |
 
 - **Mobile Considerations**: Card-based layout (instead of table), status badges prominently displayed, swipe to filter
 - **Exit Points**: Assignment card → Assignment Submission; Back → Course Detail
@@ -500,16 +500,16 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Read instructions, upload file(s), enter text/code response, remove attachments, submit, view feedback
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Page skeleton | — |
-  | Uploading | Progress bar with percentage + ETA | "Uploading... 45% (2.1 MB of 5.0 MB)" |
-  | Error (file too large) | Red banner on upload zone | "File exceeds maximum size limit." |
-  | Error (wrong type) | Red banner on upload zone | "This file type is not supported." |
-  | Submitting | Blue processing banner | "Submitting assignment... Please don't close this window." |
-  | Success | Green confirmation toast | "Assignment submitted successfully!" |
-  | Under review | Yellow "In review" badge | "Estimated grading time: 24–48 hours." |
-  | Graded | Grade display + feedback section | Grade + instructor comments visible |
+  | State                  | Visual                             | User Message                                               |
+  | ---------------------- | ---------------------------------- | ---------------------------------------------------------- |
+  | Loading                | Page skeleton                      | —                                                          |
+  | Uploading              | Progress bar with percentage + ETA | "Uploading... 45% (2.1 MB of 5.0 MB)"                      |
+  | Error (file too large) | Red banner on upload zone          | "File exceeds maximum size limit."                         |
+  | Error (wrong type)     | Red banner on upload zone          | "This file type is not supported."                         |
+  | Submitting             | Blue processing banner             | "Submitting assignment... Please don't close this window." |
+  | Success                | Green confirmation toast           | "Assignment submitted successfully!"                       |
+  | Under review           | Yellow "In review" badge           | "Estimated grading time: 24–48 hours."                     |
+  | Graded                 | Grade display + feedback section   | Grade + instructor comments visible                        |
 
 - **Mobile Considerations**: Camera upload option, file picker optimization, prevent accidental submit (confirmation dialog), full-width upload zone
 - **Exit Points**: Submit → Assignment List (updated status); Back → Assignment List; Feedback link → feedback view
@@ -529,14 +529,14 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Select answer, navigate questions, mark for review, submit quiz
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Skeleton question area | "Loading quiz..." |
-  | Timed warning | Timer turns yellow (under 2 min) | — |
-  | Timer expired | Auto-submit dialog | "Time's up! Your quiz has been auto-submitted." |
-  | Exit without submit | Warning dialog | "Are you sure? Unanswered questions will be marked incorrect." |
-  | Submitted | Processing spinner | "Grading your quiz..." |
-  | Graded | Results screen: score, correct/incorrect breakdown, review answers option | Score + percentage |
+  | State               | Visual                                                                    | User Message                                                   |
+  | ------------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------- |
+  | Loading             | Skeleton question area                                                    | "Loading quiz..."                                              |
+  | Timed warning       | Timer turns yellow (under 2 min)                                          | —                                                              |
+  | Timer expired       | Auto-submit dialog                                                        | "Time's up! Your quiz has been auto-submitted."                |
+  | Exit without submit | Warning dialog                                                            | "Are you sure? Unanswered questions will be marked incorrect." |
+  | Submitted           | Processing spinner                                                        | "Grading your quiz..."                                         |
+  | Graded              | Results screen: score, correct/incorrect breakdown, review answers option | Score + percentage                                             |
 
 - **Mobile Considerations**: Sticky timer at top, large touch-friendly answer options, swipe between questions, prevent accidental submit
 - **Exit Points**: Submit → Quiz Results; Timer expire → auto-submit → Results; Back (during quiz) → warning confirmation → Assignment List
@@ -558,13 +558,13 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Browse channels, read messages, post new message, reply to messages, search, flag/report content
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Skeleton channel list + message list | — |
-  | Empty (no channels) | Illustration | "No discussion channels available yet." |
-  | Empty (no messages) | Placeholder text in channel | "Be the first to start a conversation!" |
-  | Error (send failed) | Toast notification | "Failed to send message. Tap to retry." |
-  | Offline | Yellow banner at top | "You're offline. Messages will be sent when you reconnect." |
+  | State               | Visual                               | User Message                                                |
+  | ------------------- | ------------------------------------ | ----------------------------------------------------------- |
+  | Loading             | Skeleton channel list + message list | —                                                           |
+  | Empty (no channels) | Illustration                         | "No discussion channels available yet."                     |
+  | Empty (no messages) | Placeholder text in channel          | "Be the first to start a conversation!"                     |
+  | Error (send failed) | Toast notification                   | "Failed to send message. Tap to retry."                     |
+  | Offline             | Yellow banner at top                 | "You're offline. Messages will be sent when you reconnect." |
 
 - **Mobile Considerations**: Channel list as slide-out drawer, bottom-fixed message composer, pull-to-refresh messages, swipe to reply, full-screen thread view
 - **Exit Points**: Channel → message list; Back → channel list; Notification → specific message
@@ -582,11 +582,11 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Download PDF, share on LinkedIn, copy verification link, view certificate details
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Skeleton certificate cards | — |
-  | Empty | Illustration + CTA | "Complete a course to earn your first certificate!" |
-  | Generating PDF | Progress indicator | "Generating certificate PDF..." |
+  | State          | Visual                     | User Message                                        |
+  | -------------- | -------------------------- | --------------------------------------------------- |
+  | Loading        | Skeleton certificate cards | —                                                   |
+  | Empty          | Illustration + CTA         | "Complete a course to earn your first certificate!" |
+  | Generating PDF | Progress indicator         | "Generating certificate PDF..."                     |
 
 - **Mobile Considerations**: Full-width certificate cards, native share sheet integration, optimized PDF download
 - **Exit Points**: Download → file save; Share → LinkedIn; Verification link → Certificate Verification page
@@ -604,13 +604,13 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Enter certificate ID, verify, view details
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Default | Empty input | — |
-  | Verifying | Spinner | "Verifying certificate..." |
-  | Valid | Green confirmation + certificate details | "Certificate is valid and authentic." |
-  | Invalid | Red warning | "This certificate could not be verified. It may have been tampered with." |
-  | Not found | Error message | "No certificate found with this ID." |
+  | State     | Visual                                   | User Message                                                              |
+  | --------- | ---------------------------------------- | ------------------------------------------------------------------------- |
+  | Default   | Empty input                              | —                                                                         |
+  | Verifying | Spinner                                  | "Verifying certificate..."                                                |
+  | Valid     | Green confirmation + certificate details | "Certificate is valid and authentic."                                     |
+  | Invalid   | Red warning                              | "This certificate could not be verified. It may have been tampered with." |
+  | Not found | Error message                            | "No certificate found with this ID."                                      |
 
 - **Mobile Considerations**: Simplified form, full-width certificate preview, share button
 - **Exit Points**: Valid → share options; Back → verification form
@@ -632,13 +632,13 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Add/edit skills, upload resume, add/remove projects, edit education, save profile, preview profile
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Section skeletons | — |
-  | Saving | Button spinner | "Saving profile..." |
-  | Error (validation) | Red border on field + message | Per-field validation |
-  | Error (save failed) | Toast | "Failed to save. Tap to retry." |
-  | Success | Green toast | "Profile updated successfully!" |
+  | State               | Visual                        | User Message                    |
+  | ------------------- | ----------------------------- | ------------------------------- |
+  | Loading             | Section skeletons             | —                               |
+  | Saving              | Button spinner                | "Saving profile..."             |
+  | Error (validation)  | Red border on field + message | Per-field validation            |
+  | Error (save failed) | Toast                         | "Failed to save. Tap to retry." |
+  | Success             | Green toast                   | "Profile updated successfully!" |
 
 - **Mobile Considerations**: Multi-step wizard layout, clear progress indicator, mobile resume upload (camera + file picker), touch-friendly tag input
 - **Exit Points**: Save → placement dashboard; Complete profile → Job Board access
@@ -656,11 +656,11 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Search jobs, filter, view details, apply (external link), save/bookmark jobs
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Skeleton job cards | — |
-  | Empty | Illustration | "No jobs match your criteria right now." |
-  | Saved | Bookmark icon filled | — |
+  | State   | Visual               | User Message                             |
+  | ------- | -------------------- | ---------------------------------------- |
+  | Loading | Skeleton job cards   | —                                        |
+  | Empty   | Illustration         | "No jobs match your criteria right now." |
+  | Saved   | Bookmark icon filled | —                                        |
 
 - **Mobile Considerations**: Card-based layout, collapsible filter drawer, swipe to save, quick-apply button
 - **Exit Points**: Apply → external job application; Save → saved jobs list; Back → placement dashboard
@@ -679,11 +679,11 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: View list, click notification (navigate to content), mark as read, mark all as read, filter by type, delete notification
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Skeleton notification items | — |
-  | Empty | Illustration | "You're all caught up! No new notifications." |
-  | Error | Toast + retry | "Failed to load notifications." |
+  | State   | Visual                      | User Message                                  |
+  | ------- | --------------------------- | --------------------------------------------- |
+  | Loading | Skeleton notification items | —                                             |
+  | Empty   | Illustration                | "You're all caught up! No new notifications." |
+  | Error   | Toast + retry               | "Failed to load notifications."               |
 
 - **Mobile Considerations**: Full-screen notification drawer, swipe to delete, pull-to-refresh
 - **Exit Points**: Click notification → related content page (course, assignment, live class, etc.)
@@ -702,13 +702,13 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Review order, apply coupon, initiate payment, cancel
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Order summary skeleton | — |
-  | Payment processing | Full-screen overlay with spinner | "Processing payment... Please don't close this window." |
-  | Error (payment failed) | Red banner + retry | "Payment failed. Please try again or use a different method." |
-  | Error (coupon invalid) | Red text below coupon input | "Invalid coupon code." |
-  | Success | Redirect to Payment Success page | — |
+  | State                  | Visual                           | User Message                                                  |
+  | ---------------------- | -------------------------------- | ------------------------------------------------------------- |
+  | Loading                | Order summary skeleton           | —                                                             |
+  | Payment processing     | Full-screen overlay with spinner | "Processing payment... Please don't close this window."       |
+  | Error (payment failed) | Red banner + retry               | "Payment failed. Please try again or use a different method." |
+  | Error (coupon invalid) | Red text below coupon input      | "Invalid coupon code."                                        |
+  | Success                | Redirect to Payment Success page | —                                                             |
 
 - **Mobile Considerations**: Full-width order summary, sticky pay button at bottom, Razorpay mobile-optimized overlay
 - **Exit Points**: Payment success → Payment Success page; Cancel → Course Detail; Back → Course Detail
@@ -746,11 +746,11 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Change avatar, change password, manage connected accounts, toggle notification preferences, delete account, log out
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Profile skeleton | — |
-  | Saving | Button spinner | "Saving changes..." |
-  | Error | Toast | "Failed to save changes." |
+  | State   | Visual           | User Message              |
+  | ------- | ---------------- | ------------------------- |
+  | Loading | Profile skeleton | —                         |
+  | Saving  | Button spinner   | "Saving changes..."       |
+  | Error   | Toast            | "Failed to save changes." |
 
 - **Mobile Considerations**: Collapsible settings sections, large touch targets for toggles, bottom-aligned save button
 - **Exit Points**: Save → confirmation toast; Log Out → Login page; Delete Account → confirmation dialog → Login page
@@ -759,7 +759,7 @@ Users have a single role (student OR instructor) — no role switching within an
 
 ## 5. Instructor App Pages
 
-> All instructor pages live at `instructor.eduplatform.com`. Mobile-first design. Navigation uses a **sidebar** on desktop and a **hamburger menu** on mobile. Instructor onboarding is invite-only — instructors must apply and be approved by admin before accessing the dashboard.
+> All instructor pages live at `instructor.example.com`. Mobile-first design. Navigation uses a **sidebar** on desktop and a **hamburger menu** on mobile. Instructor onboarding is invite-only — instructors must apply and be approved by admin before accessing the dashboard.
 
 ### 5.1 Instructor Application Form
 
@@ -776,13 +776,13 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Fill form sections, upload documents, submit application
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Default | Empty form | — |
-  | Validation error | Red border + message per field | Per-field validation |
-  | Submitting | Blue processing banner | "Submitting application... Please don't close this window." |
-  | Error | Toast + retry | "Submission failed. Tap to retry." |
-  | Success | Confirmation screen with reference number | "Application submitted! Reference: #XXXX. We'll review it within 3–5 business days." |
+  | State            | Visual                                    | User Message                                                                         |
+  | ---------------- | ----------------------------------------- | ------------------------------------------------------------------------------------ |
+  | Default          | Empty form                                | —                                                                                    |
+  | Validation error | Red border + message per field            | Per-field validation                                                                 |
+  | Submitting       | Blue processing banner                    | "Submitting application... Please don't close this window."                          |
+  | Error            | Toast + retry                             | "Submission failed. Tap to retry."                                                   |
+  | Success          | Confirmation screen with reference number | "Application submitted! Reference: #XXXX. We'll review it within 3–5 business days." |
 
 - **Mobile Considerations**: Vertical stacked sections, touch-friendly file upload, clear progress indicator
 - **Exit Points**: Success → Application Status page; Cancel → landing page
@@ -800,12 +800,12 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: View status, re-apply (if rejected), proceed to dashboard (if approved)
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Skeleton status card | — |
-  | Pending | Yellow clock icon | "Your application is under review." |
-  | Approved | Green checkmark | "Congratulations! Your application has been approved." |
-  | Rejected | Red X icon + reason | "Your application was not approved." + reason text |
+  | State    | Visual               | User Message                                           |
+  | -------- | -------------------- | ------------------------------------------------------ |
+  | Loading  | Skeleton status card | —                                                      |
+  | Pending  | Yellow clock icon    | "Your application is under review."                    |
+  | Approved | Green checkmark      | "Congratulations! Your application has been approved." |
+  | Rejected | Red X icon + reason  | "Your application was not approved." + reason text     |
 
 - **Mobile Considerations**: Centered status card, full-width timeline
 - **Exit Points**: Approved → Dashboard; Rejected → re-apply flow; Pending → wait (no action)
@@ -823,11 +823,11 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Create course, schedule class, view analytics, start live class, view recent activity
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Skeleton metric cards + activity feed | — |
-  | Empty (new instructor) | Welcome illustration + CTA | "Welcome! Start by creating your first course." |
-  | Error | Toast + retry | "Failed to load dashboard." |
+  | State                  | Visual                                | User Message                                    |
+  | ---------------------- | ------------------------------------- | ----------------------------------------------- |
+  | Loading                | Skeleton metric cards + activity feed | —                                               |
+  | Empty (new instructor) | Welcome illustration + CTA            | "Welcome! Start by creating your first course." |
+  | Error                  | Toast + retry                         | "Failed to load dashboard."                     |
 
 - **Mobile Considerations**: Stacked metric cards, scrollable activity feed, prominent quick action buttons
 - **Exit Points**: Create Course → Course Creation Wizard; Schedule Class → Live Class Scheduler; Analytics → Analytics Dashboard; Start Class → Live Class Room
@@ -845,10 +845,10 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Create new course, edit course, publish/unpublish, view course, filter, sort
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Skeleton course cards | — |
-  | Empty | Illustration + CTA | "You haven't created any courses yet." |
+  | State   | Visual                | User Message                           |
+  | ------- | --------------------- | -------------------------------------- |
+  | Loading | Skeleton course cards | —                                      |
+  | Empty   | Illustration + CTA    | "You haven't created any courses yet." |
 
 - **Mobile Considerations**: Card-based layout (not table), status badges prominently displayed, swipe actions for quick edit
 - **Exit Points**: Create → Course Creation Wizard; Course card → Course Editor; Published → preview
@@ -869,14 +869,14 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Fill details, upload thumbnail, add sections/lectures, upload content, reorder, preview, save draft, publish
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Default | Empty form at Step 1 | — |
-  | Auto-saving | Subtle "Saving draft..." indicator | — |
-  | Validation error | Red border + message per field | Per-field validation |
-  | Publishing | Blue processing banner | "Publishing course..." |
-  | Success | Confirmation toast | "Course published successfully!" |
-  | Draft saved | Toast | "Draft saved." |
+  | State            | Visual                             | User Message                     |
+  | ---------------- | ---------------------------------- | -------------------------------- |
+  | Default          | Empty form at Step 1               | —                                |
+  | Auto-saving      | Subtle "Saving draft..." indicator | —                                |
+  | Validation error | Red border + message per field     | Per-field validation             |
+  | Publishing       | Blue processing banner             | "Publishing course..."           |
+  | Success          | Confirmation toast                 | "Course published successfully!" |
+  | Draft saved      | Toast                              | "Draft saved."                   |
 
 - **Mobile Considerations**: Single-column step layout, touch-friendly drag handles (long-press), collapsible sections, bottom-aligned navigation buttons
 - **Exit Points**: Publish → Course List (published); Save Draft → Course List (draft); Cancel → confirmation → Course List
@@ -896,12 +896,12 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Edit course details, add/edit/delete sections, add/edit/delete lectures, reorder, toggle free preview, save, preview
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Skeleton course editor | — |
-  | Auto-saving | "Saving..." indicator | — |
-  | Reordering | Processing spinner on drag | — |
-  | Error | Toast | "Failed to save changes." |
+  | State       | Visual                     | User Message              |
+  | ----------- | -------------------------- | ------------------------- |
+  | Loading     | Skeleton course editor     | —                         |
+  | Auto-saving | "Saving..." indicator      | —                         |
+  | Reordering  | Processing spinner on drag | —                         |
+  | Error       | Toast                      | "Failed to save changes." |
 
 - **Mobile Considerations**: Collapsible sections, swipe-to-delete lectures, bottom sheet for adding lectures
 - **Exit Points**: Save → Course List; Preview → student-facing course page; Back → Course List
@@ -921,14 +921,14 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Select files, drag-and-drop, cancel upload, retry failed upload, monitor transcoding
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Default | Empty drop zone | "Drag and drop files here or click to browse" |
-  | Uploading | Progress bar + percentage + ETA | "Uploading... 45% (2.1 MB of 5.0 MB) ~2 min remaining" |
-  | Transcoding | Processing indicator | "Processing video... This may take a few minutes." |
-  | Complete | Green checkmark + quality options | "Upload complete! Available in: 720p, 1080p" |
-  | Error (validation) | Red banner | "Invalid file type or file too large." |
-  | Error (transcoding failed) | Red banner + retry | "Video processing failed. Tap to retry." |
+  | State                      | Visual                            | User Message                                           |
+  | -------------------------- | --------------------------------- | ------------------------------------------------------ |
+  | Default                    | Empty drop zone                   | "Drag and drop files here or click to browse"          |
+  | Uploading                  | Progress bar + percentage + ETA   | "Uploading... 45% (2.1 MB of 5.0 MB) ~2 min remaining" |
+  | Transcoding                | Processing indicator              | "Processing video... This may take a few minutes."     |
+  | Complete                   | Green checkmark + quality options | "Upload complete! Available in: 720p, 1080p"           |
+  | Error (validation)         | Red banner                        | "Invalid file type or file too large."                 |
+  | Error (transcoding failed) | Red banner + retry                | "Video processing failed. Tap to retry."               |
 
 - **Mobile Considerations**: Large touch-friendly drop zone, camera integration for mobile capture, background upload support, data usage warning
 - **Exit Points**: Complete → back to lecture editor; Cancel → remove upload
@@ -949,13 +949,13 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Set date/time/duration, select course, enter title, toggle notifications, schedule
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Default | Empty form | — |
-  | Validation error | Red border per field | Per-field validation |
-  | Scheduling | Button spinner | "Scheduling class..." |
-  | Error (time conflict) | Red banner | "You already have a class scheduled at this time." |
-  | Success | Confirmation toast | "Live class scheduled! Students will be notified." |
+  | State                 | Visual               | User Message                                       |
+  | --------------------- | -------------------- | -------------------------------------------------- |
+  | Default               | Empty form           | —                                                  |
+  | Validation error      | Red border per field | Per-field validation                               |
+  | Scheduling            | Button spinner       | "Scheduling class..."                              |
+  | Error (time conflict) | Red banner           | "You already have a class scheduled at this time." |
+  | Success               | Confirmation toast   | "Live class scheduled! Students will be notified." |
 
 - **Mobile Considerations**: Native date/time pickers, simplified duration presets, stacked form layout
 - **Exit Points**: Success → Dashboard (class appears in upcoming list); Cancel → back
@@ -976,13 +976,13 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Enable/disable mic/camera, share screen, start/stop recording, send chat messages, mute/remove students, end class
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Starting | Spinner | "Starting live class..." |
-  | Live | Red "LIVE" badge, active video, controls | — |
-  | Recording | Red "REC" indicator | — |
-  | Ending | Confirmation dialog | "Are you sure you want to end this class?" |
-  | Ended | Summary screen | "Class ended. Duration: XX min. Recording will be available shortly." |
+  | State     | Visual                                   | User Message                                                          |
+  | --------- | ---------------------------------------- | --------------------------------------------------------------------- |
+  | Starting  | Spinner                                  | "Starting live class..."                                              |
+  | Live      | Red "LIVE" badge, active video, controls | —                                                                     |
+  | Recording | Red "REC" indicator                      | —                                                                     |
+  | Ending    | Confirmation dialog                      | "Are you sure you want to end this class?"                            |
+  | Ended     | Summary screen                           | "Class ended. Duration: XX min. Recording will be available shortly." |
 
 - **Mobile Considerations**: Responsive video grid, pinned speaker view, swipe to chat, simplified participant management
 - **Exit Points**: End class → recording summary; Leave → Dashboard
@@ -1002,11 +1002,11 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Search students, filter by course, click for details, send bulk message
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Skeleton table/cards | — |
-  | Empty | Illustration | "No students enrolled yet." |
-  | Error | Toast + retry | "Failed to load students." |
+  | State   | Visual               | User Message                |
+  | ------- | -------------------- | --------------------------- |
+  | Loading | Skeleton table/cards | —                           |
+  | Empty   | Illustration         | "No students enrolled yet." |
+  | Error   | Toast + retry        | "Failed to load students."  |
 
 - **Mobile Considerations**: Card-based layout (not table), search at top, swipe for quick actions, infinite scroll instead of pagination
 - **Exit Points**: Student card → Student Progress Detail; Bulk message → compose message dialog
@@ -1027,11 +1027,11 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: View progress details, grade assignments (inline), add feedback, compare with class average
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Skeleton progress sections | — |
-  | No activity | "No activity recorded" message | — |
-  | Error | Toast + retry | "Failed to load student progress." |
+  | State       | Visual                         | User Message                       |
+  | ----------- | ------------------------------ | ---------------------------------- |
+  | Loading     | Skeleton progress sections     | —                                  |
+  | No activity | "No activity recorded" message | —                                  |
+  | Error       | Toast + retry                  | "Failed to load student progress." |
 
 - **Mobile Considerations**: Vertical timeline layout, collapsible sections, bottom-sheet for grade entry
 - **Exit Points**: Grade action → inline grading; Back → Student Management list
@@ -1049,12 +1049,12 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: View submission, enter grade, write feedback, submit grade, view history
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Skeleton submission view | — |
-  | Saving grade | Button spinner | "Saving grade..." |
-  | Error | Toast | "Failed to save grade." |
-  | Success | Toast | "Grade submitted. Student will be notified." |
+  | State        | Visual                   | User Message                                 |
+  | ------------ | ------------------------ | -------------------------------------------- |
+  | Loading      | Skeleton submission view | —                                            |
+  | Saving grade | Button spinner           | "Saving grade..."                            |
+  | Error        | Toast                    | "Failed to save grade."                      |
+  | Success      | Toast                    | "Grade submitted. Student will be notified." |
 
 - **Mobile Considerations**: Full-width submission view, bottom-fixed grade entry bar, swipe between submissions
 - **Exit Points**: Submit grade → submission list (updated); Back → Student Management
@@ -1073,11 +1073,11 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Change time period, filter by course, hover/click charts for details, export report
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Skeleton metric cards + chart placeholders | — |
-  | Empty | Illustration | "No analytics data available for the selected period." |
-  | Error | Toast + retry | "Failed to load analytics." |
+  | State   | Visual                                     | User Message                                           |
+  | ------- | ------------------------------------------ | ------------------------------------------------------ |
+  | Loading | Skeleton metric cards + chart placeholders | —                                                      |
+  | Empty   | Illustration                               | "No analytics data available for the selected period." |
+  | Error   | Toast + retry                              | "Failed to load analytics."                            |
 
 - **Mobile Considerations**: Stacked metric cards, horizontally scrollable charts, simplified date picker, touch-optimized chart interactions
 - **Exit Points**: Export → download report; Drill down → specific course analytics
@@ -1097,11 +1097,11 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: View revenue breakdown, check payout history, export data
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Skeleton cards + table | — |
-  | Empty | Illustration | "No revenue data yet. Publish a paid course to start earning." |
-  | Error | Toast + retry | "Failed to load revenue data." |
+  | State   | Visual                 | User Message                                                   |
+  | ------- | ---------------------- | -------------------------------------------------------------- |
+  | Loading | Skeleton cards + table | —                                                              |
+  | Empty   | Illustration           | "No revenue data yet. Publish a paid course to start earning." |
+  | Error   | Toast + retry          | "Failed to load revenue data."                                 |
 
 - **Mobile Considerations**: Stacked revenue cards, collapsible payout history, swipe to navigate periods
 - **Exit Points**: Export → download; Back → Dashboard
@@ -1120,12 +1120,12 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Enter bank details, submit for verification, update details
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Not set | Prompt to configure | "Set up your bank account to receive payouts." |
+  | State                | Visual                      | User Message                                                    |
+  | -------------------- | --------------------------- | --------------------------------------------------------------- |
+  | Not set              | Prompt to configure         | "Set up your bank account to receive payouts."                  |
   | Pending verification | Yellow processing indicator | "Verifying your bank details. This may take 1–2 business days." |
-  | Verified | Green checkmark | "Bank account verified. Payouts will be credited here." |
-  | Error | Red banner | "Verification failed. Please check your details." |
+  | Verified             | Green checkmark             | "Bank account verified. Payouts will be credited here."         |
+  | Error                | Red banner                  | "Verification failed. Please check your details."               |
 
 - **Mobile Considerations**: Simplified input fields, masked account number display, clear validation feedback
 - **Exit Points**: Save → confirmation; Skip → can complete later (warning shown)
@@ -1146,12 +1146,12 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Edit profile, upload avatar, add/remove social links, change password, toggle notifications, preview student-facing profile, log out
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Profile skeleton | — |
-  | Saving | Button spinner | "Saving profile..." |
-  | Error | Toast | "Failed to save changes." |
-  | Success | Toast | "Profile updated!" |
+  | State   | Visual           | User Message              |
+  | ------- | ---------------- | ------------------------- |
+  | Loading | Profile skeleton | —                         |
+  | Saving  | Button spinner   | "Saving profile..."       |
+  | Error   | Toast            | "Failed to save changes." |
+  | Success | Toast            | "Profile updated!"        |
 
 - **Mobile Considerations**: Collapsible sections, bottom-aligned save button, touch-friendly tag input
 - **Exit Points**: Save → confirmation; Preview → student-facing profile; Log Out → Login page
@@ -1169,10 +1169,10 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: View, click to navigate, mark as read, mark all as read, filter
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Skeleton items | — |
-  | Empty | Illustration | "No notifications." |
+  | State   | Visual         | User Message        |
+  | ------- | -------------- | ------------------- |
+  | Loading | Skeleton items | —                   |
+  | Empty   | Illustration   | "No notifications." |
 
 - **Mobile Considerations**: Full-screen list, swipe to delete, pull-to-refresh
 - **Exit Points**: Click notification → related content page
@@ -1181,7 +1181,7 @@ Users have a single role (student OR instructor) — no role switching within an
 
 ## 6. Admin App Pages
 
-> All admin pages live at `admin.eduplatform.com`. **Desktop-first design** (admins primarily work on desktop/laptop). Navigation uses a persistent **sidebar** with collapsible sections.
+> All admin pages live at `admin.example.com`. **Desktop-first design** (admins primarily work on desktop/laptop). Navigation uses a persistent **sidebar** with collapsible sections.
 
 ### 6.1 Dashboard
 
@@ -1197,10 +1197,10 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: View metrics, navigate to moderation queues, view activity, access quick actions
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Skeleton metric cards + activity feed | — |
-  | Error | Toast + retry | "Failed to load dashboard." |
+  | State   | Visual                                | User Message                |
+  | ------- | ------------------------------------- | --------------------------- |
+  | Loading | Skeleton metric cards + activity feed | —                           |
+  | Error   | Toast + retry                         | "Failed to load dashboard." |
 
 - **Exit Points**: Metric card → detailed analytics; Moderation badge → approval/moderation queue; Activity item → related entity
 
@@ -1220,11 +1220,11 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Search, filter, sort, view user details, deactivate user, reset password, export
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Skeleton table rows | — |
+  | State      | Visual                         | User Message              |
+  | ---------- | ------------------------------ | ------------------------- |
+  | Loading    | Skeleton table rows            | —                         |
   | No results | "No users match your filters." | Adjust filters suggestion |
-  | Error | Toast + retry | "Failed to load users." |
+  | Error      | Toast + retry                  | "Failed to load users."   |
 
 - **Exit Points**: User row → User Detail; Export → download CSV
 
@@ -1242,12 +1242,12 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Activate/deactivate user, change role, reset password, unlock account, view audit trail
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Profile skeleton | — |
-  | Error | Toast + retry | "Failed to load user details." |
-  | Action confirmation | Modal dialog | "Are you sure you want to [action]? This cannot be undone." |
-  | Action success | Toast | "User [deactivated/activated/etc.] successfully." |
+  | State               | Visual           | User Message                                                |
+  | ------------------- | ---------------- | ----------------------------------------------------------- |
+  | Loading             | Profile skeleton | —                                                           |
+  | Error               | Toast + retry    | "Failed to load user details."                              |
+  | Action confirmation | Modal dialog     | "Are you sure you want to [action]? This cannot be undone." |
+  | Action success      | Toast            | "User [deactivated/activated/etc.] successfully."           |
 
 - **Exit Points**: Back → User Management; Action → confirmation + updated detail view
 
@@ -1265,12 +1265,12 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Review application, preview documents, approve, reject with reason, filter queue
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Skeleton queue items | — |
-  | Empty queue | Illustration | "No pending applications. All caught up!" |
-  | Processing approval | Spinner on action button | "Processing..." |
-  | Success | Toast + queue update | "Application approved. Instructor notified." |
+  | State               | Visual                   | User Message                                 |
+  | ------------------- | ------------------------ | -------------------------------------------- |
+  | Loading             | Skeleton queue items     | —                                            |
+  | Empty queue         | Illustration             | "No pending applications. All caught up!"    |
+  | Processing approval | Spinner on action button | "Processing..."                              |
+  | Success             | Toast + queue update     | "Application approved. Instructor notified." |
 
 - **Exit Points**: Approve/Reject → queue updates; Back → Dashboard
 
@@ -1287,12 +1287,12 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Review course, preview content, approve, reject, suspend, request changes, view flag history
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Skeleton queue items | — |
-  | Empty queue | Illustration | "No courses pending review." |
-  | Processing | Spinner on action button | — |
-  | Success | Toast + queue update | "Course approved." / "Course rejected. Instructor notified." |
+  | State       | Visual                   | User Message                                                 |
+  | ----------- | ------------------------ | ------------------------------------------------------------ |
+  | Loading     | Skeleton queue items     | —                                                            |
+  | Empty queue | Illustration             | "No courses pending review."                                 |
+  | Processing  | Spinner on action button | —                                                            |
+  | Success     | Toast + queue update     | "Course approved." / "Course rejected. Instructor notified." |
 
 - **Exit Points**: Action → queue updates; Course title → Content Review page
 
@@ -1310,10 +1310,10 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Preview all content, take moderation action, view history
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Content skeleton | — |
-  | Error | Toast | "Failed to load course content." |
+  | State        | Visual           | User Message                           |
+  | ------------ | ---------------- | -------------------------------------- |
+  | Loading      | Content skeleton | —                                      |
+  | Error        | Toast            | "Failed to load course content."       |
   | Action taken | Toast + redirect | "Action recorded. Returning to queue." |
 
 - **Exit Points**: Action → back to moderation queue; Back → queue
@@ -1332,11 +1332,11 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Change date range, toggle chart metrics, compare periods, hover for details, export
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Skeleton metric cards + chart placeholders | — |
-  | Empty | "No data for selected period." | Suggestion to adjust range |
-  | Error | Toast + retry | "Failed to load analytics." |
+  | State   | Visual                                     | User Message                |
+  | ------- | ------------------------------------------ | --------------------------- |
+  | Loading | Skeleton metric cards + chart placeholders | —                           |
+  | Empty   | "No data for selected period."             | Suggestion to adjust range  |
+  | Error   | Toast + retry                              | "Failed to load analytics." |
 
 - **Exit Points**: Export → download report; Metric click → drill-down view
 
@@ -1355,11 +1355,11 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Filter by date/course/instructor, view transaction details, export
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Skeleton cards + table | — |
-  | Sync error | Yellow warning banner | "Payment data sync is delayed. Last synced: [time]." |
-  | Error | Toast + retry | "Failed to load revenue data." |
+  | State      | Visual                 | User Message                                         |
+  | ---------- | ---------------------- | ---------------------------------------------------- |
+  | Loading    | Skeleton cards + table | —                                                    |
+  | Sync error | Yellow warning banner  | "Payment data sync is delayed. Last synced: [time]." |
+  | Error      | Toast + retry          | "Failed to load revenue data."                       |
 
 - **Exit Points**: Export → download; Transaction → detail view
 
@@ -1378,12 +1378,12 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Select type, set date range, choose format, generate, download
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Default | Form with options | — |
-  | Generating | Progress bar + percentage | "Generating report... 75% (ETA: 1 min)" |
-  | Complete | Download link available | "Report ready! Click to download." |
-  | Error | Toast | "Report generation failed. Please try again." |
+  | State      | Visual                    | User Message                                  |
+  | ---------- | ------------------------- | --------------------------------------------- |
+  | Default    | Form with options         | —                                             |
+  | Generating | Progress bar + percentage | "Generating report... 75% (ETA: 1 min)"       |
+  | Complete   | Download link available   | "Report ready! Click to download."            |
+  | Error      | Toast                     | "Report generation failed. Please try again." |
 
 - **Exit Points**: Download → file save; Complete → download link
 
@@ -1427,11 +1427,11 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Filter logs, search, export, paginate, click entry for details
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Skeleton table rows | — |
-  | No results | "No log entries match your filters." | — |
-  | Error | Toast + retry | "Failed to load audit log." |
+  | State      | Visual                               | User Message                |
+  | ---------- | ------------------------------------ | --------------------------- |
+  | Loading    | Skeleton table rows                  | —                           |
+  | No results | "No log entries match your filters." | —                           |
+  | Error      | Toast + retry                        | "Failed to load audit log." |
 
 - **Exit Points**: Export → download CSV; Entry → detail view
 
@@ -1449,11 +1449,11 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: View events, respond to alerts, terminate sessions, block IPs, investigate
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Skeleton event feed | — |
-  | Critical alert | Red banner at top | "[X] active security threat(s) detected." |
-  | No events | "No security events." | — |
+  | State          | Visual                | User Message                              |
+  | -------------- | --------------------- | ----------------------------------------- |
+  | Loading        | Skeleton event feed   | —                                         |
+  | Critical alert | Red banner at top     | "[X] active security threat(s) detected." |
+  | No events      | "No security events." | —                                         |
 
 - **Exit Points**: Event → investigation detail; Block IP → confirmation → updated list
 
@@ -1474,12 +1474,12 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: Modify settings, toggle features, schedule maintenance, save, view change history
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Settings skeleton | — |
-  | Saving | Section-level spinner | "Saving..." |
-  | Error | Red banner per section | "Failed to save. [specific error]" |
-  | Success | Green toast per section | "Settings saved." |
+  | State   | Visual                  | User Message                       |
+  | ------- | ----------------------- | ---------------------------------- |
+  | Loading | Settings skeleton       | —                                  |
+  | Saving  | Section-level spinner   | "Saving..."                        |
+  | Error   | Red banner per section  | "Failed to save. [specific error]" |
+  | Success | Green toast per section | "Settings saved."                  |
 
 - **Exit Points**: Save → updated settings; Schedule maintenance → confirmation
 
@@ -1495,10 +1495,10 @@ Users have a single role (student OR instructor) — no role switching within an
 - **User Actions**: View, click to navigate, mark as read, mark all as read, filter
 - **States**:
 
-  | State | Visual | User Message |
-  |---|---|---|
-  | Loading | Skeleton items | — |
-  | Empty | "No notifications." | — |
+  | State   | Visual              | User Message |
+  | ------- | ------------------- | ------------ |
+  | Loading | Skeleton items      | —            |
+  | Empty   | "No notifications." | —            |
 
 - **Exit Points**: Click notification → related admin page
 
@@ -1508,22 +1508,22 @@ Users have a single role (student OR instructor) — no role switching within an
 
 > These features are **not in the current implementation scope**. They are listed here for design awareness. Detailed page maps will be created in a separate design brief when Phase 2 begins.
 
-| Feature | Description | Dependencies |
-|---|---|---|
-| Institution Dashboard | Separate `web-institution` app for colleges/training centers — seat management, cohort reports, usage analytics | User roles, seat license system |
-| Support Tickets | Ticket queue, priority system, response workflow, SLA tracking | User management, notification system |
-| Mobile App (React Native) | Native mobile app for students — offline access, push notifications, camera integration | Core web platform stable |
-| Mock Interviews | Scheduled mock interview sessions with instructors, video recording, feedback | Live class infrastructure, placement profile |
-| Referrals | Student referral system with referral codes, tracking, rewards | User management, payment system |
-| Advanced Chat | Reactions (emoji), voice rooms, threaded replies, file sharing in community | Community/Forums (Phase 1) |
-| AI Tutors | AI-powered tutoring, doubt resolution, content recommendations | Course content, user progress data |
-| Whiteboards | Collaborative whiteboard for live classes | Live class infrastructure |
-| Gamification | Streaks, leaderboards, XP system, badges | User progress tracking |
-| Multilingual Support | Interface localization, content translation | Design system with i18n support |
-| Advanced Recommendations | ML-powered course recommendations | User behavior data, course catalog |
-| DRM | Digital rights management for video content | Video pipeline, content delivery |
-| Bulk Upload (Instructor) | Batch upload multiple videos at once | Content upload pipeline |
-| Content Versioning | Version history for course content, rollback capability | Course editor, content storage |
+| Feature                   | Description                                                                                                     | Dependencies                                 |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| Institution Dashboard     | Separate `web-institution` app for colleges/training centers — seat management, cohort reports, usage analytics | User roles, seat license system              |
+| Support Tickets           | Ticket queue, priority system, response workflow, SLA tracking                                                  | User management, notification system         |
+| Mobile App (React Native) | Native mobile app for students — offline access, push notifications, camera integration                         | Core web platform stable                     |
+| Mock Interviews           | Scheduled mock interview sessions with instructors, video recording, feedback                                   | Live class infrastructure, placement profile |
+| Referrals                 | Student referral system with referral codes, tracking, rewards                                                  | User management, payment system              |
+| Advanced Chat             | Reactions (emoji), voice rooms, threaded replies, file sharing in community                                     | Community/Forums (Phase 1)                   |
+| AI Tutors                 | AI-powered tutoring, doubt resolution, content recommendations                                                  | Course content, user progress data           |
+| Whiteboards               | Collaborative whiteboard for live classes                                                                       | Live class infrastructure                    |
+| Gamification              | Streaks, leaderboards, XP system, badges                                                                        | User progress tracking                       |
+| Multilingual Support      | Interface localization, content translation                                                                     | Design system with i18n support              |
+| Advanced Recommendations  | ML-powered course recommendations                                                                               | User behavior data, course catalog           |
+| DRM                       | Digital rights management for video content                                                                     | Video pipeline, content delivery             |
+| Bulk Upload (Instructor)  | Batch upload multiple videos at once                                                                            | Content upload pipeline                      |
+| Content Versioning        | Version history for course content, rollback capability                                                         | Course editor, content storage               |
 
 ---
 
@@ -1534,18 +1534,22 @@ Users have a single role (student OR instructor) — no role switching within an
 ### 8.1 Navigation Patterns
 
 **Student App:**
+
 - **Mobile**: Bottom tab bar with 5 tabs — Home, My Courses, Community, Notifications, Profile. Active tab highlighted.
 - **Desktop**: Left sidebar with same navigation items + user avatar at bottom. Collapsible on smaller screens.
 
 **Instructor App:**
+
 - **Mobile**: Hamburger menu (top-left) opening a full-screen drawer. Navigation sections: Dashboard, Courses, Live Classes, Students, Analytics, Revenue, Settings.
 - **Desktop**: Persistent left sidebar with sections and sub-items. User avatar + name at bottom.
 
 **Admin App:**
+
 - **Desktop-first**: Persistent left sidebar with collapsible sections — Overview, Users, Content (Moderation), Analytics, Reports, Security, Settings. Icons + labels.
 - **Mobile**: Hamburger menu (responsive but desktop is primary).
 
 **Shared patterns:**
+
 - Breadcrumbs on sub-pages (e.g., Courses > [Course Name] > [Lecture Title])
 - Active page highlighted in navigation
 - Logo click → app dashboard (from any page)
@@ -1554,16 +1558,17 @@ Users have a single role (student OR instructor) — no role switching within an
 
 Four variants, each with distinct color treatment:
 
-| Variant | Color | Use Case |
-|---|---|---|
-| **Success** | Green | Action completed (saved, published, submitted) |
-| **Error** | Red | Action failed, validation error |
-| **Warning** | Yellow | Caution needed (unsaved changes, data limit) |
-| **Info** | Blue/Indigo | Informational (new version, maintenance scheduled) |
+| Variant     | Color       | Use Case                                           |
+| ----------- | ----------- | -------------------------------------------------- |
+| **Success** | Green       | Action completed (saved, published, submitted)     |
+| **Error**   | Red         | Action failed, validation error                    |
+| **Warning** | Yellow      | Caution needed (unsaved changes, data limit)       |
+| **Info**    | Blue/Indigo | Informational (new version, maintenance scheduled) |
 
 **Structure**: Icon + Title (bold) + optional description + optional action button + dismiss (X) button
 
 **Behavior**:
+
 - Position: top-right (desktop), top-center (mobile)
 - Auto-dismiss after 5 seconds
 - Pause auto-dismiss on hover (desktop)
@@ -1576,29 +1581,32 @@ Gray placeholder blocks that match the dimensions of the content they replace, w
 
 **Types:**
 
-| Skeleton Type | Used For | Shape |
-|---|---|---|
-| Card skeleton | Course cards, metric cards | Image rectangle + 2–3 text line rectangles |
-| Table skeleton | Data tables, lists | Row-shaped rectangles with cell divisions |
-| Form skeleton | Settings, profile pages | Input-shaped rectangles stacked vertically |
-| Chart skeleton | Analytics charts | Large rectangle placeholder |
+| Skeleton Type  | Used For                   | Shape                                      |
+| -------------- | -------------------------- | ------------------------------------------ |
+| Card skeleton  | Course cards, metric cards | Image rectangle + 2–3 text line rectangles |
+| Table skeleton | Data tables, lists         | Row-shaped rectangles with cell divisions  |
+| Form skeleton  | Settings, profile pages    | Input-shaped rectangles stacked vertically |
+| Chart skeleton | Analytics charts           | Large rectangle placeholder                |
 
 **Transition**: Skeleton fades out (300ms) → real content fades in (300ms). No layout shift.
 
 ### 8.4 Progress Indicators
 
 **Linear Progress Bar** — Used for uploads, transcoding, bulk operations:
+
 - Full-width bar with fill animation
 - Percentage label + descriptive phase text
 - Phases: Initializing (0–25%), Processing (25–75%), Finalizing (75–95%), Almost complete (95–100%)
 - Shows ETA when available (e.g., "~2 minutes remaining")
 
 **Circular Progress** — Used for API calls, authentication, single operations:
+
 - Circle (64px) with thin (4px) stroke
 - Percentage displayed in center
 - Animated fill from 0 to current value
 
 **Button Spinner** — Used for form submissions, action buttons:
+
 - Small spinner replaces button text
 - Button disabled while spinning
 - Text changes to "Processing..." or "Saving..."
@@ -1619,22 +1627,26 @@ Layout: vertically and horizontally centered within the content area.
 Three levels of error handling:
 
 **Inline errors** (form fields):
+
 - Red border on the field
 - Error message text below the field
 - Clear once user starts correcting
 
 **Toast errors** (action failures):
+
 - Red toast notification (see 8.2)
 - Optional "Retry" action button
 - Non-blocking — user can continue other actions
 
 **Full-page errors** (critical failures):
+
 - Centered error illustration
 - Error heading + description
 - "Retry" primary button
 - "Go to Dashboard" secondary button (fallback action)
 
 **Offline detection**:
+
 - Persistent yellow banner at top of page
 - Icon + "You're offline" + "Some features may not work."
 - Auto-dismisses when connection restored
@@ -1642,6 +1654,7 @@ Three levels of error handling:
 ### 8.7 Confirmation Dialogs
 
 **Destructive action confirmation** (delete, deactivate, end class):
+
 - Modal overlay (dimmed background)
 - Warning icon
 - Action description ("Are you sure you want to delete your account?")
@@ -1650,6 +1663,7 @@ Three levels of error handling:
 - Confirm button (red/destructive style)
 
 **Non-destructive confirmation** (publish course, submit quiz):
+
 - Similar modal structure
 - Confirm button in primary style (not red)
 - May include a checkbox ("Don't show this again")
@@ -1657,21 +1671,25 @@ Three levels of error handling:
 ### 8.8 Real-time Patterns
 
 **Connection status indicator** (pill-shaped badge):
+
 - **Connected**: Green dot + "Connected"
 - **Connecting**: Yellow pulsing dot + "Connecting..."
 - **Disconnected**: Red dot + "Disconnected"
 - Positioned in page header or relevant panel
 
 **Typing indicator**:
+
 - Three bouncing dots animation (staggered: 0ms, 150ms, 300ms)
 - Text label: "[Name] is typing..."
 
 **Online presence**:
+
 - Small dot on user avatar
 - Green dot (bottom-right) = online, full opacity avatar
 - Gray dot = offline, reduced opacity avatar (60%)
 
 **Live indicator**:
+
 - Red badge: pulsing white dot + "LIVE" text
 - Positioned at top-left of video/content area
 - Only visible during active live sessions
@@ -1679,12 +1697,14 @@ Three levels of error handling:
 ### 8.9 Pagination & Infinite Scroll
 
 **Pagination** (tables, admin lists):
+
 - Page number buttons with active state
 - Previous / Next arrows
 - Items-per-page selector (10, 25, 50, 100)
 - Total count display ("Showing 1–10 of 256")
 
 **Infinite scroll** (feeds, community, notifications):
+
 - Content loads automatically as user scrolls near bottom
 - Loading indicator at bottom during fetch
 - "Load more" button as fallback if auto-load fails
@@ -1692,13 +1712,14 @@ Three levels of error handling:
 
 ### 8.10 Animation Timing Reference
 
-| Speed | Duration | Use Cases |
-|---|---|---|
-| **Fast** | 150ms | Micro-interactions: button hover, toggle, checkbox, focus states |
-| **Medium** | 300ms | Content transitions: page transitions, content fade-in, toast slide, modal open |
-| **Slow** | 500ms | Complex transitions: full-page transitions, multi-element animations |
+| Speed      | Duration | Use Cases                                                                       |
+| ---------- | -------- | ------------------------------------------------------------------------------- |
+| **Fast**   | 150ms    | Micro-interactions: button hover, toggle, checkbox, focus states                |
+| **Medium** | 300ms    | Content transitions: page transitions, content fade-in, toast slide, modal open |
+| **Slow**   | 500ms    | Complex transitions: full-page transitions, multi-element animations            |
 
 **Easing**:
+
 - **Entrance**: ease-out (elements appear smoothly)
 - **Exit**: ease-in (elements disappear smoothly)
 - **In-out**: ease-in-out (moving elements, modals)

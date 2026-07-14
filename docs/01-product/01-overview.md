@@ -20,15 +20,19 @@ The Month 1 goal is **not** to build everything. It is to build the right founda
 ## Vision & Mission
 
 ### Vision
+
 To become the most trusted skills platform for Indian college students and professionals, offering world-class instruction in technology and business — live and on-demand.
 
 ### Mission
+
 Empower students to build career-ready skills through live instruction, structured courses, and a strong learning community — accessible from any device, anywhere.
 
 ### Core Product Belief
+
 > A content engagement system — not a realtime technology demo.
 
 Platform success depends on:
+
 - **Instructor workflow quality** — how easily instructors upload, organize, schedule, and manage students
 - **Student engagement** — completion rates, community, and tangible outcomes (certificates, placements)
 - **Content flywheel** — live classes automatically becoming recorded courses, compounding content library over time
@@ -49,12 +53,13 @@ apps/web-institution   → Institutional dashboard (Phase 2)
 **Security Rationale:** Each zone is isolated to prevent cross-zone vulnerabilities (XSS, CSRF, privilege escalation). Shared components and API clients live in `/packages` to maintain consistency while enforcing boundary separation.
 
 **Domain Mapping:**
+
 ```
-api.eduplatform.com            → apps/api
-student.eduplatform.com        → apps/web-student
-instructor.eduplatform.com     → apps/web-instructor
-admin.eduplatform.com          → apps/web-admin
-institution.eduplatform.com    → apps/web-institution (Phase 2)
+api.example.com            → apps/api
+student.example.com        → apps/web-student
+instructor.example.com     → apps/web-instructor
+admin.example.com          → apps/web-admin
+institution.example.com    → apps/web-institution (Phase 2)
 ```
 
 ---
@@ -62,6 +67,7 @@ institution.eduplatform.com    → apps/web-institution (Phase 2)
 ## Core Product Loops
 
 ### Student Loop
+
 ```
 Discover free preview → Purchase course / Institution access
   → Watch live class or recorded lecture
@@ -71,6 +77,7 @@ Discover free preview → Purchase course / Institution access
 ```
 
 ### Instructor Loop
+
 ```
 Apply & get vetted → Create course / Schedule live class
   → Upload content → Students enroll
@@ -79,6 +86,7 @@ Apply & get vetted → Create course / Schedule live class
 ```
 
 ### Content Flywheel
+
 ```
 Live class (LiveKit)
   → Auto-recorded

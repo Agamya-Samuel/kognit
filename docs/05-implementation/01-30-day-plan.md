@@ -53,24 +53,28 @@
 All implementation days must include comprehensive UX states for loading, error, and success scenarios. Refer to the [UX States Specification](../04-engineering/06-ux-states-specification.md) for detailed requirements.
 
 ### Core UX Components Required:
+
 - **Loading States**: Skeleton screens, progress indicators, spinners
 - **Error States**: Error boundaries, retry mechanisms, fallback content
 - **Success States**: Success notifications, completion indicators
 - **Real-time States**: Connection indicators, typing indicators, presence updates
 
 ### Performance Requirements:
+
 - **First Contentful Paint** < 1.5s for all pages
 - **Time to Interactive** < 3.0s for complex pages
 - **Loading Progress** must always show ETA for operations > 2s
 - **Error Recovery** must provide clear retry options
 
 ### Accessibility Requirements:
+
 - All loading states must be screen reader accessible
 - Error messages must be descriptive and actionable
 - Keyboard navigation must work in all states
 - Color contrast must meet WCAG 2.1 AA standards
 
 ### Implementation Guidelines:
+
 - Use shared UI components from `/packages/shared-components`
 - Implement TanStack Query for loading/error states
 - Use React Error Boundaries for error handling
@@ -85,17 +89,18 @@ All implementation days must include comprehensive UX states for loading, error,
 
 **Goal:** Turborepo monorepo with shared packages, linting, formatting, CI/CD
 
-| Task | Details |
-|---|---|
-| Initialize Turborepo | Root `package.json`, `turbo.json`, workspace configuration |
-| Scaffold apps | `apps/web-student` (Next.js), `apps/web-instructor` (Next.js), `apps/web-admin` (Next.js), `apps/web-landing` (Next.js, marketing/landing page), `apps/api` (NestJS) |
-| Scaffold shared packages | `packages/ui` (ShadCN), `packages/types` (TypeScript types), `packages/validation` (Zod schemas), `packages/api-client` (typed client), `packages/config` (ESLint, TSConfig), `packages/shared-components` (cross-app UI components) |
-| Code quality | ESLint config, Prettier config, Husky pre-commit hooks, lint-staged |
-| CI/CD pipeline | GitHub Actions workflow — lint, typecheck, test, build (per-app pipelines, affected-only builds) |
-| **.env.example** | Document all required environment variables (per-app and shared) |
-| **Landing page scaffold** | `apps/web-landing` — Next.js App Router, TailwindCSS, standalone output, port 3003, minimal deps (no API client/state management) |
+| Task                      | Details                                                                                                                                                                                                                              |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Initialize Turborepo      | Root `package.json`, `turbo.json`, workspace configuration                                                                                                                                                                           |
+| Scaffold apps             | `apps/web-student` (Next.js), `apps/web-instructor` (Next.js), `apps/web-admin` (Next.js), `apps/web-landing` (Next.js, marketing/landing page), `apps/api` (NestJS)                                                                 |
+| Scaffold shared packages  | `packages/ui` (ShadCN), `packages/types` (TypeScript types), `packages/validation` (Zod schemas), `packages/api-client` (typed client), `packages/config` (ESLint, TSConfig), `packages/shared-components` (cross-app UI components) |
+| Code quality              | ESLint config, Prettier config, Husky pre-commit hooks, lint-staged                                                                                                                                                                  |
+| CI/CD pipeline            | GitHub Actions workflow — lint, typecheck, test, build (per-app pipelines, affected-only builds)                                                                                                                                     |
+| **.env.example**          | Document all required environment variables (per-app and shared)                                                                                                                                                                     |
+| **Landing page scaffold** | `apps/web-landing` — Next.js App Router, TailwindCSS, standalone output, port 3003, minimal deps (no API client/state management)                                                                                                    |
 
 **UX State Requirements:**
+
 - **Loading States**: Create shared loading components (Spinner, Skeleton, Progress)
 - **Error States**: Implement basic error boundary for development environment
 - **Component Library**: Set up base UI components with loading/error states
@@ -103,6 +108,7 @@ All implementation days must include comprehensive UX states for loading, error,
 - **Accessibility**: Ensure all components meet WCAG 2.1 AA standards
 
 **Tests Required:**
+
 - Unit tests for all shared Zod schemas in `/packages/validation`
 - Unit tests for all TypeScript type utility functions in `/packages/types`
 - Integration tests for ESLint/Prettier config validation
@@ -118,16 +124,17 @@ All implementation days must include comprehensive UX states for loading, error,
 
 **Goal:** NestJS backend running with all core module stubs
 
-| Task | Details |
-|---|---|
-| NestJS app setup | `apps/api` — main module, global pipes, interceptors, exception filters |
-| Module scaffolding | `auth`, `users`, `courses`, `enrollments`, `uploads`, `media`, `live`, `payments`, `notifications`, `chat`, `assignments`, `certificates`, `analytics`, `admin` |
-| Global interceptors | Response envelope interceptor (standardized `{success, data, meta, error}` format) |
-| Validation pipe | Global Zod validation pipe with detailed error messages |
-| Configuration module | `@nestjs/config` with typed environment variables, Zod validation |
-| Docker setup | `Dockerfile` for API, `docker-compose.yml` for local dev (PostgreSQL + Redis) |
+| Task                 | Details                                                                                                                                                         |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| NestJS app setup     | `apps/api` — main module, global pipes, interceptors, exception filters                                                                                         |
+| Module scaffolding   | `auth`, `users`, `courses`, `enrollments`, `uploads`, `media`, `live`, `payments`, `notifications`, `chat`, `assignments`, `certificates`, `analytics`, `admin` |
+| Global interceptors  | Response envelope interceptor (standardized `{success, data, meta, error}` format)                                                                              |
+| Validation pipe      | Global Zod validation pipe with detailed error messages                                                                                                         |
+| Configuration module | `@nestjs/config` with typed environment variables, Zod validation                                                                                               |
+| Docker setup         | `Dockerfile` for API, `docker-compose.yml` for local dev (PostgreSQL + Redis)                                                                                   |
 
 **UX State Requirements:**
+
 - **Error Handling**: Implement global error interceptor with standardized error responses
 - **Validation**: Create detailed error messages for all validation failures
 - **Response Format**: Ensure all API responses include loading/error state metadata
@@ -135,6 +142,7 @@ All implementation days must include comprehensive UX states for loading, error,
 - **API Documentation**: Document error codes and messages for frontend consumption
 
 **Tests Required:**
+
 - Unit tests for response envelope interceptor
 - Unit tests for Zod validation pipe (valid input, invalid input, edge cases)
 - Unit tests for configuration module (valid env, missing vars, invalid types)
@@ -151,16 +159,17 @@ All implementation days must include comprehensive UX states for loading, error,
 
 **Goal:** All core schemas defined, migrated, and tested
 
-| Task | Details |
-|---|---|
-| Drizzle ORM setup | Schema definitions for ALL tables listed in [Database Schema](../02-architecture/04-database.md) |
-| Schema files | `users`, `instructor_profiles`, `student_profiles`, `courses`, `sections`, `lectures`, `enrollments`, `progress`, `live_classes`, `assignments`, `submissions`, `certificates`, `payments`, `messages`, `channels` |
-| Relations | Foreign keys, cascading deletes, unique constraints, indexes |
-| Migration setup | `drizzle-kit` configured, migration generation and apply scripts |
-| Seed script | Development seed data (1 admin, 1 instructor, 2 students, 1 course) |
-| Database connection | Connection pool, error handling, graceful shutdown |
+| Task                | Details                                                                                                                                                                                                            |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Drizzle ORM setup   | Schema definitions for ALL tables listed in [Database Schema](../02-architecture/04-database.md)                                                                                                                   |
+| Schema files        | `users`, `instructor_profiles`, `student_profiles`, `courses`, `sections`, `lectures`, `enrollments`, `progress`, `live_classes`, `assignments`, `submissions`, `certificates`, `payments`, `messages`, `channels` |
+| Relations           | Foreign keys, cascading deletes, unique constraints, indexes                                                                                                                                                       |
+| Migration setup     | `drizzle-kit` configured, migration generation and apply scripts                                                                                                                                                   |
+| Seed script         | Development seed data (1 admin, 1 instructor, 2 students, 1 course)                                                                                                                                                |
+| Database connection | Connection pool, error handling, graceful shutdown                                                                                                                                                                 |
 
 **UX State Requirements:**
+
 - **Data Loading**: Create repository pattern with loading state management
 - **Error Handling**: Implement database error handling with user-friendly messages
 - **Soft Deletes**: Ensure all queries automatically filter soft-deleted records
@@ -169,6 +178,7 @@ All implementation days must include comprehensive UX states for loading, error,
 - **Connection Management**: Handle connection failures gracefully with retry logic
 
 **Tests Required:**
+
 - Unit tests for each schema definition (column types, constraints, defaults)
 - Unit tests for relation definitions (foreign keys, cascades)
 - Integration tests for each CRUD operation against test database (create, read, update, delete)
@@ -187,16 +197,17 @@ All implementation days must include comprehensive UX states for loading, error,
 
 **Goal:** Redis connected, BullMQ queue operational
 
-| Task | Details |
-|---|---|
-| Redis connection | Upstash Redis integration (dev: local Redis via docker-compose) |
-| Redis module | NestJS Redis module with connection health checks |
-| BullMQ setup | Queue definitions: `media-processing`, `email-notifications`, `certificate-generation` |
-| Queue processors | Worker stubs for each queue |
-| Rate limiting | Redis-backed rate limiter middleware (per-IP, per-user) |
-| Cache utilities | Generic cache service with TTL, invalidation, key namespacing |
+| Task             | Details                                                                                |
+| ---------------- | -------------------------------------------------------------------------------------- |
+| Redis connection | Upstash Redis integration (dev: local Redis via docker-compose)                        |
+| Redis module     | NestJS Redis module with connection health checks                                      |
+| BullMQ setup     | Queue definitions: `media-processing`, `email-notifications`, `certificate-generation` |
+| Queue processors | Worker stubs for each queue                                                            |
+| Rate limiting    | Redis-backed rate limiter middleware (per-IP, per-user)                                |
+| Cache utilities  | Generic cache service with TTL, invalidation, key namespacing                          |
 
 **UX State Requirements:**
+
 - **Connection Management**: Implement Redis connection status indicators
 - **Queue Progress**: Create job progress tracking for long-running operations
 - **Rate Limiting**: Implement user-friendly rate limit exceeded messages
@@ -205,6 +216,7 @@ All implementation days must include comprehensive UX states for loading, error,
 - **Error Recovery**: Add retry logic for failed background jobs with user notifications
 
 **Tests Required:**
+
 - Unit tests for Redis connection service (connect, disconnect, reconnect, error handling)
 - Unit tests for cache service (get, set, delete, TTL expiration, key namespacing)
 - Unit tests for rate limiter (allows within limit, blocks over limit, resets after window)
@@ -224,17 +236,18 @@ All implementation days must include comprehensive UX states for loading, error,
 
 **Goal:** All testing frameworks configured, mock factories created, CI coverage gates
 
-| Task | Details |
-|---|---|
-| Jest config (backend) | `jest.config.ts` — coverage thresholds (80% general, 95% critical paths: auth, payments, enrollments, certificates), reporters, test match patterns |
-| Vitest config (per frontend app) | `vitest.config.ts` in each `apps/web-*` — coverage (80% general), RTL setup, Next.js path aliases |
-| Playwright config (per frontend app) | `playwright.config.ts` in each `apps/web-*` — webServer, browsers, baseURL, test proxy for MSW |
-| Mock factories | Factory functions for: User, Course, Lecture, Enrollment, Payment, Certificate, Assignment, Submission, Message, Channel |
-| Database test helpers | Transactional test wrapper (rollback after each test), test DB seeding |
-| CI coverage gates | GitHub Actions fails if coverage drops below 80% (general) / 95% (critical paths), coverage report artifacts (per-app reports) |
-| MSW setup | Mock Service Worker for frontend API mocking, handlers for all v1 endpoints |
+| Task                                 | Details                                                                                                                                             |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Jest config (backend)                | `jest.config.ts` — coverage thresholds (80% general, 95% critical paths: auth, payments, enrollments, certificates), reporters, test match patterns |
+| Vitest config (per frontend app)     | `vitest.config.ts` in each `apps/web-*` — coverage (80% general), RTL setup, Next.js path aliases                                                   |
+| Playwright config (per frontend app) | `playwright.config.ts` in each `apps/web-*` — webServer, browsers, baseURL, test proxy for MSW                                                      |
+| Mock factories                       | Factory functions for: User, Course, Lecture, Enrollment, Payment, Certificate, Assignment, Submission, Message, Channel                            |
+| Database test helpers                | Transactional test wrapper (rollback after each test), test DB seeding                                                                              |
+| CI coverage gates                    | GitHub Actions fails if coverage drops below 80% (general) / 95% (critical paths), coverage report artifacts (per-app reports)                      |
+| MSW setup                            | Mock Service Worker for frontend API mocking, handlers for all v1 endpoints                                                                         |
 
 **UX State Requirements:**
+
 - **Loading State Tests**: Create tests for all loading states (skeletons, spinners, progress bars)
 - **Error State Tests**: Implement tests for error boundaries and error recovery
 - **Accessibility Tests**: Add tests for UX state accessibility (screen readers, keyboard navigation)
@@ -243,6 +256,7 @@ All implementation days must include comprehensive UX states for loading, error,
 - **Visual Testing**: Add visual regression tests for loading/error states
 
 **Tests Required:**
+
 - Unit tests for all mock factories (generate valid data, respect types, customizable overrides)
 - Unit tests for database test helpers (transaction isolation, rollback verification)
 - Integration tests: Jest config correctly reports coverage thresholds (80% general, 95% critical) on test fixtures
@@ -264,22 +278,23 @@ All implementation days must include comprehensive UX states for loading, error,
 
 **Goal:** JWT + refresh token flow, role middleware, OAuth skeleton
 
-| Task | Details |
-|---|---|
-| Auth module | `apps/api/src/auth` — register, login, logout, refresh, OAuth callback |
-| JWT strategy | Access token generation (15 min expiry), payload: userId, role, email |
-| Refresh token strategy | Refresh token generation (30 day expiry), secure storage in DB. Token rotation: old token revoked on each use, new token issued |
-| Password hashing | bcrypt with 12 salt rounds |
-| Password policy | Zod schema: min 8 chars, 1 uppercase, 1 lowercase, 1 digit. Shared in `/packages/validation` |
-| Account lockout | Redis-based: 5 failed attempts → 15-min lockout (`lockout:{email}`), email alert on lockout, admin unlock |
-| Email-first registration | New flow: email → send 6-digit verification code → verify → set password + name → account created |
-| Refresh token theft detection | On reuse of revoked token: revoke entire token family, force re-auth on all devices, email alert |
-| Token invalidation on deactivation | Redis set `deactivated_users` checked by JWT middleware; deactivated users rejected immediately |
-| OAuth skeleton | Google + GitHub provider configuration, Auth.js integration |
-| Email verification | 6-digit code generation (bcrypt 10 rounds), verification endpoint, resend logic |
-| Password reset | Token generation (bcrypt 10 rounds), email with reset link, password update endpoint |
+| Task                               | Details                                                                                                                         |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Auth module                        | `apps/api/src/auth` — register, login, logout, refresh, OAuth callback                                                          |
+| JWT strategy                       | Access token generation (15 min expiry), payload: userId, role, email                                                           |
+| Refresh token strategy             | Refresh token generation (30 day expiry), secure storage in DB. Token rotation: old token revoked on each use, new token issued |
+| Password hashing                   | bcrypt with 12 salt rounds                                                                                                      |
+| Password policy                    | Zod schema: min 8 chars, 1 uppercase, 1 lowercase, 1 digit. Shared in `/packages/validation`                                    |
+| Account lockout                    | Redis-based: 5 failed attempts → 15-min lockout (`lockout:{email}`), email alert on lockout, admin unlock                       |
+| Email-first registration           | New flow: email → send 6-digit verification code → verify → set password + name → account created                               |
+| Refresh token theft detection      | On reuse of revoked token: revoke entire token family, force re-auth on all devices, email alert                                |
+| Token invalidation on deactivation | Redis set `deactivated_users` checked by JWT middleware; deactivated users rejected immediately                                 |
+| OAuth skeleton                     | Google + GitHub provider configuration, Auth.js integration                                                                     |
+| Email verification                 | 6-digit code generation (bcrypt 10 rounds), verification endpoint, resend logic                                                 |
+| Password reset                     | Token generation (bcrypt 10 rounds), email with reset link, password update endpoint                                            |
 
 **UX State Requirements:**
+
 - **Loading States**: Implement loading spinners for all auth operations
 - **Error Messages**: Create user-friendly error messages for all auth failures
 - **Form Validation**: Add real-time validation with helpful error messages
@@ -290,6 +305,7 @@ All implementation days must include comprehensive UX states for loading, error,
 - **Password Reset**: Clear feedback for reset request and completion
 
 **Tests Required:**
+
 - Unit tests for refresh token service (generate, validate, revoke, expired, already-used, revoked token reuse triggers family revocation)
 - Unit tests for password hashing (hash matches, wrong password fails, salt uniqueness)
 - Unit tests for password policy Zod schema (valid, too short, no uppercase, no lowercase, no digit, edge cases)
@@ -322,18 +338,19 @@ All implementation days must include comprehensive UX states for loading, error,
 
 **Goal:** `apps/web-student` running, auth pages functional, Dokploy staging deploy
 
-| Task | Details |
-|---|---|
-| Next.js setup (`web-student`) | App Router, TailwindCSS, ShadCN/UI init, path aliases, environment config |
-| Layout structure | Root layout, auth layout, dashboard layout, error boundaries, loading states |
-| Auth pages | Login page, Register page, Forgot Password, Reset Password, Email Verification |
-| API client | Typed API client in `/packages/api-client` (auto-generated from OpenAPI) with auth interceptors (cookie handling) |
-| Auth context | Jotai atoms for auth state, TanStack Query integration for user profile |
-| Protected routes | Middleware for route protection (student redirects) |
-| Shared components | Button, Input, Card, Dialog, Toast, Form (from `/packages/ui`) |
-| Dokploy staging | Deploy API + `web-student` to staging, configure subdomain (`student.eduplatform.com`), SSL, env vars |
+| Task                          | Details                                                                                                           |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Next.js setup (`web-student`) | App Router, TailwindCSS, ShadCN/UI init, path aliases, environment config                                         |
+| Layout structure              | Root layout, auth layout, dashboard layout, error boundaries, loading states                                      |
+| Auth pages                    | Login page, Register page, Forgot Password, Reset Password, Email Verification                                    |
+| API client                    | Typed API client in `/packages/api-client` (auto-generated from OpenAPI) with auth interceptors (cookie handling) |
+| Auth context                  | Jotai atoms for auth state, TanStack Query integration for user profile                                           |
+| Protected routes              | Middleware for route protection (student redirects)                                                               |
+| Shared components             | Button, Input, Card, Dialog, Toast, Form (from `/packages/ui`)                                                    |
+| Dokploy staging               | Deploy API + `web-student` to staging, configure subdomain (`student.example.com`), SSL, env vars                 |
 
 **UX State Requirements:**
+
 - **Loading States**: Implement skeleton screens for auth pages and dashboard
 - **Error Boundaries**: Create error boundaries for auth-related components
 - **Form Validation**: Real-time validation with helpful error messages
@@ -344,6 +361,7 @@ All implementation days must include comprehensive UX states for loading, error,
 - **Responsive Design**: Mobile-first approach for all auth pages
 
 **Tests Required:**
+
 - Unit tests for auth pages (form validation, error display, success redirect)
 - Unit tests for API client (request interceptor, response interceptor, error handling, retry logic)
 - Unit tests for Jotai auth atoms (login state, logout state, user data updates)
@@ -354,14 +372,14 @@ All implementation days must include comprehensive UX states for loading, error,
 - Integration tests: forgot password → email sent → reset form → success (mocked API)
 - E2E test (Playwright): full registration → email verify → login → dashboard navigation
 - E2E test: protected route redirects to login when unauthenticated
-- E2E test: Dokploy staging deploy is accessible and responsive at `student.eduplatform.com`
+- E2E test: Dokploy staging deploy is accessible and responsive at `student.example.com`
 - **UX Tests**: Test all auth page loading states render correctly
 - **UX Tests**: Validate error boundaries catch and display auth errors properly
 - **UX Tests**: Test form validation provides real-time feedback
 - **UX Tests**: Test accessibility of all auth forms and error states
 - **UX Tests**: Test responsive design across all device sizes
 
-**Exit Criteria:** Staging environment live (`student.eduplatform.com` + API), auth pages working end-to-end, all tests pass, ≥95% coverage on frontend auth code (critical path), comprehensive auth UX states implemented with loading skeletons, error boundaries, and user feedback
+**Exit Criteria:** Staging environment live (`student.example.com` + API), auth pages working end-to-end, all tests pass, ≥95% coverage on frontend auth code (critical path), comprehensive auth UX states implemented with loading skeletons, error boundaries, and user feedback
 
 > **Note:** `apps/web-instructor` and `apps/web-admin` scaffolding happens on Day 9 and Day 22 respectively. Auth pages are shared via `/packages/shared-components` to avoid duplication.
 
@@ -375,17 +393,18 @@ All implementation days must include comprehensive UX states for loading, error,
 
 **Goal:** Full course management API with sections and lectures
 
-| Task | Details |
-|---|---|
-| Course module | CRUD endpoints: create, read, update, delete, list (with pagination, filtering, search) |
-| Section module | CRUD for sections within courses (add, reorder, delete) |
-| Lecture module | CRUD for lectures within sections (add, reorder, delete, type assignment) |
+| Task                     | Details                                                                                 |
+| ------------------------ | --------------------------------------------------------------------------------------- |
+| Course module            | CRUD endpoints: create, read, update, delete, list (with pagination, filtering, search) |
+| Section module           | CRUD for sections within courses (add, reorder, delete)                                 |
+| Lecture module           | CRUD for lectures within sections (add, reorder, delete, type assignment)               |
 | Free preview enforcement | Logic to determine which lectures are free preview (instructor-marked preview lectures) |
-| RBAC enforcement | Instructors can only manage own courses, admin can manage all |
-| DTOs & validation | Zod schemas for all request bodies, response types in `/packages/types` |
-| Database queries | Optimized queries with proper joins, indexes, N+1 prevention |
+| RBAC enforcement         | Instructors can only manage own courses, admin can manage all                           |
+| DTOs & validation        | Zod schemas for all request bodies, response types in `/packages/types`                 |
+| Database queries         | Optimized queries with proper joins, indexes, N+1 prevention                            |
 
 **UX State Requirements:**
+
 - **Loading States**: Implement loading indicators for all course operations
 - **Error Handling**: Create user-friendly error messages for course operations
 - **Validation**: Detailed validation feedback for course/section/lecture creation
@@ -396,6 +415,7 @@ All implementation days must include comprehensive UX states for loading, error,
 - **Response Formatting**: Consistent API response format with loading/error metadata
 
 **Tests Required:**
+
 - Unit tests for course service (create, update, delete, find, pagination, search, filter)
 - Unit tests for section service (create, reorder, delete, cascade behavior)
 - Unit tests for lecture service (create, reorder, delete, type assignment, free preview logic)
@@ -425,21 +445,22 @@ All implementation days must include comprehensive UX states for loading, error,
 
 **Goal:** `apps/web-instructor` scaffolded, instructor can create and manage courses via UI
 
-| Task | Details |
-|---|---|
-| Scaffold `web-instructor` | Next.js App Router, TailwindCSS, ShadCN/UI, shared packages wiring, Dokploy deployment config |
-| Auth pages (instructor) | Reuse `/packages/shared-components` auth forms, instructor-specific post-login redirect |
-| Course creation form | Multi-step form: course details, sections, lectures, pricing, publish |
-| Course list page | Table of instructor's courses with status, enrollment count, revenue |
-| Course edit page | Edit course details, reorder sections/lectures (drag-and-drop) |
-| Section management | Add/edit/delete sections, reorder via drag-and-drop |
-| Lecture management | Add/edit/delete lectures, set type, mark free preview, reorder |
-| Pricing form | Set pricing type (free/paid), set INR price |
-| Publish toggle | Publish/draft toggle with confirmation dialog |
-| TanStack Query integration | Mutations for all CRUD operations, optimistic updates, error handling |
-| Dokploy staging | Deploy `web-instructor` to staging, configure subdomain (`instructor.eduplatform.com`), SSL, env vars |
+| Task                       | Details                                                                                           |
+| -------------------------- | ------------------------------------------------------------------------------------------------- |
+| Scaffold `web-instructor`  | Next.js App Router, TailwindCSS, ShadCN/UI, shared packages wiring, Dokploy deployment config     |
+| Auth pages (instructor)    | Reuse `/packages/shared-components` auth forms, instructor-specific post-login redirect           |
+| Course creation form       | Multi-step form: course details, sections, lectures, pricing, publish                             |
+| Course list page           | Table of instructor's courses with status, enrollment count, revenue                              |
+| Course edit page           | Edit course details, reorder sections/lectures (drag-and-drop)                                    |
+| Section management         | Add/edit/delete sections, reorder via drag-and-drop                                               |
+| Lecture management         | Add/edit/delete lectures, set type, mark free preview, reorder                                    |
+| Pricing form               | Set pricing type (free/paid), set INR price                                                       |
+| Publish toggle             | Publish/draft toggle with confirmation dialog                                                     |
+| TanStack Query integration | Mutations for all CRUD operations, optimistic updates, error handling                             |
+| Dokploy staging            | Deploy `web-instructor` to staging, configure subdomain (`instructor.example.com`), SSL, env vars |
 
 **UX State Requirements:**
+
 - **Loading States**: Skeleton screens for course list and tables
 - **Progress Indicators**: Multi-step form progress indicators
 - **Drag-and-Drop**: Visual feedback during reorder operations
@@ -455,6 +476,7 @@ All implementation days must include comprehensive UX states for loading, error,
 - **Responsive Design**: Mobile-first approach for all dashboard components
 
 **Tests Required:**
+
 - Unit tests for course creation form (field validation, step navigation, form submission)
 - Unit tests for course list page (render courses, empty state, loading state, error state)
 - Unit tests for course edit page (pre-fill data, save changes, discard changes)
@@ -466,7 +488,7 @@ All implementation days must include comprehensive UX states for loading, error,
 - Integration tests: pricing change → validation → API call → update confirmation (mocked API)
 - E2E test: instructor creates course → adds 2 sections → adds 3 lectures → sets price → publishes
 - E2E test: instructor edits course → reorders sections → saves → changes persist after reload
-- E2E test: Dokploy staging deploy is accessible at `instructor.eduplatform.com`
+- E2E test: Dokploy staging deploy is accessible at `instructor.example.com`
 - **UX Tests**: Test all loading states render correctly with skeleton screens
 - **UX Tests**: Validate drag-and-drop provides visual feedback
 - **UX Tests**: Test form validation provides real-time feedback
@@ -483,17 +505,18 @@ All implementation days must include comprehensive UX states for loading, error,
 
 **Goal:** Direct-to-S3 upload via signed URLs with progress tracking
 
-| Task | Details |
-|---|---|
-| Upload module | Endpoint to request signed S3 upload URL (per lecture) |
-| S3 integration | AWS SDK v3 configuration, bucket setup, CloudFront origin |
-| Signed URL generation | PUT signed URL with 30-min expiry, content-type validation, max size (500MB) |
-| Upload tracking | Track upload status (pending, uploading, complete, failed) in DB |
+| Task                      | Details                                                                                          |
+| ------------------------- | ------------------------------------------------------------------------------------------------ |
+| Upload module             | Endpoint to request signed S3 upload URL (per lecture)                                           |
+| S3 integration            | AWS SDK v3 configuration, bucket setup, CloudFront origin                                        |
+| Signed URL generation     | PUT signed URL with 30-min expiry, content-type validation, max size (500MB)                     |
+| Upload tracking           | Track upload status (pending, uploading, complete, failed) in DB                                 |
 | Upload completion webhook | S3 event → NestJS webhook → magic byte validation → mark upload complete → trigger Mux ingestion |
-| Upload progress API | Endpoint for frontend to poll upload progress |
-| Frontend upload UI | Drag-and-drop upload zone, progress bar, retry on failure, cancel upload |
+| Upload progress API       | Endpoint for frontend to poll upload progress                                                    |
+| Frontend upload UI        | Drag-and-drop upload zone, progress bar, retry on failure, cancel upload                         |
 
 **UX State Requirements:**
+
 - **Upload Progress**: Real-time progress bar with percentage and ETA
 - **Drag-and-Drop**: Visual feedback for file selection and drag operations
 - **File Validation**: Real-time validation with helpful error messages
@@ -507,6 +530,7 @@ All implementation days must include comprehensive UX states for loading, error,
 - **Accessibility**: Full keyboard navigation and screen reader support
 
 **Tests Required:**
+
 - Unit tests for S3 service (signed URL generation, URL expiry, content-type validation, size limit)
 - Unit tests for upload tracking service (status transitions, pending → uploading → complete, pending → failed)
 - Unit tests for upload completion webhook handler (valid signature, invalid signature, duplicate webhook)
@@ -535,18 +559,19 @@ All implementation days must include comprehensive UX states for loading, error,
 
 **Goal:** Mux asset creation, transcoding webhooks, signed playback URL generation
 
-| Task | Details |
-|---|---|
-| Mux SDK setup | Mux Node.js SDK configuration, direct upload API |
-| Asset creation | Create Mux asset from S3 URL, track `mux_asset_id` on lecture |
-| Transcoding webhook | Mux webhook handler (`video.asset.ready`, `video.asset.errored`) |
-| Playback URL generation | Signed playback URL generation (time-limited, per-user) |
+| Task                    | Details                                                                                                                           |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Mux SDK setup           | Mux Node.js SDK configuration, direct upload API                                                                                  |
+| Asset creation          | Create Mux asset from S3 URL, track `mux_asset_id` on lecture                                                                     |
+| Transcoding webhook     | Mux webhook handler (`video.asset.ready`, `video.asset.errored`)                                                                  |
+| Playback URL generation | Signed playback URL generation (time-limited, per-user)                                                                           |
 | Playback URL validation | Backend endpoint to request playback URL (enforces enrollment check, exception for `is_free_preview` lectures — no auth required) |
-| Frontend video player | HLS player integration (Mux Player or Video.js), playback URL loading |
-| Playback error handling | Invalid URL, expired URL, asset not ready, transcoding failed |
-| Dead-letter queue | SQS queue for failed S3→NestJS webhooks, reconciliation cron (every 15 min) for orphaned uploads |
+| Frontend video player   | HLS player integration (Mux Player or Video.js), playback URL loading                                                             |
+| Playback error handling | Invalid URL, expired URL, asset not ready, transcoding failed                                                                     |
+| Dead-letter queue       | SQS queue for failed S3→NestJS webhooks, reconciliation cron (every 15 min) for orphaned uploads                                  |
 
 **UX State Requirements:**
+
 - **Video Loading**: Loading spinner and progress indicator for video initialization
 - **Transcoding Status**: Real-time status updates for video processing
 - **Playback Errors**: Clear error messages for video playback issues
@@ -561,6 +586,7 @@ All implementation days must include comprehensive UX states for loading, error,
 - **Buffering Indicators**: Visual buffering indicators during playback
 
 **Tests Required:**
+
 - Unit tests for Mux service (asset creation, URL construction, webhook validation, signed URL generation)
 - Unit tests for transcoding webhook handler (asset ready, asset errored, invalid signature, unknown asset)
 - Unit tests for playback URL endpoint (enrolled student, non-enrolled student, expired token, free preview — unauthenticated access)
@@ -588,17 +614,18 @@ All implementation days must include comprehensive UX states for loading, error,
 
 **Goal:** `apps/web-student` — Course discovery, browsing, detail pages with free preview
 
-| Task | Details |
-|---|---|
-| Course listing page | Grid/list view, domain filter, search, pagination |
-| Course detail page | Syllabus, instructor bio, preview lectures, pricing, reviews |
+| Task                     | Details                                                                         |
+| ------------------------ | ------------------------------------------------------------------------------- |
+| Course listing page      | Grid/list view, domain filter, search, pagination                               |
+| Course detail page       | Syllabus, instructor bio, preview lectures, pricing, reviews                    |
 | Free preview enforcement | Preview-marked lectures playable without enrollment, lock icon on paid lectures |
-| Search & filter UI | Domain chips, price range slider, instructor dropdown, sort options |
-| Course card component | Thumbnail, title, instructor, price, rating, enrollment count |
-| Loading & error states | Skeleton loaders, empty state, error fallback |
-| SEO optimization | Meta tags, Open Graph, structured data for courses |
+| Search & filter UI       | Domain chips, price range slider, instructor dropdown, sort options             |
+| Course card component    | Thumbnail, title, instructor, price, rating, enrollment count                   |
+| Loading & error states   | Skeleton loaders, empty state, error fallback                                   |
+| SEO optimization         | Meta tags, Open Graph, structured data for courses                              |
 
 **UX State Requirements:**
+
 - **Loading States**: Skeleton screens for course listings and detail pages
 - **Search Performance**: Debounced search with loading indicators
 - **Filter Interface**: Real-time filter updates with loading states
@@ -613,6 +640,7 @@ All implementation days must include comprehensive UX states for loading, error,
 - **Accessibility**: Full keyboard navigation and screen reader support
 
 **Tests Required:**
+
 - Unit tests for course listing page (render courses, filter by domain, search, pagination, empty state)
 - Unit tests for course detail page (render details, free preview lectures visible, paid lectures locked)
 - Unit tests for course card component (render data, pricing display, enrollment count formatting)
@@ -639,16 +667,17 @@ All implementation days must include comprehensive UX states for loading, error,
 
 **Goal:** HLS video player with progress tracking, resume playback, playback controls
 
-| Task | Details |
-|---|---|
-| Video player component | HLS player (Mux Player), quality selector, playback speed (0.5x–2x) |
-| Progress tracking | Track `watched_seconds` per lecture, update on play/pause/seek |
-| Resume playback | Resume from `last_watched_at` position on re-watch |
-| Completion detection | Mark lecture complete when 100% watched |
-| Progress API | POST endpoint to update progress, GET endpoint for student's progress |
-| Watch history page | Student dashboard page showing recently watched lectures |
+| Task                   | Details                                                               |
+| ---------------------- | --------------------------------------------------------------------- |
+| Video player component | HLS player (Mux Player), quality selector, playback speed (0.5x–2x)   |
+| Progress tracking      | Track `watched_seconds` per lecture, update on play/pause/seek        |
+| Resume playback        | Resume from `last_watched_at` position on re-watch                    |
+| Completion detection   | Mark lecture complete when 100% watched                               |
+| Progress API           | POST endpoint to update progress, GET endpoint for student's progress |
+| Watch history page     | Student dashboard page showing recently watched lectures              |
 
 **UX State Requirements:**
+
 - **Video Loading**: Loading spinner with progress indicator during video initialization
 - **Buffering**: Visual buffering indicators during playback
 - **Progress Tracking**: Visual progress bar with seek functionality and resume position indicator
@@ -665,6 +694,7 @@ All implementation days must include comprehensive UX states for loading, error,
 - **Performance Optimization**: Lazy loading for video components
 
 **Tests Required:**
+
 - Unit tests for video player component (play, pause, seek, quality change, speed change, error recovery)
 - Unit tests for progress tracking logic (seconds calculation, 100% threshold, edge cases: seek forward, seek backward)
 - Unit tests for resume playback (no progress → start at 0, partial progress → resume from position, complete → restart)
@@ -691,18 +721,19 @@ All implementation days must include comprehensive UX states for loading, error,
 
 **Goal:** Razorpay order creation, payment intent, webhook handling, access grant
 
-| Task | Details |
-|---|---|
-| Razorpay SDK setup | Razorpay Node SDK configuration, key management |
-| Order creation | POST endpoint to create Razorpay order (course price, currency, student info) |
-| Payment intent | Return order ID, key, amount to frontend for Razorpay checkout |
-| Frontend checkout | Razorpay checkout modal integration, order ID passing, success/failure handling |
-| Payment webhook | Razorpay webhook handler (`payment.captured`, `payment.failed`, signature verification) |
-| Enrollment grant | On payment success → create enrollment record, send confirmation email |
-| Refund handling | Admin endpoint to issue refund, webhook handler for refund status |
-| Payment history page | Student dashboard page showing all payment transactions |
+| Task                 | Details                                                                                 |
+| -------------------- | --------------------------------------------------------------------------------------- |
+| Razorpay SDK setup   | Razorpay Node SDK configuration, key management                                         |
+| Order creation       | POST endpoint to create Razorpay order (course price, currency, student info)           |
+| Payment intent       | Return order ID, key, amount to frontend for Razorpay checkout                          |
+| Frontend checkout    | Razorpay checkout modal integration, order ID passing, success/failure handling         |
+| Payment webhook      | Razorpay webhook handler (`payment.captured`, `payment.failed`, signature verification) |
+| Enrollment grant     | On payment success → create enrollment record, send confirmation email                  |
+| Refund handling      | Admin endpoint to issue refund, webhook handler for refund status                       |
+| Payment history page | Student dashboard page showing all payment transactions                                 |
 
 **UX State Requirements:**
+
 - **Checkout Loading**: Loading spinner during order creation and payment processing
 - **Payment Modal**: Secure checkout modal with loading states
 - **Progress Indicators**: Clear progress indicators for payment processing
@@ -719,6 +750,7 @@ All implementation days must include comprehensive UX states for loading, error,
 - **Network Resilience**: Automatic retry for network interruptions
 
 **Tests Required:**
+
 - Unit tests for Razorpay service (order creation, signature verification, refund processing)
 - Unit tests for payment webhook handler (payment captured, payment failed, invalid signature, duplicate webhook)
 - Unit tests for enrollment grant logic (create enrollment, send email, update course enrollment count)
@@ -752,16 +784,17 @@ All implementation days must include comprehensive UX states for loading, error,
 
 **Goal:** Socket.IO gateway with authentication, room architecture, Redis adapter
 
-| Task | Details |
-|---|---|
-| Socket.IO gateway | NestJS WebSocket gateway, connection authentication (JWT validation) |
-| Room architecture | Per-course channels, per-live-class rooms, general channels |
-| Redis adapter | `@socket.io/redis-adapter` for horizontal scaling |
-| Connection management | Connect, disconnect, reconnect handling, presence tracking |
-| Message validation | Zod validation for all incoming socket messages |
-| Rate limiting | Per-socket message rate limiting (prevent spam) |
+| Task                  | Details                                                              |
+| --------------------- | -------------------------------------------------------------------- |
+| Socket.IO gateway     | NestJS WebSocket gateway, connection authentication (JWT validation) |
+| Room architecture     | Per-course channels, per-live-class rooms, general channels          |
+| Redis adapter         | `@socket.io/redis-adapter` for horizontal scaling                    |
+| Connection management | Connect, disconnect, reconnect handling, presence tracking           |
+| Message validation    | Zod validation for all incoming socket messages                      |
+| Rate limiting         | Per-socket message rate limiting (prevent spam)                      |
 
 **UX State Requirements:**
+
 - **Connection Status**: Real-time connection status indicators (connected, connecting, disconnected)
 - **Presence Tracking**: Online/offline status indicators for users
 - **Message Delivery**: Visual feedback for message send status (sent, delivered, read)
@@ -776,6 +809,7 @@ All implementation days must include comprehensive UX states for loading, error,
 - **Accessibility**: Screen reader support for real-time features
 
 **Tests Required:**
+
 - Unit tests for Socket.IO gateway (connection authentication, room joining, room leaving, disconnect handling)
 - Unit tests for JWT validation in socket handshake (valid token, expired token, invalid token, missing token)
 - Unit tests for room architecture (join course room, join live class room, leave room, invalid room)
@@ -802,17 +836,18 @@ All implementation days must include comprehensive UX states for loading, error,
 
 **Goal:** Real-time course chat with message persistence
 
-| Task | Details |
-|---|---|
-| Chat module | Message persistence in PostgreSQL, channel management |
-| Message CRUD | Send, edit, delete messages, message history API |
-| Frontend chat UI | Message list, input, send button, typing indicator, online presence |
-| Message threading | Reply to messages (nested replies, max 2 levels) |
-| Message moderation | Flag/report messages, instructor can delete any message |
-| Typing indicators | Real-time typing indicator per channel |
-| Online presence | Show who is online in each course channel |
+| Task               | Details                                                             |
+| ------------------ | ------------------------------------------------------------------- |
+| Chat module        | Message persistence in PostgreSQL, channel management               |
+| Message CRUD       | Send, edit, delete messages, message history API                    |
+| Frontend chat UI   | Message list, input, send button, typing indicator, online presence |
+| Message threading  | Reply to messages (nested replies, max 2 levels)                    |
+| Message moderation | Flag/report messages, instructor can delete any message             |
+| Typing indicators  | Real-time typing indicator per channel                              |
+| Online presence    | Show who is online in each course channel                           |
 
 **Tests Required:**
+
 - Unit tests for chat service (send message, edit message, delete message, message history, pagination)
 - Unit tests for channel service (create channel, join channel, leave channel, list members)
 - Unit tests for message moderation (flag message, unflag, instructor delete, student delete own)
@@ -834,17 +869,18 @@ All implementation days must include comprehensive UX states for loading, error,
 
 **Goal:** LiveKit room creation, instructor starts class, student joins, recording auto-start
 
-| Task | Details |
-|---|---|
-| LiveKit SDK setup | LiveKit server SDK configuration, room management |
-| Room creation | Create room per live class, set max participants, recording enabled |
-| Token generation | Generate join tokens for instructors (publisher) and students (subscriber) |
-| Frontend live player | LiveKit client SDK integration, video/audio display, screen sharing |
-| Recording auto-start | Room configured for recording, S3 storage for recordings |
-| Live status management | Update live class status (scheduled → live → ended) |
-| Connection quality | Network quality indicators, connection fallback |
+| Task                   | Details                                                                    |
+| ---------------------- | -------------------------------------------------------------------------- |
+| LiveKit SDK setup      | LiveKit server SDK configuration, room management                          |
+| Room creation          | Create room per live class, set max participants, recording enabled        |
+| Token generation       | Generate join tokens for instructors (publisher) and students (subscriber) |
+| Frontend live player   | LiveKit client SDK integration, video/audio display, screen sharing        |
+| Recording auto-start   | Room configured for recording, S3 storage for recordings                   |
+| Live status management | Update live class status (scheduled → live → ended)                        |
+| Connection quality     | Network quality indicators, connection fallback                            |
 
 **Tests Required:**
+
 - Unit tests for LiveKit service (room creation, token generation, room deletion, recording config)
 - Unit tests for token generation (instructor token with publisher perms, student token with subscriber perms, token expiry)
 - Unit tests for live status management (scheduled → live, live → ended, invalid transitions)
@@ -865,16 +901,17 @@ All implementation days must include comprehensive UX states for loading, error,
 
 **Goal:** Schedule classes, notify students, recording → S3 → Mux pipeline
 
-| Task | Details |
-|---|---|
-| Scheduling API | CRUD for live class schedules (date, time, duration, attached course) |
-| Calendar view | Instructor calendar with upcoming classes, student calendar view |
-| Notification triggers | Auto-notify enrolled students (1hr before, 15min before) |
-| Recording pipeline | LiveKit recording → S3 → Mux ingestion → attached to course lecture |
-| Recording status tracking | Track recording processing status (processing, ready, failed) |
-| Post-session workflow | After class ends → recording URL → trigger Mux → update lecture |
+| Task                      | Details                                                               |
+| ------------------------- | --------------------------------------------------------------------- |
+| Scheduling API            | CRUD for live class schedules (date, time, duration, attached course) |
+| Calendar view             | Instructor calendar with upcoming classes, student calendar view      |
+| Notification triggers     | Auto-notify enrolled students (1hr before, 15min before)              |
+| Recording pipeline        | LiveKit recording → S3 → Mux ingestion → attached to course lecture   |
+| Recording status tracking | Track recording processing status (processing, ready, failed)         |
+| Post-session workflow     | After class ends → recording URL → trigger Mux → update lecture       |
 
 **Tests Required:**
+
 - Unit tests for scheduling service (create schedule, update schedule, cancel class, timezone handling)
 - Unit tests for calendar view API (instructor calendar, student calendar, date range filtering)
 - Unit tests for notification triggers (1hr before, 15min before, timezone conversion)
@@ -896,17 +933,18 @@ All implementation days must include comprehensive UX states for loading, error,
 
 **Goal:** Assignment creation, submission, auto-grading (MCQ), manual grading
 
-| Task | Details |
-|---|---|
-| Assignment module | CRUD for assignments (title, description, type, max score, due date) |
-| Quiz engine | MCQ question bank, answer validation, auto-grading logic |
-| Submission module | Student submission, file upload support, text submission |
-| Grading system | Auto-grade MCQ (instant), manual grade open-ended (instructor review) |
-| Feedback system | Instructor feedback on submissions, score display |
-| Late submission policy | Configurable late submission window, penalty calculation |
-| Bulk operations | Bulk assignment creation, bulk grading |
+| Task                   | Details                                                               |
+| ---------------------- | --------------------------------------------------------------------- |
+| Assignment module      | CRUD for assignments (title, description, type, max score, due date)  |
+| Quiz engine            | MCQ question bank, answer validation, auto-grading logic              |
+| Submission module      | Student submission, file upload support, text submission              |
+| Grading system         | Auto-grade MCQ (instant), manual grade open-ended (instructor review) |
+| Feedback system        | Instructor feedback on submissions, score display                     |
+| Late submission policy | Configurable late submission window, penalty calculation              |
+| Bulk operations        | Bulk assignment creation, bulk grading                                |
 
 **Tests Required:**
+
 - Unit tests for assignment service (create, update, delete, list, due date validation)
 - Unit tests for quiz engine (MCQ creation, answer validation, auto-grading, score calculation)
 - Unit tests for submission service (submit assignment, file upload, text submission, late submission)
@@ -928,16 +966,17 @@ All implementation days must include comprehensive UX states for loading, error,
 
 **Goal:** Student assignment submission UI, instructor grading UI
 
-| Task | Details |
-|---|---|
-| Student assignment page | Assignment list, due dates, submission form (text/file upload), status |
-| Quiz taking UI | MCQ question display, answer selection, timer (optional), submit |
-| Instructor grading page | Submission list, auto-graded results, manual grading form, feedback input |
-| Submission history | Student view of all submissions with scores and feedback |
-| Bulk grading UI | Select multiple submissions, apply same grade/feedback |
-| Assignment creation form | Instructor form to create assignments/quizzes (multi-step) |
+| Task                     | Details                                                                   |
+| ------------------------ | ------------------------------------------------------------------------- |
+| Student assignment page  | Assignment list, due dates, submission form (text/file upload), status    |
+| Quiz taking UI           | MCQ question display, answer selection, timer (optional), submit          |
+| Instructor grading page  | Submission list, auto-graded results, manual grading form, feedback input |
+| Submission history       | Student view of all submissions with scores and feedback                  |
+| Bulk grading UI          | Select multiple submissions, apply same grade/feedback                    |
+| Assignment creation form | Instructor form to create assignments/quizzes (multi-step)                |
 
 **Tests Required:**
+
 - Unit tests for student assignment page (render assignments, due date display, submission form, status badges)
 - Unit tests for quiz taking UI (render questions, answer selection, navigation, submit, timer)
 - Unit tests for instructor grading page (submission list, auto-grade display, manual grade form, feedback)
@@ -958,17 +997,18 @@ All implementation days must include comprehensive UX states for loading, error,
 
 **Goal:** Auto-generate certificates on completion, analytics event tracking
 
-| Task | Details |
-|---|---|
-| Certificate generation | Auto-issue on 100% course completion, unique certificate ID (UUID) |
-| PDF generation | Certificate PDF with course name, student name, date, verification URL |
-| Verification page | Public page to verify certificate authenticity via unique ID |
-| Certificate download | Download PDF, shareable LinkedIn-ready format |
-| PostHog setup | PostHog SDK integration (frontend + backend), event tracking |
-| Event tracking | Page views, video start/complete, enrollment, purchase, live attendance, assignment submit |
-| Analytics dashboard | Instructor analytics: enrollment count, completion rates, revenue, drop-off points |
+| Task                   | Details                                                                                    |
+| ---------------------- | ------------------------------------------------------------------------------------------ |
+| Certificate generation | Auto-issue on 100% course completion, unique certificate ID (UUID)                         |
+| PDF generation         | Certificate PDF with course name, student name, date, verification URL                     |
+| Verification page      | Public page to verify certificate authenticity via unique ID                               |
+| Certificate download   | Download PDF, shareable LinkedIn-ready format                                              |
+| PostHog setup          | PostHog SDK integration (frontend + backend), event tracking                               |
+| Event tracking         | Page views, video start/complete, enrollment, purchase, live attendance, assignment submit |
+| Analytics dashboard    | Instructor analytics: enrollment count, completion rates, revenue, drop-off points         |
 
 **Tests Required:**
+
 - Unit tests for certificate service (generate certificate, UUID generation, PDF generation, verification)
 - Unit tests for certificate verification (valid ID, invalid ID, revoked certificate)
 - Unit tests for PDF generation (template rendering, data injection, file size, download URL)
@@ -994,20 +1034,21 @@ All implementation days must include comprehensive UX states for loading, error,
 
 **Goal:** `apps/web-admin` scaffolded, admin can manage users, view platform stats
 
-| Task | Details |
-|---|---|
-| Scaffold `web-admin` | Next.js App Router, TailwindCSS, ShadCN/UI, shared packages wiring, Dokploy deployment config |
-| Auth pages (admin) | Reuse `/packages/shared-components` auth forms, admin-specific post-login redirect. Admin dashboard has independent login — no session sharing with other portals (separate accounts required) |
-| Admin layout | Admin-specific navigation, RBAC guard (admin role only), admin-only error boundaries |
-| User management table | Paginated list of all users (students, instructors), search, filter by role |
-| User detail page | View user profile, enrollment history, payment history, activity log |
-| User actions | Activate/deactivate, reset password, change role, delete user, unlock locked accounts |
-| Platform stats | Total users, active courses, revenue, enrollments (overview cards) |
-| Certificate management | View all certificates, revoke certificate (manual), re-issue certificate (admin discretion on content changes) |
-| Audit log | Track admin actions (user created, role changed, course moderated, certificate revoked) |
-| Dokploy staging | Deploy `web-admin` to staging, configure subdomain (`admin.eduplatform.com`), SSL, env vars |
+| Task                   | Details                                                                                                                                                                                        |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Scaffold `web-admin`   | Next.js App Router, TailwindCSS, ShadCN/UI, shared packages wiring, Dokploy deployment config                                                                                                  |
+| Auth pages (admin)     | Reuse `/packages/shared-components` auth forms, admin-specific post-login redirect. Admin dashboard has independent login — no session sharing with other portals (separate accounts required) |
+| Admin layout           | Admin-specific navigation, RBAC guard (admin role only), admin-only error boundaries                                                                                                           |
+| User management table  | Paginated list of all users (students, instructors), search, filter by role                                                                                                                    |
+| User detail page       | View user profile, enrollment history, payment history, activity log                                                                                                                           |
+| User actions           | Activate/deactivate, reset password, change role, delete user, unlock locked accounts                                                                                                          |
+| Platform stats         | Total users, active courses, revenue, enrollments (overview cards)                                                                                                                             |
+| Certificate management | View all certificates, revoke certificate (manual), re-issue certificate (admin discretion on content changes)                                                                                 |
+| Audit log              | Track admin actions (user created, role changed, course moderated, certificate revoked)                                                                                                        |
+| Dokploy staging        | Deploy `web-admin` to staging, configure subdomain (`admin.example.com`), SSL, env vars                                                                                                        |
 
 **Tests Required:**
+
 - Unit tests for admin user table (render users, search, filter, pagination, empty state)
 - Unit tests for user detail page (profile display, enrollment history, payment history, activity log)
 - Unit tests for user actions (activate, deactivate, role change, delete, unlock locked account, confirmation dialogs)
@@ -1020,7 +1061,7 @@ All implementation days must include comprehensive UX states for loading, error,
 - Integration tests: platform stats → data aggregated from multiple sources → displayed correctly (mocked API)
 - E2E test: admin searches for user → views details → deactivates user → audit log updated
 - E2E test: non-admin attempts to access admin dashboard → redirected to home
-- E2E test: Dokploy staging deploy is accessible at `admin.eduplatform.com`
+- E2E test: Dokploy staging deploy is accessible at `admin.example.com`
 
 **Exit Criteria:** `web-admin` scaffolded and deployed, admin user management fully functional, RBAC enforced, audit logging working, all tests pass
 
@@ -1030,15 +1071,16 @@ All implementation days must include comprehensive UX states for loading, error,
 
 **Goal:** `apps/web-admin` — Admin can approve instructors, moderate courses
 
-| Task | Details |
-|---|---|
-| Instructor approval queue | List of pending instructor applications, review details |
-| Approval workflow | Approve/reject with reason, email notification to applicant |
-| Course moderation | Flagged courses list, review content, approve/reject/suspend |
-| Revenue overview | Platform revenue, instructor payouts, transaction history |
-| Report generation | Export reports (CSV, PDF) for revenue, enrollments, user activity |
+| Task                      | Details                                                           |
+| ------------------------- | ----------------------------------------------------------------- |
+| Instructor approval queue | List of pending instructor applications, review details           |
+| Approval workflow         | Approve/reject with reason, email notification to applicant       |
+| Course moderation         | Flagged courses list, review content, approve/reject/suspend      |
+| Revenue overview          | Platform revenue, instructor payouts, transaction history         |
+| Report generation         | Export reports (CSV, PDF) for revenue, enrollments, user activity |
 
 **Tests Required:**
+
 - Unit tests for instructor approval queue (render pending applications, filter by date, sort)
 - Unit tests for approval workflow (approve → email sent, reject → reason required, email sent)
 - Unit tests for course moderation (flag review, approve, reject, suspend, reason validation)
@@ -1058,17 +1100,18 @@ All implementation days must include comprehensive UX states for loading, error,
 
 **Goal:** Optimize queries, caching, CDN, eliminate N+1 queries
 
-| Task | Details |
-|---|---|
-| Database indexing | Add missing indexes on frequently queried columns |
-| N+1 query elimination | Audit all queries, add eager loading, use query builders |
-| TanStack Query caching | Configure staleTime, gcTime, refetch intervals per query |
-| CloudFront CDN | Validate CDN configuration, cache headers, invalidation |
-| API response optimization | Selective field returns, pagination limits, response compression |
-| Query profiling | Identify slow queries, add EXPLAIN ANALYZE logging |
-| Load testing | Basic load test on critical endpoints (auth, course list, video playback) |
+| Task                      | Details                                                                   |
+| ------------------------- | ------------------------------------------------------------------------- |
+| Database indexing         | Add missing indexes on frequently queried columns                         |
+| N+1 query elimination     | Audit all queries, add eager loading, use query builders                  |
+| TanStack Query caching    | Configure staleTime, gcTime, refetch intervals per query                  |
+| CloudFront CDN            | Validate CDN configuration, cache headers, invalidation                   |
+| API response optimization | Selective field returns, pagination limits, response compression          |
+| Query profiling           | Identify slow queries, add EXPLAIN ANALYZE logging                        |
+| Load testing              | Basic load test on critical endpoints (auth, course list, video playback) |
 
 **Tests Required:**
+
 - Unit tests for query optimization (eager loading verification, N+1 detection in test queries)
 - Unit tests for cache configuration (staleTime honored, gcTime honored, refetch behavior)
 - Unit tests for CDN cache headers (correct headers set, cache-control, ETag)
@@ -1087,18 +1130,19 @@ All implementation days must include comprehensive UX states for loading, error,
 
 **Goal:** Harden platform, validate all security measures
 
-| Task | Details |
-|---|---|
-| Rate limiting validation | Test all endpoints for rate limiting (per-IP, per-user) |
-| Signed URL enforcement | Verify all Mux playback URLs are signed, unsigned rejected |
-| RBAC validation | Audit all endpoints for role enforcement, test bypass attempts |
-| Input sanitization | XSS prevention, SQL injection prevention, file upload validation |
-| CSRF protection | CSRF tokens for state-changing operations |
-| Security headers | HSTS, CSP, X-Frame-Options, X-Content-Type-Options |
-| Secret management | Verify no secrets in code, env var validation, rotation procedures |
-| Penetration testing | Basic pen test on auth, payments, file upload, API endpoints |
+| Task                     | Details                                                            |
+| ------------------------ | ------------------------------------------------------------------ |
+| Rate limiting validation | Test all endpoints for rate limiting (per-IP, per-user)            |
+| Signed URL enforcement   | Verify all Mux playback URLs are signed, unsigned rejected         |
+| RBAC validation          | Audit all endpoints for role enforcement, test bypass attempts     |
+| Input sanitization       | XSS prevention, SQL injection prevention, file upload validation   |
+| CSRF protection          | CSRF tokens for state-changing operations                          |
+| Security headers         | HSTS, CSP, X-Frame-Options, X-Content-Type-Options                 |
+| Secret management        | Verify no secrets in code, env var validation, rotation procedures |
+| Penetration testing      | Basic pen test on auth, payments, file upload, API endpoints       |
 
 **Tests Required:**
+
 - Unit tests for rate limiter (all endpoints tested, limits enforced, whitelist bypass)
 - Unit tests for signed URL validation (signed URL accepted, unsigned rejected, expired rejected)
 - Unit tests for RBAC bypass attempts (student tries admin endpoint, instructor tries other instructor's data)
@@ -1119,18 +1163,19 @@ All implementation days must include comprehensive UX states for loading, error,
 
 **Goal:** Comprehensive E2E tests for critical user journeys
 
-| Task | Details |
-|---|---|
-| Auth E2E | Registration → email verify → login → refresh → logout → password reset |
-| Course E2E | Browse → search → view detail → free preview → purchase → enroll → watch |
-| Upload E2E | Create course → upload video → Mux processing → playback URL → student watches |
-| Payment E2E | Purchase → Razorpay checkout → payment success → enrollment → confirmation email |
-| Live class E2E | Schedule → notify → start → join → record → end → replay available |
-| Assignment E2E | Create → submit → auto-grade → score → manual grade → feedback |
-| Certificate E2E | Complete course → certificate generated → PDF download → verification |
-| Chat E2E | Join channel → send message → receive → edit → delete → flag |
+| Task            | Details                                                                          |
+| --------------- | -------------------------------------------------------------------------------- |
+| Auth E2E        | Registration → email verify → login → refresh → logout → password reset          |
+| Course E2E      | Browse → search → view detail → free preview → purchase → enroll → watch         |
+| Upload E2E      | Create course → upload video → Mux processing → playback URL → student watches   |
+| Payment E2E     | Purchase → Razorpay checkout → payment success → enrollment → confirmation email |
+| Live class E2E  | Schedule → notify → start → join → record → end → replay available               |
+| Assignment E2E  | Create → submit → auto-grade → score → manual grade → feedback                   |
+| Certificate E2E | Complete course → certificate generated → PDF download → verification            |
+| Chat E2E        | Join channel → send message → receive → edit → delete → flag                     |
 
 **Tests Required:**
+
 - All E2E tests listed above implemented in Playwright (frontend) and Supertest (backend)
 - Each E2E test covers happy path + at least 2 error paths
 - E2E tests run against staging environment with seeded test data
@@ -1145,17 +1190,18 @@ All implementation days must include comprehensive UX states for loading, error,
 
 **Goal:** Test error handling, edge cases, failure scenarios
 
-| Task | Details |
-|---|---|
-| Network failure tests | API timeout, network drop, retry behavior |
-| Concurrent user tests | Multiple users enrolling simultaneously, race conditions |
-| Data integrity tests | Transaction rollback on failure, orphaned record prevention |
-| Edge case tests | Empty states, max limits, special characters, unicode, long strings |
-| Error recovery tests | Service restart, database reconnect, Redis reconnect, queue retry |
-| Mobile responsive tests | All pages responsive on mobile, tablet, desktop breakpoints |
-| Accessibility tests | WCAG 2.1 AA compliance, screen reader testing, keyboard navigation |
+| Task                    | Details                                                             |
+| ----------------------- | ------------------------------------------------------------------- |
+| Network failure tests   | API timeout, network drop, retry behavior                           |
+| Concurrent user tests   | Multiple users enrolling simultaneously, race conditions            |
+| Data integrity tests    | Transaction rollback on failure, orphaned record prevention         |
+| Edge case tests         | Empty states, max limits, special characters, unicode, long strings |
+| Error recovery tests    | Service restart, database reconnect, Redis reconnect, queue retry   |
+| Mobile responsive tests | All pages responsive on mobile, tablet, desktop breakpoints         |
+| Accessibility tests     | WCAG 2.1 AA compliance, screen reader testing, keyboard navigation  |
 
 **Tests Required:**
+
 - E2E tests for network failures (API down → error shown → retry → success)
 - E2E tests for concurrent enrollment (10 users enroll same course → all succeed → no duplicates)
 - E2E tests for data integrity (payment fails → no enrollment created → rollback verified)
@@ -1172,17 +1218,18 @@ All implementation days must include comprehensive UX states for loading, error,
 
 **Goal:** Sentry integration, structured logging, alerting
 
-| Task | Details |
-|---|---|
-| Sentry setup | Sentry SDK for frontend (Next.js) and backend (NestJS) |
-| Error boundaries | React error boundaries with Sentry reporting |
-| Structured logging | JSON structured logs (timestamp, level, context, userId, requestId) |
-| Request tracing | Correlation ID across frontend → backend → database |
-| Alerting rules | Critical error alerts (payment failures, auth failures, service down) |
-| Log aggregation | Log shipping to centralized store, search/filter capability |
-| Performance monitoring | Sentry APM, transaction tracing, slow query alerts |
+| Task                   | Details                                                               |
+| ---------------------- | --------------------------------------------------------------------- |
+| Sentry setup           | Sentry SDK for frontend (Next.js) and backend (NestJS)                |
+| Error boundaries       | React error boundaries with Sentry reporting                          |
+| Structured logging     | JSON structured logs (timestamp, level, context, userId, requestId)   |
+| Request tracing        | Correlation ID across frontend → backend → database                   |
+| Alerting rules         | Critical error alerts (payment failures, auth failures, service down) |
+| Log aggregation        | Log shipping to centralized store, search/filter capability           |
+| Performance monitoring | Sentry APM, transaction tracing, slow query alerts                    |
 
 **Tests Required:**
+
 - Unit tests for Sentry integration (error capture, context enrichment, user identification)
 - Unit tests for error boundaries (render fallback, report to Sentry, reset state)
 - Unit tests for structured logging (JSON format, required fields, log levels, redaction of secrets)
@@ -1200,17 +1247,18 @@ All implementation days must include comprehensive UX states for loading, error,
 
 **Goal:** Swagger API docs, internal runbooks, deployment documentation
 
-| Task | Details |
-|---|---|
-| Swagger setup | `@nestjs/swagger` integration, all endpoints documented |
-| API documentation | Request/response schemas, examples, error codes, authentication |
-| Internal runbooks | Deployment procedures, database migration steps, rollback procedures |
-| Environment setup | Local dev setup guide, staging deploy guide, production deploy guide |
-| Troubleshooting guide | Common issues, diagnostic steps, resolution procedures |
-| Architecture diagrams | Updated diagrams reflecting actual implementation |
-| CHANGELOG | Version history, breaking changes, migration notes |
+| Task                  | Details                                                              |
+| --------------------- | -------------------------------------------------------------------- |
+| Swagger setup         | `@nestjs/swagger` integration, all endpoints documented              |
+| API documentation     | Request/response schemas, examples, error codes, authentication      |
+| Internal runbooks     | Deployment procedures, database migration steps, rollback procedures |
+| Environment setup     | Local dev setup guide, staging deploy guide, production deploy guide |
+| Troubleshooting guide | Common issues, diagnostic steps, resolution procedures               |
+| Architecture diagrams | Updated diagrams reflecting actual implementation                    |
+| CHANGELOG             | Version history, breaking changes, migration notes                   |
 
 **Tests Required:**
+
 - Unit tests for Swagger documentation (all endpoints documented, schemas match actual DTOs, examples valid)
 - Integration tests: Swagger UI accessible → all endpoints listed → "Try it out" works
 - Integration tests: runbook procedures tested (deploy fresh instance, run migrations, seed data)
@@ -1225,16 +1273,17 @@ All implementation days must include comprehensive UX states for loading, error,
 
 **Goal:** Landing page, final review, soft launch
 
-| Task | Details |
-|---|---|
-| Landing page | Public landing page (`apps/web-landing`) with value proposition, course preview, CTA. Independent deploy, minimal deps, SEO-optimized |
-| Landing page deploy | Deploy `web-landing` to staging, configure subdomain (`landing.eduplatform.com`), SSL, env vars |
-| Final code review | Comprehensive code review, TODO/FIXME cleanup, dead code removal |
-| Final test pass | Full test suite run, coverage verification, flaky test fix |
-| Performance final pass | Lighthouse audit, bundle size optimization, image optimization |
-| Launch | Launch, monitoring dashboards active, incident response ready |
+| Task                   | Details                                                                                                                               |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Landing page           | Public landing page (`apps/web-landing`) with value proposition, course preview, CTA. Independent deploy, minimal deps, SEO-optimized |
+| Landing page deploy    | Deploy `web-landing` to staging, configure subdomain (`landing.example.com`), SSL, env vars                                           |
+| Final code review      | Comprehensive code review, TODO/FIXME cleanup, dead code removal                                                                      |
+| Final test pass        | Full test suite run, coverage verification, flaky test fix                                                                            |
+| Performance final pass | Lighthouse audit, bundle size optimization, image optimization                                                                        |
+| Launch                 | Launch, monitoring dashboards active, incident response ready                                                                         |
 
 **UX State Requirements:**
+
 - **Landing Page**: Optimized loading with skeleton screens and progressive enhancement
 - **Performance**: Loading performance optimization with Core Web Vitals monitoring
 - **Error Recovery**: Comprehensive error boundaries with retry mechanisms
@@ -1247,6 +1296,7 @@ All implementation days must include comprehensive UX states for loading, error,
 - **User Testing**: Final user testing session feedback integration
 
 **Tests Required:**
+
 - Unit tests for landing page (render content, CTA buttons, course preview, responsive layout)
 - E2E test: landing page → Lighthouse score > 90 on all metrics
 - E2E test: full test suite → coverage thresholds met (≥80% general, ≥95% critical) → no flaky tests → CI green
@@ -1256,7 +1306,7 @@ All implementation days must include comprehensive UX states for loading, error,
 - **UX Tests**: Responsive testing across all device sizes
 - **UX Tests**: User experience testing with real users
 
-**Exit Criteria:** Landing page live at `landing.eduplatform.com` (`apps/web-landing`), coverage thresholds met (≥80% general, ≥95% critical), soft launch successful, comprehensive production-ready UX states implemented with performance optimization, accessibility compliance, and user experience monitoring
+**Exit Criteria:** Landing page live at `landing.example.com` (`apps/web-landing`), coverage thresholds met (≥80% general, ≥95% critical), soft launch successful, comprehensive production-ready UX states implemented with performance optimization, accessibility compliance, and user experience monitoring
 
 ---
 

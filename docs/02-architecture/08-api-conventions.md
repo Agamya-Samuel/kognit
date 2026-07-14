@@ -35,7 +35,7 @@ POST   /api/v1/courses/:id/sections → Add section to course
 ```json
 {
   "success": true,
-  "data": { },
+  "data": {},
   "meta": { "page": 1, "total": 100 },
   "error": null
 }
@@ -62,6 +62,7 @@ POST   /api/v1/courses/:id/sections → Add section to course
 - Offset-based for traditional pagination
 
 **Response format:**
+
 ```json
 {
   "data": [...],
@@ -79,12 +80,12 @@ POST   /api/v1/courses/:id/sections → Add section to course
 
 ## Rate Limiting Tiers
 
-| Endpoint Type | Rate Limit |
-|---|---|
-| Public endpoints | 100 requests / 15 minutes per IP |
-| Authenticated endpoints | 1000 requests / 15 minutes per user |
-| Upload endpoints | 10 uploads / hour per user |
-| WebSocket | 50 messages / minute per user (across all connections) |
+| Endpoint Type           | Rate Limit                                             |
+| ----------------------- | ------------------------------------------------------ |
+| Public endpoints        | 100 requests / 15 minutes per IP                       |
+| Authenticated endpoints | 1000 requests / 15 minutes per user                    |
+| Upload endpoints        | 10 uploads / hour per user                             |
+| WebSocket               | 50 messages / minute per user (across all connections) |
 
 Rate limiting is Redis-backed via Upstash. Rate limit headers (`X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`) are included in all responses. When a client exceeds the limit, the response returns HTTP `429 Too Many Requests` with a `Retry-After` header indicating seconds until the window resets.
 
@@ -93,9 +94,9 @@ Rate limiting is Redis-backed via Upstash. Rate limit headers (`X-RateLimit-Limi
 ## CORS Policy
 
 - **Allowed origins (strict allow-list):**
-  - `https://student.eduplatform.com`
-  - `https://instructor.eduplatform.com`
-  - `https://admin.eduplatform.com`
+  - `https://student.example.com`
+  - `https://instructor.example.com`
+  - `https://admin.example.com`
   - `http://localhost:3000` (development only)
   - `http://localhost:3001` (development only)
   - `http://localhost:3002` (development only)
@@ -110,21 +111,21 @@ Rate limiting is Redis-backed via Upstash. Rate limit headers (`X-RateLimit-Limi
 
 ## WebSocket Constraints
 
-| Constraint | Limit |
-|---|---|
-| Max payload per message | 10KB |
-| Max message length (chat) | 2000 characters |
+| Constraint                | Limit                                         |
+| ------------------------- | --------------------------------------------- |
+| Max payload per message   | 10KB                                          |
+| Max message length (chat) | 2000 characters                               |
 | Messages exceeding limits | Rejected with `PAYLOAD_TOO_LARGE` error event |
-| Rate limit scope | Per-user (across all WebSocket connections) |
+| Rate limit scope          | Per-user (across all WebSocket connections)   |
 
 ---
 
 ## Bulk Operation Limits
 
-| Operation | Max Batch Size |
-|---|---|
-| Bulk message students | 100 recipients per request |
-| Bulk grading | 50 submissions per request |
+| Operation                | Max Batch Size             |
+| ------------------------ | -------------------------- |
+| Bulk message students    | 100 recipients per request |
+| Bulk grading             | 50 submissions per request |
 | Bulk assignment creation | 25 assignments per request |
 
 - Bulk operations are queued via BullMQ and processed asynchronously

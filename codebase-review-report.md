@@ -451,8 +451,8 @@ However, the review uncovered **50+ issues** including **12 Critical**, **15 Hig
 | MED-14 | `useSearchParams` `<Suspense>` has no `fallback` (blank screen on slow connections) | All 3 portals             | 1 hour  |
 | MED-15 | `<Toaster />` missing from provider trees                                           | web-student, web-admin    | 30 min  |
 | MED-16 | No `error.tsx` / `loading.tsx` / `not-found.tsx` route files                        | web-student, web-admin    | 3 hours |
-| MED-17 | Hardcoded `https://eduplatform.com` in certificate share URL                        | web-student               | 15 min  |
-| MED-18 | Hardcoded `https://eduplatform.com` in robots.ts and sitemap.ts                     | web-landing               | 15 min  |
+| MED-17 | Hardcoded `https://example.com` in certificate share URL                            | web-student               | 15 min  |
+| MED-18 | Hardcoded `https://example.com` in robots.ts and sitemap.ts                         | web-landing               | 15 min  |
 | MED-19 | Admin management pages use `useState`/`useEffect`/`fetch` anti-pattern              | web-admin                 | 3 hours |
 | MED-20 | Dashboard query duplicated in hook and page (dead code + cache conflicts)           | web-admin                 | 1 hour  |
 | MED-21 | `recharts` v2.x vs v3.x version mismatch                                            | web-instructor, web-admin | 1 hour  |

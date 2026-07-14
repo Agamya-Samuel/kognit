@@ -45,15 +45,19 @@ The Month 1 goal is **not** to build everything. It is to build the right founda
 ## 2. Vision & Mission
 
 ### Vision
+
 To become the most trusted skills platform for Indian college students and professionals, offering world-class instruction in technology and business — live and on-demand.
 
 ### Mission
+
 Empower students to build career-ready skills through live instruction, structured courses, and a strong learning community — accessible from any device, anywhere.
 
 ### Core Product Belief
+
 > A content engagement system — not a realtime technology demo.
 
 Platform success depends on:
+
 - **Instructor workflow quality** — how easily instructors upload, organize, schedule, and manage students
 - **Student engagement** — completion rates, community, and tangible outcomes (certificates, placements)
 - **Content flywheel** — live classes automatically becoming recorded courses, compounding content library over time
@@ -64,31 +68,31 @@ Platform success depends on:
 
 ### Primary Audience — Students
 
-| Attribute | Detail |
-|---|---|
-| **Segment** | College and University students |
-| **Age Range** | 18–26 |
-| **Geography** | India (primary), Global English-speaking (secondary) |
-| **Goals** | Career readiness, skill-building, placement support |
+| Attribute       | Detail                                                                               |
+| --------------- | ------------------------------------------------------------------------------------ |
+| **Segment**     | College and University students                                                      |
+| **Age Range**   | 18–26                                                                                |
+| **Geography**   | India (primary), Global English-speaking (secondary)                                 |
+| **Goals**       | Career readiness, skill-building, placement support                                  |
 | **Pain Points** | Expensive courses, poor instruction quality, lack of community, no placement support |
-| **Devices** | Mobile-first (India), Desktop (Global) |
+| **Devices**     | Mobile-first (India), Desktop (Global)                                               |
 
 ### Secondary Audience — Instructors
 
-| Attribute | Detail |
-|---|---|
-| **Type** | Vetted, invite-only |
-| **Profile** | Industry practitioners, senior engineers, business professionals |
-| **Goals** | Monetize expertise, build audience, teach at scale |
-| **Pain Points** | Complex creator tools, poor analytics, low revenue share |
+| Attribute       | Detail                                                           |
+| --------------- | ---------------------------------------------------------------- |
+| **Type**        | Vetted, invite-only                                              |
+| **Profile**     | Industry practitioners, senior engineers, business professionals |
+| **Goals**       | Monetize expertise, build audience, teach at scale               |
+| **Pain Points** | Complex creator tools, poor analytics, low revenue share         |
 
 ### Institutional Audience
 
-| Attribute | Detail |
-|---|---|
-| **Segment** | Colleges, Universities, Bootcamps |
-| **Goals** | Supplement curriculum, offer job-ready skills to students |
-| **Model** | Bulk licensing, white-labelled access, cohort management |
+| Attribute   | Detail                                                    |
+| ----------- | --------------------------------------------------------- |
+| **Segment** | Colleges, Universities, Bootcamps                         |
+| **Goals**   | Supplement curriculum, offer job-ready skills to students |
+| **Model**   | Bulk licensing, white-labelled access, cohort management  |
 
 ### Market Geography
 
@@ -102,29 +106,34 @@ Platform success depends on:
 ### Revenue Streams
 
 #### 1. Per-Course Purchases (B2C)
+
 - Students purchase individual courses or bundles
 - One-time payment, lifetime access
 - Instructor revenue share model (TBD — recommend 60/40 or 70/30 instructor/platform)
 
 #### 2. Institution Licensing
+
 - Colleges and universities purchase platform access for their students
 - Cohort-based access or seat-based pricing
 - Custom onboarding, progress dashboards for institutions
 - Highest revenue potential — prioritize early enterprise conversations
 
 #### 3. Freemium Access
+
 - First 1–2 lectures of every course are free
 - Acts as a marketing funnel and trust builder
 - No login required to preview (reduces friction for discovery)
 
 ### Pricing Strategy (Initial)
-| Tier | Price | Access |
-|---|---|---|
-| Free | ₹0 | Preview lectures only |
-| Course Purchase | ₹499–₹4,999 | Full course, lifetime access |
-| Institution Licensing | Custom | Cohort/seat-based, all courses |
+
+| Tier                  | Price       | Access                         |
+| --------------------- | ----------- | ------------------------------ |
+| Free                  | ₹0          | Preview lectures only          |
+| Course Purchase       | ₹499–₹4,999 | Full course, lifetime access   |
+| Institution Licensing | Custom      | Cohort/seat-based, all courses |
 
 ### Future Revenue Opportunities
+
 - Certificate programs (premium, verifiable)
 - Placement service fees
 - Live cohort bootcamps (cohort-based pricing)
@@ -148,16 +157,18 @@ apps/web-institution   → Institutional dashboard (Phase 2)
 **Security Rationale:** Each zone is isolated to prevent cross-zone vulnerabilities (XSS, CSRF, privilege escalation). Shared components and API clients live in `/packages` to maintain consistency while enforcing boundary separation.
 
 **Domain Mapping:**
+
 ```
-student.eduplatform.com        → apps/web-student
-instructor.eduplatform.com     → apps/web-instructor
-admin.eduplatform.com          → apps/web-admin
-institution.eduplatform.com    → apps/web-institution (Phase 2)
+student.example.com        → apps/web-student
+instructor.example.com     → apps/web-instructor
+admin.example.com          → apps/web-admin
+institution.example.com    → apps/web-institution (Phase 2)
 ```
 
 ### Core Product Loops
 
 **Student Loop**
+
 ```
 Discover free preview → Purchase course / Institution access
   → Watch live class or recorded lecture
@@ -167,6 +178,7 @@ Discover free preview → Purchase course / Institution access
 ```
 
 **Instructor Loop**
+
 ```
 Apply & get vetted → Create course / Schedule live class
   → Upload content → Students enroll
@@ -175,6 +187,7 @@ Apply & get vetted → Create course / Schedule live class
 ```
 
 **Content Flywheel**
+
 ```
 Live class (LiveKit)
   → Auto-recorded
@@ -191,6 +204,7 @@ Live class (LiveKit)
 ### 6.1 Student Platform
 
 #### Course Discovery & Enrollment
+
 - Browse courses by domain (Coding/Tech, Business)
 - Free preview of first 1–2 lectures (no login required)
 - Search and filter (domain, instructor, price, rating)
@@ -198,6 +212,7 @@ Live class (LiveKit)
 - One-click enrollment after purchase
 
 #### Video Player
+
 - HLS adaptive bitrate streaming via Mux
 - Signed playback URLs (no unauthorized sharing)
 - Progress tracking (resume from last position)
@@ -205,6 +220,7 @@ Live class (LiveKit)
 - Quality selector
 
 #### Live Classes
+
 - Join live class via embedded LiveKit player
 - Chat during class (Socket.IO)
 - Raise hand / reaction system (Phase 2)
@@ -212,6 +228,7 @@ Live class (LiveKit)
 - Class recording available post-session
 
 #### Assignments & Quizzes
+
 - Per-lecture and per-course assignments
 - Multiple choice, short answer, code submission
 - Auto-graded quizzes (MCQ)
@@ -219,12 +236,14 @@ Live class (LiveKit)
 - Submission history and feedback
 
 #### Certificates
+
 - Auto-generated on course completion
 - Unique certificate ID (verifiable link)
 - Downloadable as PDF
 - Shareable (LinkedIn-ready)
 
 #### Community / Forums
+
 - Course-level discussion channels
 - General domain channels (Coding, Business)
 - Instructor can post announcements
@@ -232,12 +251,14 @@ Live class (LiveKit)
 - Basic moderation (flag/report)
 
 #### Placement Support
+
 - Profile builder (student can fill skills, resume, projects)
 - Job board (curated listings relevant to course)
 - Resume review requests to instructors
 - Phase 2: Mock interviews, referrals
 
 #### Progress & Dashboard
+
 - Course progress bars
 - Watch history
 - Assignment submission status
@@ -249,12 +270,14 @@ Live class (LiveKit)
 ### 6.2 Instructor Platform
 
 #### Profile & Onboarding
+
 - Application form (invite-only, admin-approved)
 - Bio, expertise, social links
 - Banking/payout setup (Razorpay Route for instructor payouts)
 - Profile page visible to students
 
 #### Course Creation
+
 - Create course with title, description, thumbnail, domain tags
 - Add sections and lectures (video, text, assignment, quiz)
 - Set pricing (free, paid, institutional-only)
@@ -262,6 +285,7 @@ Live class (LiveKit)
 - Reorder sections and lectures via drag-and-drop
 
 #### Content Upload Pipeline
+
 - Direct-to-S3 upload via signed URLs
 - Upload progress indicator
 - Auto-ingestion to Mux on upload complete
@@ -269,6 +293,7 @@ Live class (LiveKit)
 - Bulk upload support (Phase 2)
 
 #### Live Class Scheduling
+
 - Schedule live class with date/time/duration
 - Attach to course or standalone session
 - Auto-notify enrolled students
@@ -276,6 +301,7 @@ Live class (LiveKit)
 - Post-session: recording auto-attached to course
 
 #### Analytics Dashboard
+
 - Student enrollment count
 - Video watch completion rates
 - Drop-off points per lecture
@@ -284,6 +310,7 @@ Live class (LiveKit)
 - Assignment submission rates
 
 #### Student Management
+
 - View enrolled students
 - Bulk message enrolled students
 - View individual student progress
@@ -305,16 +332,16 @@ Live class (LiveKit)
 
 ### 6.4 Notifications System
 
-| Trigger | Channel |
-|---|---|
+| Trigger                                 | Channel        |
+| --------------------------------------- | -------------- |
 | Live class starting (1hr, 15min before) | In-app + Email |
-| New lecture published | In-app |
-| Assignment graded | In-app + Email |
-| Certificate earned | In-app + Email |
-| New community reply | In-app |
-| Payment confirmed | Email |
-| Instructor: new enrollment | In-app |
-| Instructor: assignment submitted | In-app |
+| New lecture published                   | In-app         |
+| Assignment graded                       | In-app + Email |
+| Certificate earned                      | In-app + Email |
+| New community reply                     | In-app         |
+| Payment confirmed                       | Email          |
+| Instructor: new enrollment              | In-app         |
+| Instructor: assignment submitted        | In-app         |
 
 ---
 
@@ -322,35 +349,35 @@ Live class (LiveKit)
 
 ### Stack Summary
 
-| Layer | Technology |
-|---|---|
-| **Student Web** | Next.js (App Router), TypeScript, TailwindCSS — `apps/web-student` |
-| **Instructor Web** | Next.js (App Router), TypeScript, TailwindCSS — `apps/web-instructor` |
-| **Admin Web** | Next.js (App Router), TypeScript, TailwindCSS — `apps/web-admin` |
-| **Institution Web** | Next.js (App Router), TypeScript, TailwindCSS — `apps/web-institution` (Phase 2) |
-| **UI Components** | ShadCN/UI (shared via `/packages/ui`) |
-| **State Management** | Jotai (per-app, isolated state) |
-| **Data Fetching** | TanStack Query (shared `/packages/api-client`) |
-| **Forms** | React Hook Form + Zod |
-| **Mobile (Future)** | React Native + Expo |
-| **Backend API** | NestJS (modular monolith), REST-first |
-| **WebSockets** | Socket.IO (NestJS Gateway) |
-| **Database** | PostgreSQL (Dokploy managed) |
-| **ORM** | Drizzle ORM |
-| **Cache / Queue / Presence** | Redis (Upstash initially → ElastiCache) |
-| **Auth** | Custom JWT + Refresh Tokens (NestJS) + Auth.js as OAuth broker |
-| **Video Infra** | Mux (transcoding, HLS, playback) |
-| **Live Classes** | LiveKit |
-| **Storage** | AWS S3 |
-| **CDN** | AWS CloudFront |
-| **Payments** | Razorpay (payments + Razorpay Route for instructor payouts) |
-| **Analytics** | PostHog |
-| **Error Monitoring** | Sentry |
-| **Monorepo** | Turborepo |
-| **Containerization** | Docker |
-| **Deployment** | Dokploy |
-| **Hosting** | AWS |
-| **Validation** | Zod (shared across frontend + backend) |
+| Layer                        | Technology                                                                       |
+| ---------------------------- | -------------------------------------------------------------------------------- |
+| **Student Web**              | Next.js (App Router), TypeScript, TailwindCSS — `apps/web-student`               |
+| **Instructor Web**           | Next.js (App Router), TypeScript, TailwindCSS — `apps/web-instructor`            |
+| **Admin Web**                | Next.js (App Router), TypeScript, TailwindCSS — `apps/web-admin`                 |
+| **Institution Web**          | Next.js (App Router), TypeScript, TailwindCSS — `apps/web-institution` (Phase 2) |
+| **UI Components**            | ShadCN/UI (shared via `/packages/ui`)                                            |
+| **State Management**         | Jotai (per-app, isolated state)                                                  |
+| **Data Fetching**            | TanStack Query (shared `/packages/api-client`)                                   |
+| **Forms**                    | React Hook Form + Zod                                                            |
+| **Mobile (Future)**          | React Native + Expo                                                              |
+| **Backend API**              | NestJS (modular monolith), REST-first                                            |
+| **WebSockets**               | Socket.IO (NestJS Gateway)                                                       |
+| **Database**                 | PostgreSQL (Dokploy managed)                                                     |
+| **ORM**                      | Drizzle ORM                                                                      |
+| **Cache / Queue / Presence** | Redis (Upstash initially → ElastiCache)                                          |
+| **Auth**                     | Custom JWT + Refresh Tokens (NestJS) + Auth.js as OAuth broker                   |
+| **Video Infra**              | Mux (transcoding, HLS, playback)                                                 |
+| **Live Classes**             | LiveKit                                                                          |
+| **Storage**                  | AWS S3                                                                           |
+| **CDN**                      | AWS CloudFront                                                                   |
+| **Payments**                 | Razorpay (payments + Razorpay Route for instructor payouts)                      |
+| **Analytics**                | PostHog                                                                          |
+| **Error Monitoring**         | Sentry                                                                           |
+| **Monorepo**                 | Turborepo                                                                        |
+| **Containerization**         | Docker                                                                           |
+| **Deployment**               | Dokploy                                                                          |
+| **Hosting**                  | AWS                                                                              |
+| **Validation**               | Zod (shared across frontend + backend)                                           |
 
 ---
 
@@ -389,7 +416,7 @@ Live class (LiveKit)
 ```json
 {
   "success": true,
-  "data": { },
+  "data": {},
   "meta": { "page": 1, "total": 100 },
   "error": null
 }
@@ -402,12 +429,14 @@ Live class (LiveKit)
 ### Core Tables
 
 #### `users`
+
 ```
 id, email, password_hash, role, name, avatar_url,
 is_verified, is_active, created_at, updated_at
 ```
 
 #### `instructor_profiles`
+
 ```
 id, user_id (FK), bio, expertise[], social_links,
 approval_status (pending|approved|rejected),
@@ -415,12 +444,14 @@ razorpay_seller_account_id, created_at
 ```
 
 #### `student_profiles`
+
 ```
 id, user_id (FK), resume_url, skills[],
 placement_status, created_at
 ```
 
 #### `courses`
+
 ```
 id, instructor_id (FK), title, description, thumbnail_url,
 domain (tech|business|...), pricing_type (free|paid|institutional),
@@ -428,11 +459,13 @@ price_inr, is_published, created_at, updated_at
 ```
 
 #### `sections`
+
 ```
 id, course_id (FK), title, order_index, created_at
 ```
 
 #### `lectures`
+
 ```
 id, section_id (FK), title, description, order_index,
 type (video|live|text|assignment|quiz),
@@ -441,18 +474,21 @@ is_free_preview, is_published, created_at
 ```
 
 #### `enrollments`
+
 ```
 id, student_id (FK), course_id (FK), enrolled_at,
 payment_id (FK), access_type (purchased|institutional|free)
 ```
 
 #### `progress`
+
 ```
 id, student_id (FK), lecture_id (FK),
 watched_seconds, completed, last_watched_at
 ```
 
 #### `live_classes`
+
 ```
 id, lecture_id (FK), instructor_id (FK),
 scheduled_at, duration_minutes, livekit_room_name,
@@ -460,49 +496,57 @@ recording_url, status (scheduled|live|ended), created_at
 ```
 
 #### `assignments`
+
 ```
 id, lecture_id (FK), title, description, type (mcq|short|code),
 max_score, due_at, created_at
 ```
 
 #### `submissions`
+
 ```
 id, assignment_id (FK), student_id (FK),
 content, score, feedback, graded_at, submitted_at
 ```
 
 #### `certificates`
+
 ```
 id, student_id (FK), course_id (FK),
 certificate_uid (unique), issued_at, pdf_url
 ```
 
 #### `payments`
+
 ```
 id, student_id (FK), course_id (FK),
 razorpay_order_id, razorpay_payment_id, amount, currency,
 status (pending|paid|failed|refunded), created_at
 ```
 
-#### `institution_accounts` *(Phase 2)*
+#### `institution_accounts` _(Phase 2)_
+
 ```
 id, institution_name, contact_email,
 razorpay_customer_id, seat_count, active_until, created_at
 ```
 
-#### `institution_enrollments` *(Phase 2)*
+#### `institution_enrollments` _(Phase 2)_
+
 ```
 id, institution_account_id (FK), student_id (FK),
 course_id (FK), enrolled_at
 ```
 
 #### `messages`
+
 ```
 id, channel_id (FK), sender_id (FK),
 content, created_at, is_deleted
 ```
 
 #### `channels`
+
 ```
 id, course_id (FK, nullable), type (course|general|dm),
 name, created_at
@@ -545,6 +589,7 @@ name, created_at
 ### App Isolation
 
 Each web app is deployed as a separate Docker container with its own:
+
 - Environment variables
 - SSL certificate
 - Cookie domain scope
@@ -554,24 +599,24 @@ Each web app is deployed as a separate Docker container with its own:
 
 ### AWS Services Used
 
-| Service | Purpose |
-|---|---|
-| **EC2 / ECS** | App hosting (Docker containers via Dokploy) |
-| **PostgreSQL (Dokploy)** | Primary database |
-| **ElastiCache (Redis)** | Cache, queues, pub/sub, presence |
-| **S3** | Video uploads, recording storage, assets |
-| **CloudFront** | CDN for static assets and media |
-| **SES** | Transactional email (notifications) |
-| **Route 53** | DNS management |
+| Service                  | Purpose                                     |
+| ------------------------ | ------------------------------------------- |
+| **EC2 / ECS**            | App hosting (Docker containers via Dokploy) |
+| **PostgreSQL (Dokploy)** | Primary database                            |
+| **ElastiCache (Redis)**  | Cache, queues, pub/sub, presence            |
+| **S3**                   | Video uploads, recording storage, assets    |
+| **CloudFront**           | CDN for static assets and media             |
+| **SES**                  | Transactional email (notifications)         |
+| **Route 53**             | DNS management                              |
 
 ### Month 1 Infra (Simplified)
 
-| Service | Month 1 Choice | Scale-Up Path |
-|---|---|---|
-| App hosting | Dokploy + Docker | ECS Fargate |
-| Database | PostgreSQL via Dokploy | Read replicas, connection pooling |
-| Redis | Upstash | ElastiCache |
-| Monitoring | Dokploy logs + PostHog | Sentry + Datadog / Grafana |
+| Service     | Month 1 Choice         | Scale-Up Path                     |
+| ----------- | ---------------------- | --------------------------------- |
+| App hosting | Dokploy + Docker       | ECS Fargate                       |
+| Database    | PostgreSQL via Dokploy | Read replicas, connection pooling |
+| Redis       | Upstash                | ElastiCache                       |
+| Monitoring  | Dokploy logs + PostHog | Sentry + Datadog / Grafana        |
 
 ---
 
@@ -607,6 +652,7 @@ README.md
 ```
 
 ### Key Monorepo Rules
+
 - All API request/response types live in `/packages/types` — never duplicated
 - All Zod validation schemas live in `/packages/validation` — shared between frontend forms and backend guards
 - API client is auto-generated from OpenAPI spec in `/packages/api-client` — all web apps use the same generated client
@@ -615,6 +661,7 @@ README.md
 - Mobile app imports from same `/packages/api-client` as web — ensures API contract consistency
 
 ### App Isolation Rules
+
 - No direct imports between apps (`apps/web-student` cannot import from `apps/web-admin`)
 - Shared code must go through `/packages`
 - Each app has independent dependencies (can have different package versions if needed)
@@ -633,16 +680,17 @@ Each web app (`web-student`, `web-instructor`, `web-admin`, `web-institution`) c
 
 ### Token Architecture
 
-| Token | Storage (Web) | Storage (Mobile) | Expiry |
-|---|---|---|---|
-| Access Token (JWT) | HTTP-only cookie (scoped to app subdomain) | SecureStore | 15 minutes |
-| Refresh Token | HTTP-only cookie (scoped to app subdomain) | SecureStore | 30 days |
+| Token              | Storage (Web)                              | Storage (Mobile) | Expiry     |
+| ------------------ | ------------------------------------------ | ---------------- | ---------- |
+| Access Token (JWT) | HTTP-only cookie (scoped to app subdomain) | SecureStore      | 15 minutes |
+| Refresh Token      | HTTP-only cookie (scoped to app subdomain) | SecureStore      | 30 days    |
 
 ### Auth Flows
 
 **Web (all apps)**
+
 ```
-Next.js app → POST api.eduplatform.com/api/v1/auth/login → NestJS Auth Module
+Next.js app → POST api.example.com/api/v1/auth/login → NestJS Auth Module
   → Validate credentials
   → Issue JWT + Refresh Token
   → Set HTTP-only cookies (scoped to app subdomain)
@@ -650,6 +698,7 @@ Next.js app → POST api.eduplatform.com/api/v1/auth/login → NestJS Auth Modul
 ```
 
 **Mobile (Phase 2)**
+
 ```
 React Native → POST /api/v1/auth/login → NestJS Auth Module
   → Validate credentials
@@ -658,6 +707,7 @@ React Native → POST /api/v1/auth/login → NestJS Auth Module
 ```
 
 **OAuth (Google, GitHub)**
+
 ```
 Frontend → Auth.js OAuth flow
   → Auth.js callback → NestJS /auth/oauth-callback
@@ -668,7 +718,8 @@ Frontend → Auth.js OAuth flow
 
 ### Cross-App Auth Flow
 
-After login on `student.eduplatform.com`, if the user also has instructor or admin roles:
+After login on `student.example.com`, if the user also has instructor or admin roles:
+
 - A role detection endpoint returns available roles
 - The student app displays navigation links to other portals
 - Each portal requires a fresh auth handshake (no shared session tokens)
@@ -676,12 +727,12 @@ After login on `student.eduplatform.com`, if the user also has instructor or adm
 
 ### RBAC Roles
 
-| Role | Permissions |
-|---|---|
-| `student` | Browse, enroll, watch, submit assignments, community |
-| `instructor` | All student permissions + create courses, manage students, analytics |
-| `admin` | Full platform access, user management, moderation |
-| `institution_admin` | Institution dashboard, manage seats, cohort reports |
+| Role                | Permissions                                                          |
+| ------------------- | -------------------------------------------------------------------- |
+| `student`           | Browse, enroll, watch, submit assignments, community                 |
+| `instructor`        | All student permissions + create courses, manage students, analytics |
+| `admin`             | Full platform access, user management, moderation                    |
+| `institution_admin` | Institution dashboard, manage seats, cohort reports                  |
 
 ---
 
@@ -727,6 +778,7 @@ Instructor starts live class
 ### Socket.IO (App Websockets)
 
 Used for:
+
 - Chat messages (course channels, general channels)
 - In-app notifications delivery
 - Presence indicators (who is online)
@@ -746,6 +798,7 @@ Socket.IO server (NestJS) → Redis Adapter
 ### LiveKit (Live Video)
 
 Used exclusively for:
+
 - Live class video/audio streaming
 - Teacher/student video rooms
 - Screen sharing
@@ -770,17 +823,17 @@ NestJS emits internal event (e.g., "enrollment.confirmed")
 
 **Goal:** Establish scalable, clean foundation. Eliminate future migration pain.
 
-| Task | Details |
-|---|---|
-| **Monorepo setup** | Turborepo init, shared packages scaffolded, ESLint, Prettier, Husky, CI/CD pipeline (GitHub Actions) |
-| **NestJS bootstrap** | Module structure created, core modules stubbed (auth, users, courses, uploads), global pipes/interceptors |
-| **Database design** | All core schemas defined and migrated via Drizzle ORM |
-| **Redis integration** | Upstash Redis connected, BullMQ queue setup for background jobs |
-| **Docker setup** | Dockerfiles for each web app and api, docker-compose for local dev |
-| **Dokploy deploy** | Staging environment live on AWS via Dokploy (all 4 web apps + api) |
-| **S3 + CloudFront** | Buckets created, CloudFront distribution configured |
-| **Auth system** | JWT + refresh token flow, HTTP-only cookies, role middleware, OAuth skeleton |
-| **Next.js scaffold** | `apps/web-student` App Router setup, TailwindCSS + ShadCN, auth pages (login/register) |
+| Task                  | Details                                                                                                   |
+| --------------------- | --------------------------------------------------------------------------------------------------------- |
+| **Monorepo setup**    | Turborepo init, shared packages scaffolded, ESLint, Prettier, Husky, CI/CD pipeline (GitHub Actions)      |
+| **NestJS bootstrap**  | Module structure created, core modules stubbed (auth, users, courses, uploads), global pipes/interceptors |
+| **Database design**   | All core schemas defined and migrated via Drizzle ORM                                                     |
+| **Redis integration** | Upstash Redis connected, BullMQ queue setup for background jobs                                           |
+| **Docker setup**      | Dockerfiles for each web app and api, docker-compose for local dev                                        |
+| **Dokploy deploy**    | Staging environment live on AWS via Dokploy (all 4 web apps + api)                                        |
+| **S3 + CloudFront**   | Buckets created, CloudFront distribution configured                                                       |
+| **Auth system**       | JWT + refresh token flow, HTTP-only cookies, role middleware, OAuth skeleton                              |
+| **Next.js scaffold**  | `apps/web-student` App Router setup, TailwindCSS + ShadCN, auth pages (login/register)                    |
 
 **Exit Criteria:** Staging environment live (api + web-student), auth working end-to-end, DB migrated.
 
@@ -790,16 +843,16 @@ NestJS emits internal event (e.g., "enrollment.confirmed")
 
 **Goal:** Core educational workflow. Instructors can create and upload. Students can browse and watch.
 
-| Task | Details |
-|---|---|
-| **Instructor dashboard** | `apps/web-instructor` — Create course, add sections/lectures, set pricing, publish toggle |
-| **Upload pipeline** | Signed S3 URLs, direct browser upload, upload progress UI, Mux ingest on completion |
-| **Mux integration** | Asset creation, transcoding webhooks, signed playback URL generation |
-| **Student course pages** | `apps/web-student` — Course listing, course detail, free preview enforcement |
-| **Video player** | HLS player (Mux player or Video.js), progress tracking, resume playback |
-| **Enrollment flow** | Enroll in free course, enrollment record creation |
-| **Payment integration** | Razorpay — order creation, payment intent, webhook handling, UPI/cards/wallets/net banking support, access grant on success |
-| **Basic notifications** | Email on enrollment confirmation (AWS SES) |
+| Task                     | Details                                                                                                                     |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| **Instructor dashboard** | `apps/web-instructor` — Create course, add sections/lectures, set pricing, publish toggle                                   |
+| **Upload pipeline**      | Signed S3 URLs, direct browser upload, upload progress UI, Mux ingest on completion                                         |
+| **Mux integration**      | Asset creation, transcoding webhooks, signed playback URL generation                                                        |
+| **Student course pages** | `apps/web-student` — Course listing, course detail, free preview enforcement                                                |
+| **Video player**         | HLS player (Mux player or Video.js), progress tracking, resume playback                                                     |
+| **Enrollment flow**      | Enroll in free course, enrollment record creation                                                                           |
+| **Payment integration**  | Razorpay — order creation, payment intent, webhook handling, UPI/cards/wallets/net banking support, access grant on success |
+| **Basic notifications**  | Email on enrollment confirmation (AWS SES)                                                                                  |
 
 **Exit Criteria:** Instructor can create and upload a course via `web-instructor`. Student can browse, purchase, and watch via `web-student`.
 
@@ -809,17 +862,17 @@ NestJS emits internal event (e.g., "enrollment.confirmed")
 
 **Goal:** Engagement layer. Community. Live classes. Assignments.
 
-| Task | Details |
-|---|---|
-| **Socket.IO gateway** | Authenticated connections, room architecture (per-course channels), Redis adapter |
-| **Chat system** | Course channels, real-time messaging, message persistence in PostgreSQL (`web-student` + `web-instructor`) |
-| **LiveKit integration** | Room creation, instructor starts class (`web-instructor`), student joins (`web-student`), recording auto-start |
-| **Live class scheduling** | Instructor schedules class, students notified, calendar view |
-| **Recording pipeline** | LiveKit recording → S3 → Mux → attached to lecture |
-| **Assignments & Quizzes** | Create, submit, auto-grade MCQ, manual review for open-ended |
-| **Certificates** | Auto-issue on 100% course completion, PDF generation, unique verification URL |
-| **PostHog analytics** | Event tracking: page views, video start/complete, enrollment, purchase, live attendance (separate projects per app) |
-| **In-app notifications** | Socket.IO delivery of notification events |
+| Task                      | Details                                                                                                             |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| **Socket.IO gateway**     | Authenticated connections, room architecture (per-course channels), Redis adapter                                   |
+| **Chat system**           | Course channels, real-time messaging, message persistence in PostgreSQL (`web-student` + `web-instructor`)          |
+| **LiveKit integration**   | Room creation, instructor starts class (`web-instructor`), student joins (`web-student`), recording auto-start      |
+| **Live class scheduling** | Instructor schedules class, students notified, calendar view                                                        |
+| **Recording pipeline**    | LiveKit recording → S3 → Mux → attached to lecture                                                                  |
+| **Assignments & Quizzes** | Create, submit, auto-grade MCQ, manual review for open-ended                                                        |
+| **Certificates**          | Auto-issue on 100% course completion, PDF generation, unique verification URL                                       |
+| **PostHog analytics**     | Event tracking: page views, video start/complete, enrollment, purchase, live attendance (separate projects per app) |
+| **In-app notifications**  | Socket.IO delivery of notification events                                                                           |
 
 **Exit Criteria:** Live class runs end-to-end. Assignments submittable. Certificates issued. Chat working.
 
@@ -829,17 +882,17 @@ NestJS emits internal event (e.g., "enrollment.confirmed")
 
 **Goal:** Harden the platform. Prepare for real users. Admin tooling operational.
 
-| Task | Details |
-|---|---|
-| **Performance** | TanStack Query caching, CloudFront CDN validation, N+1 query elimination, database indexing |
-| **Security audit** | Rate limiting (Redis), signed URL enforcement, RBAC validation, upload type/size validation, input sanitization |
-| **Admin dashboard** | `apps/web-admin` — User management, instructor approval flow, course moderation, basic revenue overview |
-| **Mobile API readiness** | API contract cleanup, response format consistency, auth compatibility verification |
-| **Shared schema extraction** | Zod schemas finalized in `/packages/validation`, type exports cleaned, OpenAPI client generation verified |
-| **E2E testing** | Auth flows, upload → playback, payment → enrollment, live class start/end, certificate issue (per-app Playwright configs) |
-| **Error monitoring** | Sentry integration (per-app projects + api), structured logging, error alerting |
-| **Documentation** | API docs (Swagger), internal runbooks for deployment and DB migrations |
-| **Soft launch prep** | Beta invite system, landing page, waitlist |
+| Task                         | Details                                                                                                                   |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| **Performance**              | TanStack Query caching, CloudFront CDN validation, N+1 query elimination, database indexing                               |
+| **Security audit**           | Rate limiting (Redis), signed URL enforcement, RBAC validation, upload type/size validation, input sanitization           |
+| **Admin dashboard**          | `apps/web-admin` — User management, instructor approval flow, course moderation, basic revenue overview                   |
+| **Mobile API readiness**     | API contract cleanup, response format consistency, auth compatibility verification                                        |
+| **Shared schema extraction** | Zod schemas finalized in `/packages/validation`, type exports cleaned, OpenAPI client generation verified                 |
+| **E2E testing**              | Auth flows, upload → playback, payment → enrollment, live class start/end, certificate issue (per-app Playwright configs) |
+| **Error monitoring**         | Sentry integration (per-app projects + api), structured logging, error alerting                                           |
+| **Documentation**            | API docs (Swagger), internal runbooks for deployment and DB migrations                                                    |
+| **Soft launch prep**         | Beta invite system, landing page, waitlist                                                                                |
 
 **Exit Criteria:** Platform stable under test load. Admin tools working via `web-admin`. Ready for invite-only beta.
 
@@ -849,101 +902,104 @@ NestJS emits internal event (e.g., "enrollment.confirmed")
 
 The following features are explicitly excluded from Month 1. They represent future phases after initial traction is validated.
 
-| Feature | Reason Deferred |
-|---|---|
-| Whiteboards / Collaborative editing | High complexity, needs user validation |
-| AI tutors / AI-generated content | Requires product-market fit first |
-| Advanced chat moderation (threading, reactions, voice rooms) | Edge cases will consume sprint |
-| DRM (digital rights management) | Premature without scale |
-| Offline mobile support | Architecture-ready, implement in Phase 2 |
-| Complex recommendation engine | No user data to train on yet |
-| Advanced gamification (streaks, leaderboards, XP) | Nice-to-have, not core |
-| Institution dashboard | Validate B2C first |
-| Multilingual support | English-first Phase 1 |
-| Mobile app (React Native) | API will be mobile-ready; app itself is Phase 2 |
-| Microservices | Premature — modular monolith is correct architecture now |
+| Feature                                                      | Reason Deferred                                          |
+| ------------------------------------------------------------ | -------------------------------------------------------- |
+| Whiteboards / Collaborative editing                          | High complexity, needs user validation                   |
+| AI tutors / AI-generated content                             | Requires product-market fit first                        |
+| Advanced chat moderation (threading, reactions, voice rooms) | Edge cases will consume sprint                           |
+| DRM (digital rights management)                              | Premature without scale                                  |
+| Offline mobile support                                       | Architecture-ready, implement in Phase 2                 |
+| Complex recommendation engine                                | No user data to train on yet                             |
+| Advanced gamification (streaks, leaderboards, XP)            | Nice-to-have, not core                                   |
+| Institution dashboard                                        | Validate B2C first                                       |
+| Multilingual support                                         | English-first Phase 1                                    |
+| Mobile app (React Native)                                    | API will be mobile-ready; app itself is Phase 2          |
+| Microservices                                                | Premature — modular monolith is correct architecture now |
 
 ---
 
 ## 16. Success Metrics & KPIs
 
 ### Month 1 (Foundation)
-| Metric | Target |
-|---|---|
-| Staging environment live | Week 1 |
-| Instructors onboarded (vetted) | 2–3 |
-| Courses published | 3–5 |
+
+| Metric                           | Target |
+| -------------------------------- | ------ |
+| Staging environment live         | Week 1 |
+| Instructors onboarded (vetted)   | 2–3    |
+| Courses published                | 3–5    |
 | End-to-end purchase flow working | Week 2 |
-| Live class runs without crash | Week 3 |
-| Certificates auto-issued | Week 3 |
-| Beta invites sent | Week 4 |
+| Live class runs without crash    | Week 3 |
+| Certificates auto-issued         | Week 3 |
+| Beta invites sent                | Week 4 |
 
 ### Month 2–3 (Beta)
-| Metric | Target |
-|---|---|
-| Beta student signups | 200–500 |
-| Course enrollments | 100+ |
-| Video completion rate | >40% |
-| Live class attendance rate | >60% of enrolled |
-| Revenue (first paying users) | ₹50,000–₹1,00,000 |
-| Certificate issued | 20+ |
-| Institution conversations initiated | 2–3 institutions |
+
+| Metric                              | Target            |
+| ----------------------------------- | ----------------- |
+| Beta student signups                | 200–500           |
+| Course enrollments                  | 100+              |
+| Video completion rate               | >40%              |
+| Live class attendance rate          | >60% of enrolled  |
+| Revenue (first paying users)        | ₹50,000–₹1,00,000 |
+| Certificate issued                  | 20+               |
+| Institution conversations initiated | 2–3 institutions  |
 
 ### Long-Term (6–12 months)
-| Metric | Target |
-|---|---|
-| Monthly Active Students | 5,000+ |
-| Paying students | 1,000+ |
-| Courses available | 50+ |
-| Institution accounts | 5+ institutions |
-| Instructor net promoter score | >8/10 |
-| Student course completion rate | >35% |
+
+| Metric                         | Target          |
+| ------------------------------ | --------------- |
+| Monthly Active Students        | 5,000+          |
+| Paying students                | 1,000+          |
+| Courses available              | 50+             |
+| Institution accounts           | 5+ institutions |
+| Instructor net promoter score  | >8/10           |
+| Student course completion rate | >35%            |
 
 ---
 
 ## 17. Risk Register
 
-| Risk | Likelihood | Impact | Mitigation |
-|---|---|---|---|
-| **Solo founder bandwidth** | High | High | Strict scope discipline. Month 1 plan is the ceiling, not the floor. |
-| **Instructor content quality** | Medium | High | Vetted invite-only model. Trial course before full onboarding. |
-| **Mux / LiveKit cost at scale** | Medium | Medium | Monitor usage closely. Mux pricing is usage-based. Switch to self-hosted at scale. |
-| **Low student retention** | Medium | High | Track drop-off from day 1 via PostHog. Iterate on completion flow. |
-| **Institution sales cycle too long** | High | Medium | Run B2C first. Institution licensing is secondary revenue in Month 1. |
-| **Payment failures (India)** | Medium | Medium | Razorpay as primary gateway with native UPI, net banking, wallets support. |
-| **Scope creep** | High | High | This document defines Month 1 scope. All additions go to backlog. |
-| **Database design mistakes** | Low | High | Schema reviewed before any data is written. Migrations versioned from day 1. |
-| **Multi-app complexity** | Medium | Medium | Shared packages (`/packages/ui`, `/packages/api-client`, `/packages/shared-components`) reduce duplication. Turborepo caching speeds builds. Per-app CI pipelines run only on affected apps. |
-| **Cross-app session inconsistency** | Low | High | Scoped cookie domains per app. Explicit role detection endpoint after login. Each app validates auth independently. |
+| Risk                                 | Likelihood | Impact | Mitigation                                                                                                                                                                                   |
+| ------------------------------------ | ---------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Solo founder bandwidth**           | High       | High   | Strict scope discipline. Month 1 plan is the ceiling, not the floor.                                                                                                                         |
+| **Instructor content quality**       | Medium     | High   | Vetted invite-only model. Trial course before full onboarding.                                                                                                                               |
+| **Mux / LiveKit cost at scale**      | Medium     | Medium | Monitor usage closely. Mux pricing is usage-based. Switch to self-hosted at scale.                                                                                                           |
+| **Low student retention**            | Medium     | High   | Track drop-off from day 1 via PostHog. Iterate on completion flow.                                                                                                                           |
+| **Institution sales cycle too long** | High       | Medium | Run B2C first. Institution licensing is secondary revenue in Month 1.                                                                                                                        |
+| **Payment failures (India)**         | Medium     | Medium | Razorpay as primary gateway with native UPI, net banking, wallets support.                                                                                                                   |
+| **Scope creep**                      | High       | High   | This document defines Month 1 scope. All additions go to backlog.                                                                                                                            |
+| **Database design mistakes**         | Low        | High   | Schema reviewed before any data is written. Migrations versioned from day 1.                                                                                                                 |
+| **Multi-app complexity**             | Medium     | Medium | Shared packages (`/packages/ui`, `/packages/api-client`, `/packages/shared-components`) reduce duplication. Turborepo caching speeds builds. Per-app CI pipelines run only on affected apps. |
+| **Cross-app session inconsistency**  | Low        | High   | Scoped cookie domains per app. Explicit role detection endpoint after login. Each app validates auth independently.                                                                          |
 
 ---
 
 ## 18. Glossary
 
-| Term | Definition |
-|---|---|
-| **HLS** | HTTP Live Streaming — adaptive bitrate video format used by Mux |
-| **LiveKit** | Open-source, developer-first video/audio infrastructure for live classes |
-| **Mux** | Video infrastructure platform for transcoding, storage, and delivery |
-| **Drizzle ORM** | TypeScript ORM with SQL-first, type-safe query building for PostgreSQL |
-| **Turborepo** | High-performance build system for JavaScript/TypeScript monorepos |
-| **Dokploy** | Open-source deployment platform — simpler alternative to Heroku on your own AWS |
-| **Socket.IO** | Realtime bidirectional event-based communication library |
-| **JWT** | JSON Web Token — stateless authentication token |
-| **RBAC** | Role-Based Access Control — permission system based on user roles |
-| **Zod** | TypeScript-first schema validation library |
-| **PostHog** | Open-source product analytics and event tracking platform |
-| **Razorpay** | Indian payment gateway — UPI, net banking, wallets, cards for domestic payments |
-| **Razorpay Route** | Razorpay's split-payment system for marketplace payouts to instructors |
-| **Sentry** | Error tracking and performance monitoring platform |
-| **Signed URL** | A time-limited, authenticated URL for secure media access |
-| **Modular Monolith** | Single deployable backend with clearly separated internal module boundaries |
-| **Content Flywheel** | Live classes auto-converting to recorded courses, compounding the content library |
-| **Institution** | Institutional licensing to colleges and universities — seat-based or cohort-based pricing |
+| Term                 | Definition                                                                                |
+| -------------------- | ----------------------------------------------------------------------------------------- |
+| **HLS**              | HTTP Live Streaming — adaptive bitrate video format used by Mux                           |
+| **LiveKit**          | Open-source, developer-first video/audio infrastructure for live classes                  |
+| **Mux**              | Video infrastructure platform for transcoding, storage, and delivery                      |
+| **Drizzle ORM**      | TypeScript ORM with SQL-first, type-safe query building for PostgreSQL                    |
+| **Turborepo**        | High-performance build system for JavaScript/TypeScript monorepos                         |
+| **Dokploy**          | Open-source deployment platform — simpler alternative to Heroku on your own AWS           |
+| **Socket.IO**        | Realtime bidirectional event-based communication library                                  |
+| **JWT**              | JSON Web Token — stateless authentication token                                           |
+| **RBAC**             | Role-Based Access Control — permission system based on user roles                         |
+| **Zod**              | TypeScript-first schema validation library                                                |
+| **PostHog**          | Open-source product analytics and event tracking platform                                 |
+| **Razorpay**         | Indian payment gateway — UPI, net banking, wallets, cards for domestic payments           |
+| **Razorpay Route**   | Razorpay's split-payment system for marketplace payouts to instructors                    |
+| **Sentry**           | Error tracking and performance monitoring platform                                        |
+| **Signed URL**       | A time-limited, authenticated URL for secure media access                                 |
+| **Modular Monolith** | Single deployable backend with clearly separated internal module boundaries               |
+| **Content Flywheel** | Live classes auto-converting to recorded courses, compounding the content library         |
+| **Institution**      | Institutional licensing to colleges and universities — seat-based or cohort-based pricing |
 
 ---
 
-*This document is a living specification. It should be updated at the end of each weekly sprint to reflect decisions made, features completed, and scope changes.*
+_This document is a living specification. It should be updated at the end of each weekly sprint to reflect decisions made, features completed, and scope changes._
 
 ---
 
