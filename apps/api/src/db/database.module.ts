@@ -1,21 +1,18 @@
-import { Global, Module, Provider } from '@nestjs/common';
-import { DatabaseService } from './connection';
-import { DrizzleDB } from './connection';
+import { Global, Module, Provider } from "@nestjs/common";
+import { DatabaseService, createLazyDB } from "./connection";
+import { ConnectionStateService } from "../common/services/connection-state.service";
 
-// Injection token for the Drizzle DB instance
-export const DRIZZLE_DB = Symbol('DRIZZLE_DB');
+export const DRIZZLE_DB = Symbol("DRIZZLE_DB");
 
 const dbProvider: Provider = {
   provide: DRIZZLE_DB,
-  useFactory: (databaseService: DatabaseService) => {
-    return databaseService.getConnection();
-  },
+  useFactory: (service: DatabaseService) => createLazyDB(service),
   inject: [DatabaseService],
 };
 
 @Global()
 @Module({
-  providers: [DatabaseService, dbProvider],
-  exports: [DatabaseService, DRIZZLE_DB],
+  providers: [DatabaseService, ConnectionStateService, dbProvider],
+  exports: [DatabaseService, ConnectionStateService, DRIZZLE_DB],
 })
 export class DatabaseModule {}
