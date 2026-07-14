@@ -79,6 +79,8 @@
   "optionalDependencies": {
     "@emnapi/core": "^1.7.1",
     "@emnapi/runtime": "^1.7.1",
-    "@rollup/rollup-linux-x64-gnu": "^4.34.8"
+    "@rollup/rollup-linux-x64-gnu": "^4.34.8",
+    "@tailwindcss/oxide-linux-x64-gnu": "4.3.2",
+    "@tailwindcss/oxide-linux-x64-musl": "4.3.2"
   }
 }
